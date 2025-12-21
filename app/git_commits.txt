@@ -1,0 +1,41 @@
+877aa1a|Initial commit from Create Next App|2025-12-17 10:58:41 +0530
+29c977a|feat: Multi-mode portfolio with Paper, Newspaper, Terminal modes - Paper mode: Document/resume style with sidebar TOC - Newspaper mode: Editorial layout with masthead and columns - Terminal mode: Interactive CLI with admin access - Fullscreen sub-pages with themed back navigation - GitHub integration for repos, stats, activity - Dark/light theme support|2025-12-17 12:02:14 +0530
+2c749ea|style: Update Paper mode to inverted colors, replace emojis with Lucide icons - Paper mode: Light background (#fafafa), dark text, blue accents - All modes: Replaced emojis with Lucide icons (Star, GitCommit, Rocket, MapPin, etc) - Terminal: Uses ASCII symbols for CLI aesthetic|2025-12-17 12:07:49 +0530
+7cbfe24|fix: Replace remaining emojis with Lucide icons in NewspaperMode contact section|2025-12-17 12:10:24 +0530
+9669c03|style: Refine Terminal UI - cleaner input, minimal status bar, floating ASCII|2025-12-17 12:16:16 +0530
+3cf6460|style: Terminal UI polish - remove input outline, add error shake animation|2025-12-17 12:18:11 +0530
+77abb3e|feat: Real terminal UX - ASCII at top, output below, input fixed at bottom - ASCII always visible at top of scrollable area - Output lines grow below, pushing content up naturally - Input area fixed at bottom like real terminal - Smart error shake: ASCII shakes if visible, input shakes if scrolled off - Command menu shows when no output yet|2025-12-17 12:24:17 +0530
+08f368e|feat: Add terminal commands - theme, font, screensaver, neofetch, etc - /commands shows all available commands - /theme dark|light|rosepine changes terminal colors - /font mono|sans|serif changes terminal font - /screensaver toggles matrix effect - /neofetch shows system info display - /fortune shows random dev quotes - /cowsay creates ASCII cow art - /date shows current time - /history shows command history - echo echoes text - Dynamic theming applies to all UI elements|2025-12-17 12:40:48 +0530
+29b40c4|feat: TUI theme selector with arrow key navigation - /theme opens floating modal with 3 themes: Dracula, Tokyo Night, Rosé Pine - Arrow up/down to navigate, Enter to select, Esc to cancel - All UI elements now use dynamic theme colors - Themes apply to ASCII, panels, input, status bar, and modals - Added proper theme definitions with full color palettes|2025-12-17 12:48:42 +0530
+a57a90b|fix: CommandItem uses colors prop instead of undefined theme|2025-12-17 12:51:14 +0530
+47fbe86|feat: Terminal enhancements - Theme/font localStorage persistence - Command history navigation (↑/↓ arrows) - Tab autocomplete for commands - /font TUI selector - Fun commands: /cmatrix, /sl, /figlet - Visual effects: /crt, /glitch (placeholders) - Utilities: /export (clipboard), /repo (open in new tab)|2025-12-17 13:00:13 +0530
+ecbf270|docs: update TASKS.md with comprehensive deep code review findings|2025-12-18 10:50:40 +0530
+ce5c6b9|feat: add MatrixRain component and update terminal/CSS styles|2025-12-18 10:51:50 +0530
+bcbb4f2|feat: Admin CMS with inline controls, keyboard shortcuts, session persistence|2025-12-20 15:16:21 +0530
+eb6500c|feat: add cookie-based admin auth & fix bugs|2025-12-20 17:27:34 +0530
+cdbd3c9|feat: implement secure admin authentication system|2025-12-20 18:34:10 +0530
+65753a3|fix: use config values and database for consistency|2025-12-20 18:38:09 +0530
+873b92a|chore: cleanup and documentation|2025-12-20 18:43:52 +0530
+4f4d44a|feat: font TUI selector and cleanup|2025-12-20 18:52:14 +0530
+643bdd6|fix: centralize topics parsing and popup blocker handling|2025-12-20 18:57:14 +0530
+425b66d|feat: add /shortcuts command and cleanup|2025-12-20 19:01:22 +0530
+dc2d0a4|perf: cache admin status check to reduce API calls (B-004)|2025-12-20 19:09:30 +0530
+a6aa655|feat: UX improvements and accessibility|2025-12-20 20:06:19 +0530
+79e25e3|perf: pause MatrixRain animation when tab is hidden (P-005)|2025-12-20 20:24:08 +0530
+c9ac6cf|feat: UX improvements - theme icon and demo links|2025-12-20 20:28:51 +0530
+0ec142b|docs: cleanup and reorganize TASKS.md|2025-12-20 20:32:11 +0530
+b2d06bd|feat: add global toast notification system|2025-12-20 20:37:24 +0530
+395a165|refactor: consolidate type definitions into central location|2025-12-20 20:40:36 +0530
+1fbc66d|feat: simplify admin UI and add remaining features|2025-12-20 20:51:59 +0530
+bb40e46|docs: update TASKS.md - all core tasks complete|2025-12-20 20:52:25 +0530
+88c2f8a|fix: resolve hydration error - nested anchor tags|2025-12-20 20:54:52 +0530
+3d683aa|feat: add CSRF protection and input sanitization (S-004, B-007)|2025-12-20 20:59:04 +0530
+24fe8e1|docs: update CHANGELOG, AGENTS, README with all session changes|2025-12-20 21:01:32 +0530
+44b379e|refactor: extract DefaultPage into section components (A-002)|2025-12-20 21:07:18 +0530
+c86a2ec|feat: UI polish, admin edit mode improvements, and documentation updates|2025-12-21 11:41:50 +0530
+63ded66|feat: deep review improvements - testing, caching, admin features|2025-12-21 14:58:52 +0530
+4e7af41|feat: add progressive Show More/Less for Projects and Activity|2025-12-21 15:09:37 +0530
+026b93a|feat: newspaper mode redesign with live commit counter|2025-12-21 16:31:20 +0530
+ee368ab|feat: add AI Newspaper Content System with Gemini integration|2025-12-21 19:56:44 +0530
+67d3843|Deep review fixes: security, performance, and bug fixes|2025-12-21 20:40:12 +0530
+546b0cf|Refactor: Break up large components and expand test coverage|2025-12-21 20:43:59 +0530

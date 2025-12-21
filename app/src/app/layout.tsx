@@ -1,0 +1,68 @@
+import type { Metadata } from "next";
+import { Inter, JetBrains_Mono, Playfair_Display, Source_Serif_4 } from "next/font/google";
+import "./globals.css";
+import { ThemeProvider } from "@/components/ThemeProvider";
+import { AdminProvider } from "@/components/AdminContext";
+import { ToastProvider } from "@/components/ToastProvider";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { KeyboardShortcuts } from "@/components/KeyboardShortcuts";
+
+// Fonts
+const inter = Inter({
+  variable: "--font-inter",
+  subsets: ["latin"],
+});
+
+const jetbrainsMono = JetBrains_Mono({
+  variable: "--font-mono",
+  subsets: ["latin"],
+});
+
+const playfair = Playfair_Display({
+  variable: "--font-playfair",
+  subsets: ["latin"],
+});
+
+const sourceSerif = Source_Serif_4({
+  variable: "--font-serif",
+  subsets: ["latin"],
+});
+
+export const metadata: Metadata = {
+  title: "Aman Singh | Full-Stack Python Developer",
+  description: "Portfolio of Aman Singh (Tremors) - Building AI-powered platforms, real-time systems, and advanced developer tooling.",
+  keywords: ["Python", "Django", "FastAPI", "React", "TypeScript", "Full-Stack Developer"],
+  authors: [{ name: "Aman Singh", url: "https://github.com/qtremors" }],
+  openGraph: {
+    title: "Aman Singh | Full-Stack Python Developer",
+    description: "Building AI-powered platforms and developer tools",
+    type: "website",
+  },
+};
+
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
+  return (
+    <html lang="en" suppressHydrationWarning>
+      <body
+        className={`${inter.variable} ${jetbrainsMono.variable} ${playfair.variable} ${sourceSerif.variable} antialiased`}
+      >
+        <ThemeProvider>
+          <AdminProvider>
+            <ToastProvider>
+              <ErrorBoundary>
+                <KeyboardShortcuts />
+                {children}
+              </ErrorBoundary>
+            </ToastProvider>
+          </AdminProvider>
+        </ThemeProvider>
+      </body>
+    </html>
+  );
+}
+
+
