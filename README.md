@@ -404,7 +404,8 @@ For production on Vercel or similar:
 | `GITHUB_USERNAME` | Yes | Your GitHub username |
 | `ADMIN_SECRET` | Yes | Secret command to trigger admin login |
 | `AUTH_SECRET` | Recommended | HMAC signing key for sessions |
-| `DATABASE_URL` | Yes | PostgreSQL connection string |
+| `DATABASE_URL` | Yes | PostgreSQL connection string (pooled) |
+| `DATABASE_URL_UNPOOLED` | Yes* | Direct connection for Prisma migrations (*auto-set by Vercel+Neon) |
 | `GEMINI_API_KEY` | Optional | For AI newspaper content |
 
 > **Note**: No password in env vars! Password is created on first login and stored hashed in the database.

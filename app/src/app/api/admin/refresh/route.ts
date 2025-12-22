@@ -36,6 +36,15 @@ export async function POST(request: NextRequest) {
         // Fetch repos from GitHub
         const repos = await getRepos(GITHUB_USERNAME);
 
+        // SAFEGUARD: Prevent data loss if GitHub API returns empty/incomplete results
+        // This protects against: rate limiting (403), service outages, network failures
+        if (repos.length === 0) {
+            return NextResponse.json(
+                { success: false, error: "GitHub API returned no repos - refusing to sync to prevent data loss" },
+                { status: 422 }
+            );
+        }
+
         // Fetch commits in parallel with repo processing
         const commits = await getRecentCommits(repos, 50);
 
@@ -45,6 +54,7 @@ export async function POST(request: NextRequest) {
             const githubRepoIds = repos.map((repo) => repo.id);
 
             // Delete repos that no longer exist on GitHub
+            // Safe because we verified repos.length > 0 above
             await tx.repo.deleteMany({
                 where: {
                     id: {
