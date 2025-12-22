@@ -4,12 +4,13 @@
 
 import Link from "next/link";
 import { PERSONAL, CONTACT_LINKS } from "@/config/site";
-import { Terminal, FileText, Newspaper, Github, Linkedin, Mail, Heart } from "lucide-react";
+import { Terminal, FileText, Newspaper, Rocket, Github, Linkedin, Mail, Heart } from "lucide-react";
 
 const modes = [
     { id: "terminal", label: "Terminal", href: "/terminal", icon: Terminal },
     { id: "paper", label: "Paper", href: "/paper", icon: FileText },
     { id: "newspaper", label: "Newspaper", href: "/newspaper", icon: Newspaper },
+    { id: "nexus", label: "Nexus", href: "/nexus", icon: Rocket },
 ];
 
 const getContactUrl = (id: string) => CONTACT_LINKS.find((l) => l.id === id)?.url || "#";

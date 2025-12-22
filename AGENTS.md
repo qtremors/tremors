@@ -18,6 +18,7 @@ A personal portfolio website with multiple viewing modes:
 2. **Terminal Mode** (`/terminal`) - Interactive CLI-style interface with commands
 3. **Paper Mode** (`/paper`) - Document/resume-style layout with sidebar TOC
 4. **Newspaper Mode** (`/newspaper`) - Editorial magazine-style layout
+5. **Nexus Mode** (`/nexus`) - Interactive space environment with animated elements
 
 ### Key Features
 
@@ -35,7 +36,7 @@ A personal portfolio website with multiple viewing modes:
 tremors/                         # Repository root
 ├── .gitignore                   # Root gitignore for monorepo
 ├── README.md                    # Full project documentation
-├── CHANGELOG.md                 # Version history (v0.0.0 - v1.0.0)
+├── CHANGELOG.md                 # Version history (v0.0.0 - v1.5.0)
 ├── AGENTS.md                    # This file - AI agent context
 ├── TASKS.md                     # Bug tracking
 ├── index.html                   # GitHub Pages redirect (legacy)
@@ -71,6 +72,15 @@ tremors/                         # Repository root
     │   │   │   │   └── NewspaperArchive.tsx
     │   │   │   ├── NewspaperPage.tsx
     │   │   │   ├── newspaper.css
+    │   │   │   └── page.tsx
+    │   │   ├── nexus/           # Nexus space mode
+    │   │   │   ├── components/  # Space-themed components
+    │   │   │   │   ├── Hero.tsx
+    │   │   │   │   ├── StarsBackground.tsx
+    │   │   │   │   ├── BlackholeBackground.tsx
+    │   │   │   │   ├── PlanetBackground.tsx
+    │   │   │   │   └── Voyager.tsx
+    │   │   │   ├── layout.tsx
     │   │   │   └── page.tsx
     │   │   ├── paper/           # Paper mode page
     │   │   ├── terminal/        # Terminal mode page
@@ -385,6 +395,16 @@ paper/page.tsx
 
 newspaper/page.tsx
 └── NewspaperPage         # Editorial layout
+
+nexus/page.tsx
+└── NexusLayout           # Space environment
+    ├── BodyClassManager  # Scroll control
+    ├── StarsBackground   # tsParticles starfield
+    ├── Voyager           # Probe animation
+    └── Hero              # Main content
+        ├── BlackholeBackground  # Video
+        ├── PlanetBackground     # Moon image
+        └── Spaceships           # Animated links
 ```
 
 ---

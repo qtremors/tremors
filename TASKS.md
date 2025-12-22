@@ -1,7 +1,7 @@
 # TASKS.md - Tremors Portfolio
 
 > **Last Updated**: December 22, 2024  
-> **Version**: 1.0.0 | **Status**: ✅ Production Ready
+> **Version**: 1.5.0 | **Status**: ✅ Production Ready
 
 ---
 
@@ -16,9 +16,15 @@
 
 ---
 
-## ✅ All Issues Resolved (v0.9.7)
+## ✅ All Issues Resolved (v1.5.0)
 
 ### This Session
+- **Nexus Mode Integration** (`/nexus`) - Space-themed landing page
+  - Fixed StarsBackground and BodyClassManager path detection
+  - Cleaned up unused Dashboard/LinkCard components
+  - Updated wormhole portal to link back to main portfolio
+
+### Previously Resolved (v1.0.0)
 - Custom hooks: `useAdminAuth`, `useFetch`, `useApiMutation`
 - Newspaper sub-components: Masthead, Ticker, Archive
 - `ModeErrorBoundary` with mode-specific styling

@@ -44,17 +44,10 @@ export function Header({ currentMode }: HeaderProps) {
     // Hide header on terminal mode (it has its own UI)
     if (currentMode === "terminal") return null;
 
-    // Use transparent background for paper/newspaper modes
-    const isTransparentMode = currentMode === "paper" || currentMode === "newspaper";
-
     return (
         <>
-            {/* Desktop: Simple navbar */}
-            <header className={`hidden md:flex fixed top-0 left-0 right-0 z-40 px-6 py-4 items-center justify-between ${isTransparentMode ? "bg-transparent" : "bg-[var(--bg)]/60 backdrop-blur-md"
-                }`}>
-                {!isTransparentMode && (
-                    <div className="absolute left-0 right-0 top-full h-8 bg-gradient-to-b from-[var(--bg)]/60 to-transparent pointer-events-none" />
-                )}
+            {/* Desktop: Simple navbar - fully transparent */}
+            <header className="hidden md:flex fixed top-0 left-0 right-0 z-40 px-6 py-4 items-center justify-between bg-transparent">
 
                 {/* Logo */}
                 <Link
@@ -96,6 +89,22 @@ export function Header({ currentMode }: HeaderProps) {
                         </>
                     )}
 
+                    {/* Nexus Portal Link */}
+                    <a
+                        href="https://qtremors.github.io"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="nexus-portal-link p-2 rounded-lg transition-all"
+                        title="Main Portfolio"
+                        aria-label="Go to Main Portfolio"
+                    >
+                        <img
+                            src="/blackhole-icon.png"
+                            alt="Portal"
+                            className="w-6 h-6 nexus-portal-icon"
+                        />
+                    </a>
+
                     {/* Theme Toggle */}
                     <button
                         onClick={toggleTheme}
@@ -107,8 +116,8 @@ export function Header({ currentMode }: HeaderProps) {
                 </div>
             </header>
 
-            {/* Mobile: Simple top bar */}
-            <div className="md:hidden fixed top-0 left-0 right-0 z-40 px-4 py-3 flex items-center justify-between bg-[var(--bg)]/80 backdrop-blur-xl">
+            {/* Mobile: Simple top bar - fully transparent */}
+            <div className="md:hidden fixed top-0 left-0 right-0 z-40 px-4 py-3 flex items-center justify-between bg-transparent">
                 <Link href="/" className="flex items-center gap-2 font-bold">
                     <Terminal className="w-5 h-5 text-[var(--accent-cyan)]" />
                     <span>{PERSONAL.handle.toLowerCase()}</span>
@@ -131,6 +140,15 @@ export function Header({ currentMode }: HeaderProps) {
                             </button>
                         </>
                     )}
+                    <a
+                        href="https://qtremors.github.io"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="nexus-portal-link p-2 rounded-lg"
+                        title="Main Portfolio"
+                    >
+                        <img src="/blackhole-icon.png" alt="Portal" className="w-6 h-6 nexus-portal-icon" />
+                    </a>
                     <button onClick={toggleTheme} className="p-2 rounded-lg text-[var(--text-muted)]">
                         {theme === "dark" ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
                     </button>

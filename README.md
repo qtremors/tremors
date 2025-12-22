@@ -10,7 +10,7 @@
 
 **A multi-mode portfolio website with GitHub integration and secret admin controls**
 
-[Live Demo](https://tremors.vercel.app) · [Report Bug](../../issues) · [Request Feature](../../issues)
+[Live Site](https://tremors.vercel.app) · [Report Bug](../../issues) · [Request Feature](../../issues)
 
 </div>
 
@@ -39,6 +39,7 @@ This repository contains two sites:
 | **Terminal** | Interactive CLI with 30+ commands | `/terminal` |
 | **Paper** | Document/resume-style with sidebar TOC | `/paper` |
 | **Newspaper** | Editorial magazine-style with AI-generated content | `/newspaper` |
+| **Nexus** | Interactive space environment with animated elements | `/nexus` |
 
 ### 🔗 GitHub Integration
 - Fetches repositories, user profile, and activity from GitHub API
@@ -72,6 +73,15 @@ This repository contains two sites:
 | `Ctrl + `` | Toggle Terminal mode |
 | `Ctrl + Alt + P` | Switch to Paper mode |
 | `Ctrl + Alt + N` | Switch to Newspaper mode |
+| `Ctrl + Alt + X` | Switch to Nexus mode |
+
+### 🚀 Nexus Mode
+An interactive space-themed landing page featuring:
+- **Central Space Station** - Click to deploy animated spaceships linking to Paper, Terminal, and Newspaper modes
+- **Multi-layered backgrounds** - Blackhole video, moon surface, and tsparticles starfield
+- **Particle absorber** - Stars slowly consumed by the blackhole
+- **Voyager animation** - Probe traversing the screen via CSS offset-path
+- **Wormhole portal** - Links to external portfolio (`qtremors.github.io`)
 
 ---
 
@@ -225,6 +235,7 @@ tremors/
     │   ├── app/            # Next.js App Router
     │   │   ├── api/        # API routes
     │   │   ├── newspaper/  # Newspaper mode
+    │   │   ├── nexus/      # Nexus space mode
     │   │   ├── paper/      # Paper mode
     │   │   ├── terminal/   # Terminal mode
     │   │   └── ...
@@ -460,6 +471,7 @@ npm run test:coverage
 | **UI Library** | React 19 |
 | **Styling** | Tailwind CSS 4, CSS Variables |
 | **Database** | Prisma ORM, SQLite/PostgreSQL |
+| **Animation** | Framer Motion, tsParticles |
 | **Fonts** | Inter, JetBrains Mono, Playfair Display, Source Serif 4 |
 | **Icons** | Lucide React |
 | **Deployment** | Vercel |
