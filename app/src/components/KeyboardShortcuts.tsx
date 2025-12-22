@@ -13,6 +13,7 @@ const SHORTCUTS: Record<string, { key: string; ctrl?: boolean; alt?: boolean; pa
     terminal: { key: "`", ctrl: true, path: "/terminal" },
     paper: { key: "p", ctrl: true, alt: true, path: "/paper" },
     newspaper: { key: "n", ctrl: true, alt: true, path: "/newspaper" },
+    nexus: { key: "x", ctrl: true, alt: true, path: "/nexus" },
 };
 
 export function KeyboardShortcuts() {

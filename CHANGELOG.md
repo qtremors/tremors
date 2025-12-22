@@ -4,6 +4,33 @@ All notable changes to the Tremors Portfolio project are documented in this file
 
 ---
 
+## [1.5.0] - 2025-12-22
+
+### Added
+- **Nexus Mode** (`/nexus`) - Interactive space-themed landing page
+  - Central space station with deployable spaceship links (Paper, Terminal, Newspaper)
+  - Multi-layered backgrounds: blackhole video, moon surface, starfield
+  - tsParticles with particle absorber effect
+  - Voyager probe animation via CSS offset-path
+  - Wormhole portal linking to external portfolio (`qtremors.github.io`)
+  - Framer Motion animations for smooth spaceship enter/exit
+- **Blackhole Portal Icon** - Added to navbar with glow effect and rotation animation on hover
+- **Keyboard Shortcut** - `Ctrl + Alt + X` to navigate to Nexus mode
+
+### Changed
+- **Navbar** - Made fully transparent across all pages
+- **Footer** - Added Nexus link with Rocket icon
+- **Resume Link** - Now points to external portfolio resume
+
+### Technical
+- `StarsBackground` - Interactive particle system with absorber plugin
+- `BlackholeBackground` - Looping video background
+- `PlanetBackground` - Moon surface with parallax effect
+- `Voyager` - CSS offset-path animation
+- `Hero` - Space station with spaceship deployment using `router.push`
+
+---
+
 ## [1.0.0] - 2025-12-22 🚀
 
 **First Public Release on Vercel!**

@@ -123,6 +123,27 @@ a:hover {
   mask: radial-gradient(farthest-side, transparent calc(100% - 2px), #000 calc(100% - 2px));
 }
 
+/* Nexus Portal Icon - Glow + Rotation */
+@keyframes nexus-portal-rotate {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.nexus-portal-icon {
+  filter: drop-shadow(0 0 7px rgba(173, 158, 255, 0.6));
+  transition: filter 0.3s ease;
+}
+
+.nexus-portal-link:hover .nexus-portal-icon {
+  filter: drop-shadow(0 0 12px rgba(173, 158, 255, 0.9));
+  animation: nexus-portal-rotate 2s linear infinite;
+}
+
 .glass {
   background: rgba(255, 255, 255, 0.05);
   backdrop-filter: blur(10px);

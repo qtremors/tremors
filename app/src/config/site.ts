@@ -38,7 +38,7 @@ export const CONTACT_LINKS: ContactLink[] = [
     {
         id: "resume",
         label: "Resume",
-        url: "/resume.pdf",
+        url: "https://qtremors.github.io/assets/Aman_Singh.pdf",
         icon: "📄",
     },
 ];
