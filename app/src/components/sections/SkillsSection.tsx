@@ -13,41 +13,64 @@ import {
     SiSqlite,
     SiReact,
     SiTypescript,
-    SiNextdotjs,
+    SiJavascript,
     SiHtml5,
+    SiCss,
     SiTailwindcss,
+    SiPrisma,
     SiTensorflow,
     SiGoogle,
     SiNumpy,
     SiPandas,
+    SiPlotly,
+    SiStreamlit,
+    SiScikitlearn,
+    SiOpencv,
     SiGit,
+    SiGithub,
     SiDocker,
     SiLinux,
-    SiVercel,
+    SiJupyter,
+
 } from "@icons-pack/react-simple-icons";
-import { Code2 } from "lucide-react";
+import { Code2, FlaskConical, Monitor } from "lucide-react";
 
 // Map skill names to Simple Icons with brand colors
 const iconMap: Record<string, { icon: React.ElementType; color: string }> = {
+    // Frontend
+    HTML: { icon: SiHtml5, color: "#E34F26" },
+    CSS: { icon: SiCss, color: "#1572B6" },
+    Tailwind: { icon: SiTailwindcss, color: "#06B6D4" },
+    JavaScript: { icon: SiJavascript, color: "#F7DF1E" },
+    TypeScript: { icon: SiTypescript, color: "#3178C6" },
+    React: { icon: SiReact, color: "#61DAFB" },
+    // Backend
     Python: { icon: SiPython, color: "#3776AB" },
     Django: { icon: SiDjango, color: "#092E20" },
     FastAPI: { icon: SiFastapi, color: "#009688" },
-    PostgreSQL: { icon: SiPostgresql, color: "#4169E1" },
     SQLite: { icon: SiSqlite, color: "#003B57" },
-    React: { icon: SiReact, color: "#61DAFB" },
-    TypeScript: { icon: SiTypescript, color: "#3178C6" },
-    "Next.js": { icon: SiNextdotjs, color: "currentColor" },
-    "HTML/CSS": { icon: SiHtml5, color: "#E34F26" },
-    Tailwind: { icon: SiTailwindcss, color: "#06B6D4" },
-    TensorFlow: { icon: SiTensorflow, color: "#FF6F00" },
-    "Gemini API": { icon: SiGoogle, color: "#4285F4" },
+    Prisma: { icon: SiPrisma, color: "#2D3748" },
+    PostgreSQL: { icon: SiPostgresql, color: "#4169E1" },
+    // Data
     NumPy: { icon: SiNumpy, color: "#013243" },
     Pandas: { icon: SiPandas, color: "#150458" },
+    Matplotlib: { icon: FlaskConical, color: "#11557C" },
+    Plotly: { icon: SiPlotly, color: "#3F4F75" },
+    BeautifulSoup: { icon: FlaskConical, color: "#3776AB" },
+    Streamlit: { icon: SiStreamlit, color: "#FF4B4B" },
+    // AI/ML
+    TensorFlow: { icon: SiTensorflow, color: "#FF6F00" },
+    "scikit-learn": { icon: SiScikitlearn, color: "#F7931E" },
+    OpenCV: { icon: SiOpencv, color: "#5C3EE8" },
+    "Gemini API": { icon: SiGoogle, color: "#4285F4" },
+    // Tools
     Git: { icon: SiGit, color: "#F05032" },
-    Docker: { icon: SiDocker, color: "#2496ED" },
+    GitHub: { icon: SiGithub, color: "currentColor" },
     "VS Code": { icon: Code2, color: "#007ACC" },
+    Jupyter: { icon: SiJupyter, color: "#F37626" },
+    Docker: { icon: SiDocker, color: "#2496ED" },
     Linux: { icon: SiLinux, color: "#FCC624" },
-    Vercel: { icon: SiVercel, color: "currentColor" },
+    Windows: { icon: Monitor, color: "#0078D4" },
 };
 
 // Skill icon component

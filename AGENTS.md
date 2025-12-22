@@ -36,7 +36,7 @@ A personal portfolio website with multiple viewing modes:
 tremors/                         # Repository root
 ├── .gitignore                   # Root gitignore for monorepo
 ├── README.md                    # Full project documentation
-├── CHANGELOG.md                 # Version history (v0.0.0 - v1.5.0)
+├── CHANGELOG.md                 # Version history (v0.0.0 - v1.5.1)
 ├── AGENTS.md                    # This file - AI agent context
 ├── TASKS.md                     # Bug tracking
 ├── index.html                   # GitHub Pages redirect (legacy)
@@ -223,7 +223,8 @@ model NewspaperEdition {
 | `GITHUB_USERNAME` | Required | GitHub username to fetch data for |
 | `ADMIN_SECRET` | Required | Secret command to trigger admin login in terminal |
 | `AUTH_SECRET` | Optional | HMAC signing key (auto-generated if not set) |
-| `DATABASE_URL` | Required | Prisma database connection string |
+| `DATABASE_URL` | Required | Prisma database connection string (pooled for Neon) |
+| `DATABASE_URL_UNPOOLED` | Required* | Direct connection for migrations (*auto-set by Vercel+Neon) |
 | `GEMINI_API_KEY` | Optional | Google Gemini API key for AI newspaper content |
 
 > **Note**: Password is no longer stored in env variables. It's created on first use and stored hashed in the database.

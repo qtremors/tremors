@@ -36,11 +36,33 @@ export async function POST(request: NextRequest) {
         // Fetch repos from GitHub
         const repos = await getRepos(GITHUB_USERNAME);
 
+        // SAFEGUARD: Prevent data loss if GitHub API returns empty/incomplete results
+        // This protects against: rate limiting (403), service outages, network failures
+        if (repos.length === 0) {
+            return NextResponse.json(
+                { success: false, error: "GitHub API returned no repos - refusing to sync to prevent data loss" },
+                { status: 422 }
+            );
+        }
+
         // Fetch commits in parallel with repo processing
         const commits = await getRecentCommits(repos, 50);
 
-        // Use transaction to ensure data integrity
+        // Use transaction to ensure data integrity (30s timeout for cloud DB)
         await prisma.$transaction(async (tx) => {
+            // Get list of current GitHub repo IDs
+            const githubRepoIds = repos.map((repo) => repo.id);
+
+            // Delete repos that no longer exist on GitHub
+            // Safe because we verified repos.length > 0 above
+            await tx.repo.deleteMany({
+                where: {
+                    id: {
+                        notIn: githubRepoIds,
+                    },
+                },
+            });
+
             // Parallel upsert all repos
             await Promise.all(
                 repos.map((repo) =>
@@ -149,6 +171,9 @@ export async function POST(request: NextRequest) {
                 update: { lastRefresh: new Date() },
                 create: { id: "main", lastRefresh: new Date() },
             });
+        }, {
+            maxWait: 10000,  // Max time to wait for a transaction slot (10s)
+            timeout: 30000, // Max time for the transaction to complete (30s)
         });
 
         return NextResponse.json({

@@ -195,9 +195,11 @@ export const CONTACT_LINKS = [
 ];
 
 export const SKILLS = [
-  { id: "backend", label: "Backend", skills: ["Python", "Django", "FastAPI"] },
-  { id: "frontend", label: "Frontend", skills: ["React", "TypeScript", "Next.js"] },
-  // Add more categories...
+  { id: "frontend", label: "Frontend", skills: ["HTML", "CSS", "Tailwind", "JavaScript", "TypeScript", "React"] },
+  { id: "backend", label: "Backend", skills: ["Python", "Django", "FastAPI", "SQLite", "Prisma", "PostgreSQL"] },
+  { id: "data", label: "Data", skills: ["NumPy", "Pandas", "Matplotlib", "Plotly", "BeautifulSoup", "Streamlit"] },
+  { id: "ai-ml", label: "AI / ML", skills: ["TensorFlow", "scikit-learn", "OpenCV", "Gemini API"] },
+  { id: "tools", label: "Tools", skills: ["Git", "GitHub", "VS Code", "Jupyter", "Docker", "Linux", "Windows"] },
 ];
 ```
 
@@ -402,7 +404,8 @@ For production on Vercel or similar:
 | `GITHUB_USERNAME` | Yes | Your GitHub username |
 | `ADMIN_SECRET` | Yes | Secret command to trigger admin login |
 | `AUTH_SECRET` | Recommended | HMAC signing key for sessions |
-| `DATABASE_URL` | Yes | PostgreSQL connection string |
+| `DATABASE_URL` | Yes | PostgreSQL connection string (pooled) |
+| `DATABASE_URL_UNPOOLED` | Yes* | Direct connection for Prisma migrations (*auto-set by Vercel+Neon) |
 | `GEMINI_API_KEY` | Optional | For AI newspaper content |
 
 > **Note**: No password in env vars! Password is created on first login and stored hashed in the database.

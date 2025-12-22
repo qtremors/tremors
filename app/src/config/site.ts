@@ -46,24 +46,29 @@ export const CONTACT_LINKS: ContactLink[] = [
 // Skills organized by category
 export const SKILLS: SkillCategory[] = [
     {
-        id: "backend",
-        label: "Backend",
-        skills: ["Python", "Django", "FastAPI", "PostgreSQL", "SQLite"],
-    },
-    {
         id: "frontend",
         label: "Frontend",
-        skills: ["React", "TypeScript", "Next.js", "HTML/CSS", "Tailwind"],
+        skills: ["HTML", "CSS", "Tailwind", "JavaScript", "TypeScript", "React"],
+    },
+    {
+        id: "backend",
+        label: "Backend",
+        skills: ["Python", "Django", "FastAPI", "SQLite", "Prisma", "PostgreSQL"],
+    },
+    {
+        id: "data",
+        label: "Data",
+        skills: ["NumPy", "Pandas", "Matplotlib", "Plotly", "BeautifulSoup", "Streamlit"],
     },
     {
         id: "ai-ml",
         label: "AI / ML",
-        skills: ["TensorFlow", "Gemini API", "NumPy", "Pandas"],
+        skills: ["TensorFlow", "scikit-learn", "OpenCV", "Gemini API"],
     },
     {
         id: "tools",
         label: "Tools",
-        skills: ["Git", "Docker", "VS Code", "Linux", "Vercel"],
+        skills: ["Git", "GitHub", "VS Code", "Jupyter", "Docker", "Linux", "Windows"],
     },
 ];
 
