@@ -35,7 +35,7 @@ A personal portfolio website with multiple viewing modes:
 tremors/                         # Repository root
 ├── .gitignore                   # Root gitignore for monorepo
 ├── README.md                    # Full project documentation
-├── CHANGELOG.md                 # Version history (v0.0.0 - v0.9.7)
+├── CHANGELOG.md                 # Version history (v0.0.0 - v1.0.0)
 ├── AGENTS.md                    # This file - AI agent context
 ├── TASKS.md                     # Bug tracking
 ├── index.html                   # GitHub Pages redirect (legacy)

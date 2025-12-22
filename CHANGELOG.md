@@ -4,15 +4,9 @@ All notable changes to the Tremors Portfolio project are documented in this file
 
 ---
 
-## [Unreleased]
+## [1.0.0] - 2025-12-22 🚀
 
-### Planned for v1.0.0
-- First public release on Vercel 🚀
-- Production deployment and domain setup
-
----
-
-## [0.9.7] - 2025-12-22
+**First Public Release on Vercel!**
 
 ### Added
 - **Custom Hooks** - Created `useAdminAuth`, `useFetch`, and `useApiMutation` hooks in `src/hooks/`

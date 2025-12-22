@@ -1,5 +1,6 @@
 /**
- * Seed script to create fallback newspaper content as variants
+ * Seed script to create fallback newspaper content
+ * Idempotent - only seeds if no fallbacks exist
  * Run with: npx tsx prisma/seed-newspaper.ts
  */
 
@@ -21,7 +22,7 @@ const FALLBACK_EDITORIAL = {
         "Currently, Tremors is exploring the intersection of traditional web engineering and LLM capabilities, with the goal of creating \"smarter applications\" that adapt to user needs in real-time. His status: actively seeking new opportunities.",
     ]),
     pullQuote: "\"I believe in writing code that's not just functional, but clean, efficient, and maintainable.\"",
-    isActive: true, // This one starts as active
+    isActive: true,
     isFallback: true,
     generatedBy: null,
 };
@@ -37,19 +38,23 @@ const FALLBACK_TABLOID = {
         "When reached for comment, Tremors simply muttered something about \"one more commit\" before returning to what witnesses describe as \"an unhealthy number of browser tabs.\"",
     ]),
     pullQuote: "\"I'll refactor it tomorrow.\" — Tremors, reportedly every single day",
-    isActive: false, // Not active by default
+    isActive: false,
     isFallback: true,
     generatedBy: null,
 };
 
 async function main() {
-    console.log("Seeding fallback newspaper editions as variants...\n");
-
-    // Clear existing fallbacks only
-    const deleted = await prisma.newspaperEdition.deleteMany({
+    // Check if fallbacks already exist (idempotent)
+    const existingFallbacks = await prisma.newspaperEdition.count({
         where: { isFallback: true },
     });
-    console.log(`✓ Cleared ${deleted.count} existing fallback editions`);
+
+    if (existingFallbacks > 0) {
+        console.log(`✓ ${existingFallbacks} fallback editions already exist, skipping seed.`);
+        return;
+    }
+
+    console.log("Seeding fallback newspaper editions...\n");
 
     // Create Editorial fallback (active)
     await prisma.newspaperEdition.create({
@@ -63,13 +68,12 @@ async function main() {
     });
     console.log("✓ Created Tabloid fallback");
 
-    console.log("\n✅ Both fallback variants seeded for Oct 23, 2000!");
-    console.log("   Use the Archive dropdown to switch between them.");
+    console.log("\n✅ Fallback editions seeded successfully!");
 }
 
 main()
     .catch((e) => {
-        console.error(e);
+        console.error("Seed error:", e);
         process.exit(1);
     })
     .finally(async () => {
