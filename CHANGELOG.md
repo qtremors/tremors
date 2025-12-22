@@ -4,6 +4,26 @@ All notable changes to the Tremors Portfolio project are documented in this file
 
 ---
 
+## [1.5.1] - 2025-12-22
+
+### Changed
+- **Database Migration** - Switched from SQLite to Neon PostgreSQL for both local and production
+  - Added `directUrl` support in Prisma schema for connection pooling
+  - Increased transaction timeout to 30s for cloud database operations
+- **Skills Section Update** - Reorganized into 5 categories:
+  - Frontend: HTML, CSS, Tailwind, JavaScript, TypeScript, React
+  - Backend: Python, Django, FastAPI, SQLite, Prisma, PostgreSQL
+  - Data: NumPy, Pandas, Matplotlib, Plotly, BeautifulSoup, Streamlit
+  - AI/ML: TensorFlow, scikit-learn, OpenCV, Gemini API
+  - Tools: Git, GitHub, VS Code, Jupyter, Docker, Linux, Windows
+
+### Fixed
+- **GitHub Refresh** - Deleted repos are now properly removed from database on refresh
+  - Previously only upserted repos, now deletes repos not in GitHub response
+- **Transaction Timeout** - Added `maxWait: 10s` and `timeout: 30s` for cloud DB operations
+
+---
+
 ## [1.5.0] - 2025-12-22
 
 ### Added

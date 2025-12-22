@@ -39,8 +39,20 @@ export async function POST(request: NextRequest) {
         // Fetch commits in parallel with repo processing
         const commits = await getRecentCommits(repos, 50);
 
-        // Use transaction to ensure data integrity
+        // Use transaction to ensure data integrity (30s timeout for cloud DB)
         await prisma.$transaction(async (tx) => {
+            // Get list of current GitHub repo IDs
+            const githubRepoIds = repos.map((repo) => repo.id);
+
+            // Delete repos that no longer exist on GitHub
+            await tx.repo.deleteMany({
+                where: {
+                    id: {
+                        notIn: githubRepoIds,
+                    },
+                },
+            });
+
             // Parallel upsert all repos
             await Promise.all(
                 repos.map((repo) =>
@@ -149,6 +161,9 @@ export async function POST(request: NextRequest) {
                 update: { lastRefresh: new Date() },
                 create: { id: "main", lastRefresh: new Date() },
             });
+        }, {
+            maxWait: 10000,  // Max time to wait for a transaction slot (10s)
+            timeout: 30000, // Max time for the transaction to complete (30s)
         });
 
         return NextResponse.json({
