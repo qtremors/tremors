@@ -218,8 +218,6 @@ export const commands: Record<string, (args: string[], ctx: CommandContext) => C
         return { lines };
     },
 
-    // screensaver command removed
-
     neofetch: (args, ctx) => {
         const lines: TerminalLine[] = [];
         addLine(lines, "output", `  ████████╗  ${PERSONAL.name}@portfolio`);
@@ -285,8 +283,6 @@ export const commands: Record<string, (args: string[], ctx: CommandContext) => C
     },
 
     echo: (args) => ({ lines: [{ type: "output", content: args.join(" ") || "" }] }),
-
-    // cmatrix command removed
 
     sl: () => {
         const lines: TerminalLine[] = [];

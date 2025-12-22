@@ -3,7 +3,7 @@ import { TerminalPage } from "./TerminalPage";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-    title: "Terminal | Aman Singh",
+    title: "Terminal | Tremors",
     description: "Interactive CLI-style portfolio. Type commands to explore projects, skills, and more.",
 };
 

@@ -3,7 +3,7 @@
  */
 
 import { describe, it, expect } from "vitest";
-import type { GitHubRepo } from "@/lib/github";
+import type { GitHubRepo } from "@/types";
 
 // Mock repo data for testing
 const mockRepo: GitHubRepo = {

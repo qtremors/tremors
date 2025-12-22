@@ -6,7 +6,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import type { ModeProps } from "@/types";
 import { PERSONAL, SKILLS } from "@/config/site";
 import { ContactLinks } from "@/components/ContactLinks";
@@ -51,6 +51,25 @@ export function NewspaperPage({ data }: ModeProps) {
     const [isRegenerating, setIsRegenerating] = useState(false);
     const [showArchive, setShowArchive] = useState(false);
     const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set());
+
+    // State for show more projects
+    const [showMoreProjects, setShowMoreProjects] = useState(false);
+
+    // Ref for archive dropdown click-outside detection
+    const archiveRef = useRef<HTMLDivElement>(null);
+
+    // Close archive dropdown when clicking outside (U-002)
+    useEffect(() => {
+        function handleClickOutside(event: MouseEvent) {
+            if (archiveRef.current && !archiveRef.current.contains(event.target as Node)) {
+                setShowArchive(false);
+            }
+        }
+        if (showArchive) {
+            document.addEventListener("mousedown", handleClickOutside);
+        }
+        return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, [showArchive]);
 
     // Toggle folder expansion
     const toggleFolder = (dateKey: string) => {
@@ -181,7 +200,6 @@ export function NewspaperPage({ data }: ModeProps) {
     const featuredRepos = visibleRepos.filter(r => r.featured).slice(0, 8);
     const displayRepos = featuredRepos.length > 0 ? featuredRepos : visibleRepos.slice(0, 8);
     const otherRepos = visibleRepos.filter(r => !r.featured);
-    const [showMoreProjects, setShowMoreProjects] = useState(false);
 
     // Format date
     const today = new Date();
@@ -211,7 +229,7 @@ export function NewspaperPage({ data }: ModeProps) {
                     <p className="np-masthead-tagline">"All the Code That's Fit to Ship"</p>
                     <div className="np-masthead-controls">
                         {/* Archive dropdown */}
-                        <div className="np-archive-wrapper">
+                        <div className="np-archive-wrapper" ref={archiveRef}>
                             <button onClick={() => setShowArchive(!showArchive)} className="np-control-btn">
                                 <Calendar className="w-4 h-4" />
                                 Archive
@@ -367,13 +385,17 @@ export function NewspaperPage({ data }: ModeProps) {
                 {/* Main Headline - AI Generated */}
                 <h2 className="np-headline">
                     {isLoadingContent ? (
-                        <span className="np-loading-text">Loading today's headlines...</span>
+                        <span className="inline-block w-3/4 h-10 bg-current opacity-10 animate-pulse rounded" />
                     ) : (
                         edition?.headline || "Local Developer Builds AI-Powered Platforms, Refuses to Stop Pushing Commits"
                     )}
                 </h2>
                 <p className="np-subheadline">
-                    {edition?.subheadline || `${PERSONAL.name}, known online as "${PERSONAL.handle}," continues his relentless pursuit of cleaner code and smarter applications`}
+                    {isLoadingContent ? (
+                        <span className="inline-block w-2/3 h-6 bg-current opacity-10 animate-pulse rounded" />
+                    ) : (
+                        edition?.subheadline || `${PERSONAL.name}, known online as "${PERSONAL.handle}," continues his relentless pursuit of cleaner code and smarter applications`
+                    )}
                 </p>
 
                 <div className="np-byline">

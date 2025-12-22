@@ -178,41 +178,7 @@ a:hover {
   animation: float 4s ease-in-out infinite;
 }
 
-@keyframes marquee {
-  0% {
-    transform: translateX(0);
-  }
-
-  100% {
-    transform: translateX(-25%);
-  }
-}
-
-.animate-marquee {
-  animation: marquee 20s linear infinite;
-}
-
-.animate-marquee:hover {
-  animation-play-state: paused;
-}
-
-@keyframes marquee-reverse {
-  0% {
-    transform: translateX(-25%);
-  }
-
-  100% {
-    transform: translateX(0);
-  }
-}
-
-.animate-marquee-reverse {
-  animation: marquee-reverse 20s linear infinite;
-}
-
-.animate-marquee-reverse:hover {
-  animation-play-state: paused;
-}
+/* Marquee animations defined in MARQUEE ANIMATIONS section below */
 
 @keyframes slide-in {
   from {

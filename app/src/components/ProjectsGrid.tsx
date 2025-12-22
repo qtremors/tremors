@@ -11,7 +11,7 @@ import { useAdmin } from "@/components/AdminContext";
 import { useToast } from "@/components/ToastProvider";
 import { ChevronDown } from "lucide-react";
 import { ProjectCard, RepoWithStatus } from "@/components/ProjectCard";
-import type { GitHubRepo } from "@/lib/github";
+import type { GitHubRepo } from "@/types";
 
 interface ProjectsGridProps {
     repos: GitHubRepo[];
@@ -72,7 +72,7 @@ export function ProjectsGrid({ repos: initialRepos }: ProjectsGridProps) {
                     }
                 })
                 .catch(() => {
-                    // Silently fail - use initial repos
+                    toast.error("Failed to load project data");
                 })
                 .finally(() => setLoading(false));
         }
@@ -153,7 +153,7 @@ export function ProjectsGrid({ repos: initialRepos }: ProjectsGridProps) {
                 )
             );
         } catch {
-            // Order save failed silently
+            toast.error("Failed to save order");
         }
         setDraggedId(null);
     };

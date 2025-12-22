@@ -219,7 +219,8 @@ export function HeroSection() {
                 }
             })
             .catch(() => {
-                // Silently fail - use default value from config
+                // Use config default but warn user if they're admin
+                toast.warning("Could not load availability status");
             });
     }, []);
 

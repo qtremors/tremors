@@ -3,8 +3,6 @@
  * Fetches user data, repositories, and activity from GitHub API
  */
 
-// Re-export types from central location for backward compatibility
-export type { GitHubUser, GitHubRepo, GitHubEvent, GitHubCommit } from "@/types";
 import type { GitHubUser, GitHubRepo, GitHubEvent, GitHubCommit } from "@/types";
 
 const GITHUB_API = 'https://api.github.com';

@@ -7,7 +7,7 @@
 
 import { Star, EyeOff, Eye, StarOff, GripVertical, ExternalLink } from "lucide-react";
 import { LANGUAGE_COLORS } from "@/lib/github";
-import type { GitHubRepo } from "@/lib/github";
+import type { GitHubRepo } from "@/types";
 
 export interface RepoWithStatus extends GitHubRepo {
     hidden?: boolean;
@@ -84,10 +84,11 @@ export function ProjectCard({
     const titleSize = size === "large" ? "text-xl" : size === "medium" ? "text-lg" : "text-lg";
     const languageSize = size === "large" ? "text-sm" : "text-xs";
 
+    // U-004: Enhanced drag-drop visual feedback
     const cardClasses = `group relative overflow-hidden rounded-2xl border transition-all hover:-translate-y-1 ${isDragged
-        ? "opacity-50 border-[var(--accent-cyan)] scale-[0.99]"
+        ? "opacity-50 border-[var(--accent-cyan)] scale-[0.97] rotate-1 shadow-lg"
         : isDragOver
-            ? "border-[var(--accent-cyan)] bg-[var(--accent-cyan)]/5"
+            ? "border-[var(--accent-cyan)] bg-[var(--accent-cyan)]/10 scale-[1.02] shadow-xl shadow-cyan-500/20 ring-2 ring-[var(--accent-cyan)]/30"
             : repo.hidden
                 ? "border-red-500/30 opacity-40 grayscale"
                 : "border-[var(--border)] hover:border-[var(--accent-cyan)]/50"

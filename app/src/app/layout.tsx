@@ -29,12 +29,13 @@ const sourceSerif = Source_Serif_4({
 });
 
 export const metadata: Metadata = {
-  title: "Aman Singh | Full-Stack Python Developer",
-  description: "Portfolio of Aman Singh (Tremors) - Building AI-powered platforms, real-time systems, and advanced developer tooling.",
-  keywords: ["Python", "Django", "FastAPI", "React", "TypeScript", "Full-Stack Developer"],
-  authors: [{ name: "Aman Singh", url: "https://github.com/qtremors" }],
+  title: "Tremors | Full-Stack Python Developer",
+  description: "Portfolio of Tremors - Building AI-powered platforms, real-time systems, and advanced developer tooling.",
+  keywords: ["portfolio", "developer", "python", "react", "next.js", "full-stack", "AI"],
+  authors: [{ name: "Tremors", url: "https://github.com/qtremors" }],
+  creator: "Tremors",
   openGraph: {
-    title: "Aman Singh | Full-Stack Python Developer",
+    title: "Tremors | Full-Stack Python Developer",
     description: "Building AI-powered platforms and developer tools",
     type: "website",
   },

@@ -4,7 +4,7 @@ import { Header } from "@/components/Header";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-    title: "Paper Mode | Aman Singh",
+    title: "Paper Mode | Tremors",
     description: "Document-style portfolio with sidebar navigation. A clean, minimal reading experience.",
 };
 

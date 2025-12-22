@@ -1,8 +1,7 @@
 import { getUser, getActivity } from "@/lib/github";
 import { prisma } from "@/lib/db";
 import { parseTopics } from "@/lib/utils";
-import type { PortfolioData, GitHubEvent, GitHubCommit, ActivityItem } from "@/types";
-import type { GitHubRepo } from "@/lib/github";
+import type { PortfolioData, GitHubEvent, GitHubCommit, ActivityItem, GitHubRepo } from "@/types";
 
 // GitHub username - can be configured via env
 const GITHUB_USERNAME = process.env.GITHUB_USERNAME || "qtremors";
@@ -104,6 +103,25 @@ function eventToActivityItem(event: GitHubEvent): ActivityItem | null {
     }
 }
 
+// Convert DB activity to ActivityItem format
+function dbActivityToActivityItem(dbActivity: {
+    id: string;
+    type: string;
+    title: string;
+    repoName: string;
+    repoUrl: string;
+    date: Date;
+}): ActivityItem {
+    return {
+        id: dbActivity.id,
+        type: dbActivity.type as ActivityItem['type'],
+        title: dbActivity.title,
+        repoName: dbActivity.repoName,
+        repoUrl: dbActivity.repoUrl,
+        date: dbActivity.date.toISOString(),
+    };
+}
+
 // Merge commits and events into unified activity list
 function mergeActivity(commits: GitHubCommit[], events: GitHubEvent[], limit = 10): ActivityItem[] {
     const activityItems: ActivityItem[] = [];
@@ -127,6 +145,31 @@ function mergeActivity(commits: GitHubCommit[], events: GitHubEvent[], limit = 1
             const item = eventToActivityItem(event);
             if (item) activityItems.push(item);
         });
+
+    // Sort by date and return top items
+    return activityItems
+        .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+        .slice(0, limit);
+}
+
+// Merge commits with cached activity items (from database)
+function mergeActivityWithCache(commits: GitHubCommit[], cachedActivity: ActivityItem[], limit = 10): ActivityItem[] {
+    const activityItems: ActivityItem[] = [];
+
+    // Add commits as activity items
+    commits.forEach(commit => {
+        activityItems.push({
+            id: commit.sha,
+            type: "commit",
+            title: commit.message.split("\n")[0],
+            repoName: commit.repoName,
+            repoUrl: commit.repoUrl,
+            date: commit.date,
+        });
+    });
+
+    // Add cached activity items (already filtered, no need to exclude PushEvents)
+    activityItems.push(...cachedActivity);
 
     // Sort by date and return top items
     return activityItems
@@ -174,14 +217,30 @@ export async function getGitHubData(): Promise<PortfolioData> {
                 author: c.author,
             }));
 
-            // Fetch user and activity from GitHub (these are lightweight)
-            const [user, activity] = await Promise.all([
-                getUser(GITHUB_USERNAME),
-                getActivity(GITHUB_USERNAME),
-            ]);
+            // Fetch user from GitHub (lightweight call)
+            const user = await getUser(GITHUB_USERNAME);
+
+            // Try to get cached activity from database
+            const dbActivity = await prisma.activity.findMany({
+                orderBy: { date: "desc" },
+                take: 30,
+            });
+
+            // Convert cached activity or fallback to GitHub
+            let activity: GitHubEvent[] = [];
+            if (dbActivity.length === 0) {
+                // No cached activity, fetch from GitHub
+                activity = await getActivity(GITHUB_USERNAME);
+            }
+
+            // Convert DB activity to ActivityItem format
+            const cachedActivityItems = dbActivity.map(dbActivityToActivityItem);
 
             // Merge commits and events into unified activity (30 for Show More feature)
-            const recentActivity = mergeActivity(recentCommits, activity, 30);
+            // Use cached activity if available, otherwise merge from GitHub events
+            const recentActivity = cachedActivityItems.length > 0
+                ? mergeActivityWithCache(recentCommits, cachedActivityItems, 30)
+                : mergeActivity(recentCommits, activity, 30);
 
             // Get total commits count from database
             const totalCommits = await prisma.commit.count();

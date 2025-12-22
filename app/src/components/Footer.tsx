@@ -62,7 +62,7 @@ export function Footer() {
                         <h4 className="text-sm font-semibold uppercase tracking-wider text-[var(--text-muted)] mb-4">
                             Connect
                         </h4>
-                        <div className="flex gap-3">
+                        <div className="flex gap-3 flex-wrap">
                             {["github", "linkedin", "email"].map((id) => {
                                 const Icon = socialIcons[id];
                                 const url = getContactUrl(id);
@@ -72,9 +72,9 @@ export function Footer() {
                                         href={url}
                                         target={id !== "email" ? "_blank" : undefined}
                                         rel="noopener noreferrer"
-                                        className="w-10 h-10 rounded-xl bg-[var(--bg)] border border-[var(--border)] flex items-center justify-center text-[var(--text-muted)] hover:text-[var(--text)] hover:border-[var(--accent)] transition-all"
+                                        className="w-11 h-11 sm:w-10 sm:h-10 rounded-xl bg-[var(--bg)] border border-[var(--border)] flex items-center justify-center text-[var(--text-muted)] hover:text-[var(--text)] hover:border-[var(--accent)] transition-all"
                                     >
-                                        <Icon className="w-4 h-4" />
+                                        <Icon className="w-5 h-5 sm:w-4 sm:h-4" />
                                     </a>
                                 );
                             })}

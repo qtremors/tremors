@@ -324,23 +324,52 @@ DATABASE_URL="file:./dev.db"
 ### PostgreSQL (Production)
 For production on Vercel or similar:
 
-1. Update `prisma/schema.prisma`:
+#### Deployment Checklist
+
+1. **Update Prisma Provider**
    ```prisma
+   // prisma/schema.prisma
    datasource db {
      provider = "postgresql"
      url      = env("DATABASE_URL")
    }
    ```
 
-2. Set production database URL:
+2. **Set Environment Variables**
    ```env
    DATABASE_URL="postgresql://user:pass@host:5432/dbname"
+   GITHUB_TOKEN="ghp_..."
+   GITHUB_USERNAME="yourusername"
+   AUTH_SECRET="random-32-char-string"
+   GEMINI_API_KEY="..." (optional, for newspaper mode)
    ```
 
-3. Run migrations:
+3. **Generate Prisma Client**
+   ```bash
+   npx prisma generate
+   ```
+
+4. **Run Database Migrations**
    ```bash
    npx prisma migrate deploy
    ```
+
+5. **Seed Initial Data** (optional)
+   ```bash
+   npx prisma db seed
+   ```
+
+6. **Test Build Locally**
+   ```bash
+   npm run build
+   npm start
+   ```
+
+7. **Deploy to Vercel**
+   - Push to GitHub
+   - Import project in Vercel
+   - Add environment variables
+   - Deploy
 
 ---
 
@@ -392,7 +421,33 @@ The admin authentication system includes:
 | `npm run build` | Build for production |
 | `npm start` | Start production server |
 | `npm run lint` | Run ESLint |
-| `npm test` | Run Vitest tests |
+| `npm test` | Run Vitest tests in watch mode |
+| `npm run test:coverage` | Run tests with coverage report |
+
+### Testing
+
+Tests are written using [Vitest](https://vitest.dev/) with React Testing Library.
+
+**Test files location:** `src/__tests__/`
+
+**What's tested:**
+- `auth.test.ts` - Password hashing, timing-safe comparison, session tokens
+- `csrf.test.ts` - Origin/referer validation, CSRF protection
+- `sanitize.test.ts` - XSS prevention, input cleaning
+- `utils.test.ts` - Topics parsing, utility functions
+- `ProjectCard.test.tsx` - Component rendering
+
+**Running tests:**
+```bash
+# Run once
+npx vitest run
+
+# Watch mode
+npm test
+
+# With coverage
+npm run test:coverage
+```
 
 ---
 
@@ -434,6 +489,6 @@ The admin authentication system includes:
 
 <div align="center">
 
-**Built with ❤️ by [Aman Singh](https://github.com/qtremors)**
+**Built with ❤️ by [Tremors](https://github.com/qtremors)**
 
 </div>

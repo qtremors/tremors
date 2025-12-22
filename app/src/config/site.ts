@@ -7,7 +7,7 @@ import type { ContactLink, SkillCategory, SectionConfig } from "@/types";
 
 // Personal Info
 export const PERSONAL = {
-    name: "Aman Singh",
+    name: "Tremors",
     handle: "Tremors",
     tagline: "Full-Stack Python Developer",
     bio: "Building AI-powered platforms, real-time systems, and advanced developer tooling.",
@@ -84,4 +84,13 @@ export const GITHUB_CONFIG = {
     featuredTopic: "portfolio",   // Repos with this topic are featured
     maxFeatured: 6,
     maxActivity: 10,
+} as const;
+
+// Data fetching limits (Q-002: centralized magic numbers)
+export const DATA_LIMITS = {
+    recentCommits: 30,      // Number of commits to fetch/cache
+    recentActivity: 30,     // Number of activity items to display
+    maxCommitsRefresh: 50,  // Max commits during admin refresh
+    initialProjects: 5,     // Projects shown before "Load More"
+    featuredProjects: 8,    // Max featured projects in newspaper mode
 } as const;

@@ -10,9 +10,17 @@ const ALLOWED_ORIGINS = [
     "http://127.0.0.1:3000",
 ];
 
-// Add production domain if set
+// Add production domains if set
 if (process.env.NEXT_PUBLIC_URL) {
     ALLOWED_ORIGINS.push(process.env.NEXT_PUBLIC_URL);
+}
+// Vercel deployment URL (auto-set by Vercel)
+if (process.env.VERCEL_URL) {
+    ALLOWED_ORIGINS.push(`https://${process.env.VERCEL_URL}`);
+}
+// Vercel production URL
+if (process.env.VERCEL_PROJECT_PRODUCTION_URL) {
+    ALLOWED_ORIGINS.push(`https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`);
 }
 
 export function validateCsrf(request: NextRequest): { valid: boolean; error?: string } {

@@ -2,9 +2,6 @@
 
 All notable changes to the Tremors Portfolio project are documented in this file.
 
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
-and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
-
 ---
 
 ## [Unreleased]
@@ -12,6 +9,37 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Planned for v1.0.0
 - First public release on Vercel 🚀
 - Production deployment and domain setup
+
+---
+
+## [0.9.7] - 2025-12-22
+
+### Added
+- **Custom Hooks** - Created `useAdminAuth`, `useFetch`, and `useApiMutation` hooks in `src/hooks/`
+- **Mode Error Boundaries** - `ModeErrorBoundary` component with mode-specific styling
+- **Newspaper Sub-Components** - Extracted `NewspaperMasthead`, `NewspaperTicker`, `NewspaperArchive`
+- **Test Coverage** - Added 4 new test files (75 total tests):
+  - `api-auth.test.ts` - API authentication tests
+  - `terminal-commands.test.ts` - Command execution tests
+  - `drag-drop.test.ts` - Drag-drop reordering tests
+  - `newspaper-edition.test.ts` - Edition loading tests
+
+### Fixed
+- **Error Handling** - All catch blocks now use toast notifications consistently
+- **Drag-Drop Feedback** - Enhanced visual feedback with scale, rotate, shadow, ring effects
+- **Mobile Footer** - Larger touch targets on mobile devices
+- **Newspaper Skeleton** - Proper skeleton UI for AI-generated headlines
+- **Archive Dropdown** - Click-outside detection to close dropdown
+- **Type Imports** - Fixed duplicate type re-exports from `github.ts`
+
+### Changed
+- **Branding** - Replaced "Aman Singh" with "Tremors" throughout codebase
+- **Documentation** - Cleaned up README, AGENTS.md, TASKS.md
+- **DATA_LIMITS** - Centralized magic numbers in `site.ts` config
+
+### Removed
+- Duplicate CSS marquee keyframes
+- Dead code comments in `commands.ts`
 
 ---
 
@@ -466,43 +494,43 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 [Unreleased]: https://github.com/qtremors/tremors/compare/v0.9.6...HEAD
 [0.9.6]: https://github.com/qtremors/tremors/compare/v0.9.5...v0.9.6
 [0.9.5]: https://github.com/qtremors/tremors/compare/v0.9.4...v0.9.5
-[0.9.4]: https://github.com/qtremors/portfolio/compare/v0.9.3...v0.9.4
-[0.9.3]: https://github.com/qtremors/portfolio/compare/v0.9.2...v0.9.3
-[0.9.2]: https://github.com/qtremors/portfolio/compare/v0.9.1...v0.9.2
-[0.9.1]: https://github.com/qtremors/portfolio/compare/v0.9.0...v0.9.1
-[0.9.0]: https://github.com/qtremors/portfolio/compare/v0.8.8...v0.9.0
-[0.8.8]: https://github.com/qtremors/portfolio/compare/v0.8.7...v0.8.8
-[0.8.7]: https://github.com/qtremors/portfolio/compare/v0.8.6...v0.8.7
-[0.8.6]: https://github.com/qtremors/portfolio/compare/v0.8.5...v0.8.6
-[0.8.5]: https://github.com/qtremors/portfolio/compare/v0.8.4...v0.8.5
-[0.8.4]: https://github.com/qtremors/portfolio/compare/v0.8.3...v0.8.4
-[0.8.3]: https://github.com/qtremors/portfolio/compare/v0.8.2...v0.8.3
-[0.8.2]: https://github.com/qtremors/portfolio/compare/v0.8.1...v0.8.2
-[0.8.1]: https://github.com/qtremors/portfolio/compare/v0.8.0...v0.8.1
-[0.8.0]: https://github.com/qtremors/portfolio/compare/v0.7.7...v0.8.0
-[0.7.7]: https://github.com/qtremors/portfolio/compare/v0.7.6...v0.7.7
-[0.7.6]: https://github.com/qtremors/portfolio/compare/v0.7.5...v0.7.6
-[0.7.5]: https://github.com/qtremors/portfolio/compare/v0.7.4...v0.7.5
-[0.7.4]: https://github.com/qtremors/portfolio/compare/v0.7.3...v0.7.4
-[0.7.3]: https://github.com/qtremors/portfolio/compare/v0.7.2...v0.7.3
-[0.7.2]: https://github.com/qtremors/portfolio/compare/v0.7.1...v0.7.2
-[0.7.1]: https://github.com/qtremors/portfolio/compare/v0.7.0...v0.7.1
-[0.7.0]: https://github.com/qtremors/portfolio/compare/v0.6.4...v0.7.0
-[0.6.4]: https://github.com/qtremors/portfolio/compare/v0.6.3...v0.6.4
-[0.6.3]: https://github.com/qtremors/portfolio/compare/v0.6.2...v0.6.3
-[0.6.2]: https://github.com/qtremors/portfolio/compare/v0.6.1...v0.6.2
-[0.6.1]: https://github.com/qtremors/portfolio/compare/v0.6.0...v0.6.1
-[0.6.0]: https://github.com/qtremors/portfolio/compare/v0.5.1...v0.6.0
-[0.5.1]: https://github.com/qtremors/portfolio/compare/v0.5.0...v0.5.1
-[0.5.0]: https://github.com/qtremors/portfolio/compare/v0.4.0...v0.5.0
-[0.4.0]: https://github.com/qtremors/portfolio/compare/v0.3.2...v0.4.0
-[0.3.2]: https://github.com/qtremors/portfolio/compare/v0.3.1...v0.3.2
-[0.3.1]: https://github.com/qtremors/portfolio/compare/v0.3.0...v0.3.1
-[0.3.0]: https://github.com/qtremors/portfolio/compare/v0.2.2...v0.3.0
-[0.2.2]: https://github.com/qtremors/portfolio/compare/v0.2.1...v0.2.2
-[0.2.1]: https://github.com/qtremors/portfolio/compare/v0.2.0...v0.2.1
-[0.2.0]: https://github.com/qtremors/portfolio/compare/v0.1.2...v0.2.0
-[0.1.2]: https://github.com/qtremors/portfolio/compare/v0.1.1...v0.1.2
-[0.1.1]: https://github.com/qtremors/portfolio/compare/v0.1.0...v0.1.1
-[0.1.0]: https://github.com/qtremors/portfolio/compare/v0.0.0...v0.1.0
-[0.0.0]: https://github.com/qtremors/portfolio/releases/tag/v0.0.0
+[0.9.4]: https://github.com/qtremors/tremors/compare/v0.9.3...v0.9.4
+[0.9.3]: https://github.com/qtremors/tremors/compare/v0.9.2...v0.9.3
+[0.9.2]: https://github.com/qtremors/tremors/compare/v0.9.1...v0.9.2
+[0.9.1]: https://github.com/qtremors/tremors/compare/v0.9.0...v0.9.1
+[0.9.0]: https://github.com/qtremors/tremors/compare/v0.8.8...v0.9.0
+[0.8.8]: https://github.com/qtremors/tremors/compare/v0.8.7...v0.8.8
+[0.8.7]: https://github.com/qtremors/tremors/compare/v0.8.6...v0.8.7
+[0.8.6]: https://github.com/qtremors/tremors/compare/v0.8.5...v0.8.6
+[0.8.5]: https://github.com/qtremors/tremors/compare/v0.8.4...v0.8.5
+[0.8.4]: https://github.com/qtremors/tremors/compare/v0.8.3...v0.8.4
+[0.8.3]: https://github.com/qtremors/tremors/compare/v0.8.2...v0.8.3
+[0.8.2]: https://github.com/qtremors/tremors/compare/v0.8.1...v0.8.2
+[0.8.1]: https://github.com/qtremors/tremors/compare/v0.8.0...v0.8.1
+[0.8.0]: https://github.com/qtremors/tremors/compare/v0.7.7...v0.8.0
+[0.7.7]: https://github.com/qtremors/tremors/compare/v0.7.6...v0.7.7
+[0.7.6]: https://github.com/qtremors/tremors/compare/v0.7.5...v0.7.6
+[0.7.5]: https://github.com/qtremors/tremors/compare/v0.7.4...v0.7.5
+[0.7.4]: https://github.com/qtremors/tremors/compare/v0.7.3...v0.7.4
+[0.7.3]: https://github.com/qtremors/tremors/compare/v0.7.2...v0.7.3
+[0.7.2]: https://github.com/qtremors/tremors/compare/v0.7.1...v0.7.2
+[0.7.1]: https://github.com/qtremors/tremors/compare/v0.7.0...v0.7.1
+[0.7.0]: https://github.com/qtremors/tremors/compare/v0.6.4...v0.7.0
+[0.6.4]: https://github.com/qtremors/tremors/compare/v0.6.3...v0.6.4
+[0.6.3]: https://github.com/qtremors/tremors/compare/v0.6.2...v0.6.3
+[0.6.2]: https://github.com/qtremors/tremors/compare/v0.6.1...v0.6.2
+[0.6.1]: https://github.com/qtremors/tremors/compare/v0.6.0...v0.6.1
+[0.6.0]: https://github.com/qtremors/tremors/compare/v0.5.1...v0.6.0
+[0.5.1]: https://github.com/qtremors/tremors/compare/v0.5.0...v0.5.1
+[0.5.0]: https://github.com/qtremors/tremors/compare/v0.4.0...v0.5.0
+[0.4.0]: https://github.com/qtremors/tremors/compare/v0.3.2...v0.4.0
+[0.3.2]: https://github.com/qtremors/tremors/compare/v0.3.1...v0.3.2
+[0.3.1]: https://github.com/qtremors/tremors/compare/v0.3.0...v0.3.1
+[0.3.0]: https://github.com/qtremors/tremors/compare/v0.2.2...v0.3.0
+[0.2.2]: https://github.com/qtremors/tremors/compare/v0.2.1...v0.2.2
+[0.2.1]: https://github.com/qtremors/tremors/compare/v0.2.0...v0.2.1
+[0.2.0]: https://github.com/qtremors/tremors/compare/v0.1.2...v0.2.0
+[0.1.2]: https://github.com/qtremors/tremors/compare/v0.1.1...v0.1.2
+[0.1.1]: https://github.com/qtremors/tremors/compare/v0.1.0...v0.1.1
+[0.1.0]: https://github.com/qtremors/tremors/compare/v0.0.0...v0.1.0
+[0.0.0]: https://github.com/qtremors/tremors/releases/tag/v0.0.0

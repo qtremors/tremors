@@ -8,7 +8,7 @@
 
 **Name**: Tremors Portfolio Website
 **Type**: Personal Portfolio / Developer Showcase
-**Owner**: Aman Singh (@qtremors)
+**Owner**: Tremors (@qtremors)
 **Tech Stack**: Next.js 16 + React 19 + TypeScript + Prisma + Tailwind CSS 4
 
 ### What This Project Does
@@ -35,7 +35,7 @@ A personal portfolio website with multiple viewing modes:
 tremors/                         # Repository root
 ├── .gitignore                   # Root gitignore for monorepo
 ├── README.md                    # Full project documentation
-├── CHANGELOG.md                 # Version history (v0.0.0 - v0.9.6)
+├── CHANGELOG.md                 # Version history (v0.0.0 - v0.9.7)
 ├── AGENTS.md                    # This file - AI agent context
 ├── TASKS.md                     # Bug tracking
 ├── index.html                   # GitHub Pages redirect (legacy)
@@ -44,6 +44,7 @@ tremors/                         # Repository root
 └── app/                         # Next.js Portfolio Application
     ├── prisma/
     │   ├── schema.prisma        # Database schema (Repo, Settings, Admin)
+    │   ├── seed-newspaper.ts    # Seed fallback newspaper editions
     │   └── dev.db               # SQLite database file (gitignored)
     ├── public/                  # Static assets
     ├── src/
@@ -51,12 +52,26 @@ tremors/                         # Repository root
     │   │   ├── api/             # API routes
     │   │   │   ├── admin/       # Admin-only endpoints
     │   │   │   │   ├── refresh/ # Sync repos from GitHub
-    │   │   │   │   └── repos/   # CRUD for repo settings
-    │   │   │   └── auth/        # Authentication endpoints
-    │   │   │       ├── check/   # Verify admin session
-    │   │   │       ├── logout/  # Clear session
-    │   │   │       └── route.ts # Login endpoint
+    │   │   │   │   ├── repos/   # CRUD for repo settings
+    │   │   │   │   └── availability/ # Work availability toggle
+    │   │   │   ├── auth/        # Authentication endpoints
+    │   │   │   │   ├── check/   # Verify admin session
+    │   │   │   │   ├── logout/  # Clear session
+    │   │   │   │   └── route.ts # Login endpoint
+    │   │   │   ├── newspaper/   # AI newspaper content
+    │   │   │   │   ├── generate/# Generate/fetch editions
+    │   │   │   │   ├── editions/# List past editions
+    │   │   │   │   └── active/  # Set active edition
+    │   │   │   └── stats/       # Statistics endpoints
+    │   │   │       └── commits/ # Total commit count
     │   │   ├── newspaper/       # Newspaper mode page
+    │   │   │   ├── components/  # Extracted sub-components
+    │   │   │   │   ├── NewspaperMasthead.tsx
+    │   │   │   │   ├── NewspaperTicker.tsx
+    │   │   │   │   └── NewspaperArchive.tsx
+    │   │   │   ├── NewspaperPage.tsx
+    │   │   │   ├── newspaper.css
+    │   │   │   └── page.tsx
     │   │   ├── paper/           # Paper mode page
     │   │   ├── terminal/        # Terminal mode page
     │   │   │   ├── components/  # Terminal-specific components
@@ -68,10 +83,16 @@ tremors/                         # Repository root
     │   ├── components/          # Shared components
     │   │   ├── AdminContext.tsx # Admin state + editMode
     │   │   ├── ErrorBoundary.tsx# Graceful error handling
+    │   │   ├── ModeErrorBoundary.tsx # Mode-specific error handling
     │   │   ├── Header.tsx       # Navbar with Edit/Refresh buttons
-    │   │   ├── ProjectsGrid.tsx # Project cards with inline admin controls
+    │   │   ├── ProjectCard.tsx  # Single project card
+    │   │   ├── ProjectsGrid.tsx # Project grid with drag-drop
     │   │   ├── ThemeProvider.tsx# Theme state management
     │   │   └── ToastProvider.tsx# Global toast notifications
+    │   ├── hooks/               # Custom React hooks
+    │   │   ├── useAdminAuth.ts  # Admin auth abstraction
+    │   │   ├── useFetch.ts      # API fetch with toast errors
+    │   │   └── index.ts         # Hook exports
     │   ├── config/
     │   │   └── site.ts          # Personal info, links, skills
     │   ├── lib/
@@ -82,8 +103,13 @@ tremors/                         # Repository root
     │   │   ├── github.ts        # GitHub API utilities
     │   │   ├── sanitize.ts      # Input sanitization utilities
     │   │   └── utils.ts         # Shared utilities
-    │   └── types/
-    │       └── index.ts         # All shared TypeScript types
+    │   ├── types/
+    │   │   └── index.ts         # All shared TypeScript types
+    │   └── __tests__/           # Test files
+    │       ├── api-auth.test.ts
+    │       ├── terminal-commands.test.ts
+    │       ├── drag-drop.test.ts
+    │       └── newspaper-edition.test.ts
     ├── .env.example             # Environment template (tracked)
     ├── .env                     # Environment variables (gitignored)
     ├── .env.local               # Local overrides (gitignored)
@@ -438,13 +464,19 @@ npm start
 
 ## ⚠️ Known Issues
 
-1. ~~**Session tokens are not cryptographically signed**~~ - ✅ Fixed with HMAC signing
-2. ~~**Rate limiting not implemented**~~ - ✅ Fixed with 5 attempts/15 min
-3. ~~**CSRF protection not applied to API routes**~~ - ✅ Fixed
-4. ~~**ModeSwitcher component unused**~~ - ✅ Removed
-5. **Terminal hide/show uses localStorage** - Conflicts with DB
-6. **LinkedIn/email are placeholders** - Use config values
-7. **No resume.pdf file** - 404 on contact link (placeholder)
+> **Note**: Most issues have been resolved. See `TASKS.md` for the complete tracking list.
+
+### Resolved ✅
+- ~~Session tokens are not cryptographically signed~~ - Fixed with HMAC signing
+- ~~Rate limiting not implemented~~ - Fixed with 5 attempts/15 min
+- ~~CSRF protection not applied to API routes~~ - Fixed
+- ~~ModeSwitcher component unused~~ - Removed
+- ~~Activity model not used in data fetching~~ - Now cached from DB
+- ~~Duplicate CSS marquee animations~~ - Cleaned up
+
+### Known Limitations
+- **Terminal hide/show uses localStorage** - Conflicts with DB state (design decision)
+- **Resume.pdf is placeholder** - User needs to add actual resume
 
 See `TASKS.md` for complete list of issues and improvements.
 
