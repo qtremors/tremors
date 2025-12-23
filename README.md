@@ -124,7 +124,7 @@ An interactive space-themed landing page featuring:
 
 1. **Clone the repository**
    ```bash
-   git clone https://qtremors.github.io/tremors.git
+   git clone https://github.com/qtremors/tremors.git
    cd tremors/app
    ```
 

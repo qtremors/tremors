@@ -51,12 +51,19 @@ export default function RootLayout({
       <body
         className={`${inter.variable} ${jetbrainsMono.variable} ${playfair.variable} ${sourceSerif.variable} antialiased`}
       >
+        {/* Skip link for accessibility */}
+        <a
+          href="#main-content"
+          className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-[var(--bg)] focus:text-[var(--text)] focus:border focus:border-[var(--border)] focus:rounded-lg"
+        >
+          Skip to content
+        </a>
         <ThemeProvider>
           <AdminProvider>
             <ToastProvider>
               <ErrorBoundary>
                 <KeyboardShortcuts />
-                {children}
+                <main id="main-content">{children}</main>
               </ErrorBoundary>
             </ToastProvider>
           </AdminProvider>

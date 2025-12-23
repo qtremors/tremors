@@ -9,6 +9,7 @@ import { prisma } from "@/lib/db";
 import { getRepos, getRecentCommits, getActivity } from "@/lib/github";
 import { verifyAdminCookie } from "@/lib/auth";
 import { validateCsrf } from "@/lib/csrf";
+import { eventToDbActivity } from "@/lib/activity";
 import type { GitHubEvent } from "@/types";
 
 const GITHUB_USERNAME = process.env.GITHUB_USERNAME || "qtremors";
@@ -116,50 +117,15 @@ export async function POST(request: NextRequest) {
                 })),
             });
 
-            // Cache activity events
+            // Cache activity events using shared utility
             const events = await getActivity(GITHUB_USERNAME, 30);
             await tx.activity.deleteMany({});
 
-            // Convert events to activity items
+            // Convert events to activity items using shared utility
             const activityData = events
                 .filter((e: GitHubEvent) => e.type !== "PushEvent")
-                .map((event: GitHubEvent) => {
-                    const repoName = event.repo.name.split("/")[1] || event.repo.name;
-                    let type = "create";
-                    let title = "";
-
-                    switch (event.type) {
-                        case "CreateEvent":
-                            type = "create";
-                            title = `Created ${event.payload.ref_type || "repository"}`;
-                            break;
-                        case "ReleaseEvent":
-                            type = "release";
-                            title = `Released ${event.payload.action || "version"}`;
-                            break;
-                        case "PullRequestEvent":
-                            type = "pr";
-                            title = `${event.payload.action || "Opened"} pull request`;
-                            break;
-                        case "WatchEvent":
-                            type = "star";
-                            title = "Starred repository";
-                            break;
-                        case "ForkEvent":
-                            type = "fork";
-                            title = "Forked repository";
-                            break;
-                    }
-
-                    return {
-                        id: event.id,
-                        type,
-                        title,
-                        repoName,
-                        repoUrl: `https://github.com/${event.repo.name}`,
-                        date: new Date(event.created_at),
-                    };
-                });
+                .map((event: GitHubEvent) => eventToDbActivity(event))
+                .filter((item): item is NonNullable<typeof item> => item !== null);
 
             if (activityData.length > 0) {
                 await tx.activity.createMany({ data: activityData });

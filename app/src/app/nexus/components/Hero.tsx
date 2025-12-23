@@ -91,7 +91,7 @@ const Hero = () => {
         >
           <Image
             src="/spacestation6.png"
-            alt="Space Station"
+            alt="Central space station - click to deploy navigation spaceships"
             fill
             sizes="150px"
             priority
@@ -124,7 +124,7 @@ const Hero = () => {
                   >
 
                     <div className={`${styles.face} ${styles.front}`}>
-                      <Image src={ship.image} alt={ship.name} fill sizes="80px" />
+                      <Image src={ship.image} alt={`${ship.name} spaceship - navigate to ${ship.name} mode`} fill sizes="80px" />
                     </div>
                     <div className={`${styles.face} ${styles.back}`}>
                       <Image src={ship.imageBack} alt={`${ship.name} (rear view)`} fill sizes="80px" />
@@ -157,7 +157,7 @@ const Hero = () => {
         >
           <Image
             src="/wormhole.png"
-            alt="Navigate to projects"
+            alt="Wormhole portal - navigate to main portfolio"
             className={styles.wormholeImage}
             fill
             sizes="100px"

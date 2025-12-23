@@ -102,10 +102,12 @@ tremors/                         # Repository root
     │   ├── hooks/               # Custom React hooks
     │   │   ├── useAdminAuth.ts  # Admin auth abstraction
     │   │   ├── useFetch.ts      # API fetch with toast errors
+    │   │   ├── useTerminalAdmin.ts # Terminal admin auth flow
     │   │   └── index.ts         # Hook exports
     │   ├── config/
     │   │   └── site.ts          # Personal info, links, skills
     │   ├── lib/
+    │   │   ├── activity.ts      # Event-to-activity conversion
     │   │   ├── auth.ts          # Cookie-based auth utilities
     │   │   ├── csrf.ts          # CSRF protection utilities
     │   │   ├── data.ts          # Data fetching orchestration
@@ -115,11 +117,18 @@ tremors/                         # Repository root
     │   │   └── utils.ts         # Shared utilities
     │   ├── types/
     │   │   └── index.ts         # All shared TypeScript types
-    │   └── __tests__/           # Test files
+    │   └── __tests__/           # Test files (11 files, 89 tests)
+    │       ├── activity.test.ts
     │       ├── api-auth.test.ts
-    │       ├── terminal-commands.test.ts
+    │       ├── auth.test.ts
+    │       ├── csrf.test.ts
     │       ├── drag-drop.test.ts
-    │       └── newspaper-edition.test.ts
+    │       ├── github.test.ts
+    │       ├── newspaper-edition.test.ts
+    │       ├── ProjectCard.test.ts
+    │       ├── sanitize.test.ts
+    │       ├── terminal-commands.test.ts
+    │       └── utils.test.ts
     ├── .env.example             # Environment template (tracked)
     ├── .env                     # Environment variables (gitignored)
     ├── .env.local               # Local overrides (gitignored)

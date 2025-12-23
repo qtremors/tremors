@@ -4,6 +4,32 @@ All notable changes to the Tremors Portfolio project are documented in this file
 
 ---
 
+## [1.5.2] - 2024-12-23
+
+### Added
+- **Skip Link for Accessibility** - Keyboard/screen reader users can now skip to main content
+- **New Tests** - 14 new tests added (89 total):
+  - `github.test.ts` - Tests for LANGUAGE_COLORS constant
+  - `activity.test.ts` - Tests for event conversion utilities
+- **Shared Activity Utility** - Created `src/lib/activity.ts` for event-to-activity conversion
+- **useTerminalAdmin Hook** - Extracted admin auth logic from TerminalPage for better modularity
+- **ModeErrorBoundary for Nexus** - Added error boundary with purple theme to Nexus mode
+
+### Changed
+- **Test File Organization** - Consolidated all 11 test files in `src/__tests__/`
+- **Nexus Image Alt Text** - Improved for better accessibility
+- **README Clone URL** - Fixed incorrect GitHub URL
+
+### Removed
+- **git_commits.txt** - Removed dev artifact from repository
+
+### Technical
+- `activity.ts` - Shared `eventToActivityItem()` and `eventToDbActivity()` functions
+- `useTerminalAdmin.ts` - Hook for terminal admin authentication flow
+- Removed ~60 lines of duplicate code from `data.ts` and `refresh/route.ts`
+
+---
+
 ## [1.5.1] - 2025-12-22
 
 ### Changed
