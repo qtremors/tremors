@@ -12,8 +12,8 @@ import { ContactModal } from "./ContactModal";
 
 const modes = [
     { id: "terminal", label: "Terminal", href: "/terminal", icon: Terminal },
-    { id: "paper", label: "Paper", href: "/paper", icon: FileText },
-    { id: "newspaper", label: "Newspaper", href: "/newspaper", icon: Newspaper },
+    { id: "paper", label: "Resume", href: "/paper", icon: FileText },
+    { id: "newspaper", label: "News", href: "/newspaper", icon: Newspaper },
     { id: "nexus", label: "Nexus", href: "/nexus", icon: Rocket },
 ];
 

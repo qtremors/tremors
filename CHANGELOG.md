@@ -4,6 +4,35 @@ All notable changes to the Tremors Portfolio project are documented in this file
 
 ---
 
+## [1.6.0] - 2025-12-23
+
+### Added
+- **Scroll-Triggered Nav Buttons** - Hero section buttons (Projects, News, Resume) animate into the navbar when scrolled out of view
+  - Uses Framer Motion `layoutId` for smooth position animation
+  - Navbar buttons appear with subtle blur backdrop
+  - Early trigger at 50px before buttons leave viewport
+- **Projects View Toggle** - Admin can switch between Grid and List view layouts
+  - Toggle visible only in edit mode
+  - View preference persisted in database (`projectViewMode` setting)
+  - List view shows horizontal cards with thumbnail on left, content on right
+- **NavButtonsContext** - New React context for sharing button visibility state between HeroSection and Header
+
+### Changed
+- **Hero Section Buttons** - Refactored to use Framer Motion components with `layoutId` for smooth transitions
+- **Header Component** - Now displays animated nav buttons in center when in "default" mode and buttons are scrolled
+- **ProjectCard Component** - Added `size="list"` variant for horizontal layout
+- **Loading Skeleton** - Updated hero skeleton to match new layout with three navigation buttons
+- **Settings API** - Extended to handle `projectViewMode` field
+
+### Technical
+- `NavButtonsContext.tsx` - New context provider for `showInHeader` state
+- `schema.prisma` - Added `projectViewMode` field to Settings model
+- `layout.tsx` - Wrapped app with `NavButtonsProvider`
+- `HeroSection.tsx` - Added intersection observer for scroll detection
+- `ProjectCard.tsx` - Added list view layout with horizontal card design
+
+---
+
 ## [1.5.3] - 2025-12-23
 
 ### Added

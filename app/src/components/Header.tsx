@@ -1,25 +1,28 @@
 /**
  * Header - Simple navbar with logo, admin controls, and theme toggle
- * Mode navigation moved to footer
+ * Nav buttons slide in from hero when scrolled
  */
 
 "use client";
 
 import { useState } from "react";
 import Link from "next/link";
+import { motion, AnimatePresence } from "framer-motion";
 import { useTheme } from "@/components/ThemeProvider";
 import { useAdmin } from "@/components/AdminContext";
 import { useToast } from "@/components/ToastProvider";
+import { useNavButtons } from "@/components/NavButtonsContext";
 import { PERSONAL } from "@/config/site";
-import { Terminal, Moon, Sun, Pencil, RefreshCw, Check } from "lucide-react";
+import { Terminal, Moon, Sun, Pencil, RefreshCw, Check, FolderOpen, Newspaper, FileText } from "lucide-react";
 
 interface HeaderProps {
-    currentMode: "default" | "paper" | "newspaper" | "terminal";
+    currentMode: "default" | "paper" | "newspaper" | "terminal" | "nexus";
 }
 
 export function Header({ currentMode }: HeaderProps) {
     const { theme, toggleTheme } = useTheme();
     const { isAdmin, editMode, setEditMode } = useAdmin();
+    const { showInHeader } = useNavButtons();
     const toast = useToast();
     const [refreshing, setRefreshing] = useState(false);
 
@@ -44,6 +47,9 @@ export function Header({ currentMode }: HeaderProps) {
     // Hide header on terminal mode (it has its own UI)
     if (currentMode === "terminal") return null;
 
+    // Motion Link for animated buttons
+    const MotionLink = motion.create(Link);
+
     return (
         <>
             {/* Desktop: Simple navbar - fully transparent */}
@@ -59,6 +65,52 @@ export function Header({ currentMode }: HeaderProps) {
                     </span>
                     <span>{PERSONAL.handle.toLowerCase()}</span>
                 </Link>
+
+                {/* Center: Nav buttons that slide in from hero */}
+                <AnimatePresence>
+                    {showInHeader && currentMode === "default" && (
+                        <motion.div
+                            initial={{ opacity: 0, y: -10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -10 }}
+                            transition={{ type: "spring", stiffness: 300, damping: 25 }}
+                            className="absolute left-1/2 -translate-x-1/2 flex items-center gap-4 px-5 py-2 rounded-full"
+                            style={{
+                                background: 'radial-gradient(ellipse at center, color-mix(in srgb, var(--bg) 50%, transparent) 0%, transparent 80%)',
+                                backdropFilter: 'blur(6px)',
+                                WebkitBackdropFilter: 'blur(6px)',
+                            }}
+                        >
+                            <motion.a
+                                href="#projects"
+                                layoutId="btn-projects"
+                                className="inline-flex items-center gap-1.5 text-sm font-medium text-[var(--text-muted)] hover:text-[var(--text)] transition-colors"
+                                transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                            >
+                                <FolderOpen className="w-4 h-4" />
+                                Projects
+                            </motion.a>
+                            <MotionLink
+                                href="/newspaper"
+                                layoutId="btn-news"
+                                className="inline-flex items-center gap-1.5 text-sm font-medium text-[var(--text-muted)] hover:text-[var(--text)] transition-colors"
+                                transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                            >
+                                <Newspaper className="w-4 h-4" />
+                                News
+                            </MotionLink>
+                            <MotionLink
+                                href="/paper"
+                                layoutId="btn-resume"
+                                className="inline-flex items-center gap-1.5 text-sm font-medium text-[var(--text-muted)] hover:text-[var(--text)] transition-colors"
+                                transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                            >
+                                <FileText className="w-4 h-4" />
+                                Resume
+                            </MotionLink>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
 
                 {/* Right: Admin controls + Theme toggle */}
                 <div className="flex items-center gap-2">

@@ -9,7 +9,7 @@
 import { useState, useEffect } from "react";
 import { useAdmin } from "@/components/AdminContext";
 import { useToast } from "@/components/ToastProvider";
-import { ChevronDown, X, Save, RotateCcw, ImageIcon, ImageOff } from "lucide-react";
+import { ChevronDown, X, Save, RotateCcw, ImageIcon, ImageOff, LayoutGrid, List } from "lucide-react";
 import { ProjectCard, RepoWithStatus } from "@/components/ProjectCard";
 import type { GitHubRepo } from "@/types";
 
@@ -31,6 +31,7 @@ export function ProjectsGrid({ repos: initialRepos }: ProjectsGridProps) {
     const [editImageSource, setEditImageSource] = useState<string>("github");
     const [editImageUrl, setEditImageUrl] = useState("");
     const [showImages, setShowImages] = useState<boolean | null>(null);  // null = loading, prevents flash
+    const [viewMode, setViewMode] = useState<"grid" | "list">("grid");  // DB-persisted view mode
 
     // Fetch repos with hidden status from API when admin
     useEffect(() => {
@@ -84,17 +85,20 @@ export function ProjectsGrid({ repos: initialRepos }: ProjectsGridProps) {
         }
     }, [isAdmin]);
 
-    // Fetch settings (showProjectImages) on mount
+    // Fetch settings (showProjectImages, projectViewMode) on mount
     useEffect(() => {
         fetch("/api/admin/settings")
             .then((res) => res.json())
             .then((data) => {
                 if (data.success && data.settings) {
                     setShowImages(data.settings.showProjectImages ?? true);
+                    if (data.settings.projectViewMode === "list" || data.settings.projectViewMode === "grid") {
+                        setViewMode(data.settings.projectViewMode);
+                    }
                 }
             })
             .catch(() => {
-                // Silently fail - use default true
+                // Silently fail - use defaults
             });
     }, []);
 
@@ -295,69 +299,206 @@ export function ProjectsGrid({ repos: initialRepos }: ProjectsGridProps) {
 
     return (
         <div className="space-y-8">
-            {/* Admin: Global Image Toggle */}
+            {/* Admin Controls: View Toggle + Image Toggle */}
             {editMode && (
-                <div className="flex justify-end">
-                    <button
-                        onClick={async () => {
-                            const newValue = !showImages;
-                            setShowImages(newValue);
-                            try {
-                                await fetch("/api/admin/settings", {
-                                    method: "PATCH",
-                                    headers: { "Content-Type": "application/json" },
-                                    body: JSON.stringify({ showProjectImages: newValue }),
-                                });
-                            } catch {
-                                // Revert on error
-                                setShowImages(!newValue);
-                                toast.error("Failed to save setting");
-                            }
-                        }}
-                        className={`flex items-center gap-2 px-4 py-2 rounded-xl border transition-colors ${showImages
-                            ? "border-[var(--accent-cyan)] text-[var(--accent-cyan)]"
-                            : "border-[var(--border)] text-[var(--text-muted)]"
-                            }`}
-                    >
-                        {showImages ? <ImageIcon className="w-4 h-4" /> : <ImageOff className="w-4 h-4" />}
-                        {showImages ? "Images On" : "Images Off"}
-                    </button>
+                <div className="flex justify-end gap-2">
+                    {/* View Mode Toggle */}
+                    <div className="flex rounded-xl border border-[var(--border)] overflow-hidden">
+                        <button
+                            onClick={async () => {
+                                if (viewMode === "grid") return;
+                                setViewMode("grid");
+                                // Persist to DB (will fail silently for non-admin)
+                                try {
+                                    await fetch("/api/admin/settings", {
+                                        method: "PATCH",
+                                        headers: { "Content-Type": "application/json" },
+                                        body: JSON.stringify({ projectViewMode: "grid" }),
+                                    });
+                                } catch {
+                                    // Non-admin or error - view still changes locally
+                                }
+                            }}
+                            className={`flex items-center gap-1.5 px-3 py-2 transition-colors ${viewMode === "grid"
+                                ? "bg-[var(--accent-cyan)]/10 text-[var(--accent-cyan)]"
+                                : "text-[var(--text-muted)] hover:text-[var(--text)]"
+                                }`}
+                            title="Grid view"
+                        >
+                            <LayoutGrid className="w-4 h-4" />
+                        </button>
+                        <button
+                            onClick={async () => {
+                                if (viewMode === "list") return;
+                                setViewMode("list");
+                                try {
+                                    await fetch("/api/admin/settings", {
+                                        method: "PATCH",
+                                        headers: { "Content-Type": "application/json" },
+                                        body: JSON.stringify({ projectViewMode: "list" }),
+                                    });
+                                } catch {
+                                    // Non-admin or error - view still changes locally
+                                }
+                            }}
+                            className={`flex items-center gap-1.5 px-3 py-2 transition-colors ${viewMode === "list"
+                                ? "bg-[var(--accent-cyan)]/10 text-[var(--accent-cyan)]"
+                                : "text-[var(--text-muted)] hover:text-[var(--text)]"
+                                }`}
+                            title="List view"
+                        >
+                            <List className="w-4 h-4" />
+                        </button>
+                    </div>
+
+                    {/* Admin: Image Toggle */}
+                    {editMode && (
+                        <button
+                            onClick={async () => {
+                                const newValue = !showImages;
+                                setShowImages(newValue);
+                                try {
+                                    await fetch("/api/admin/settings", {
+                                        method: "PATCH",
+                                        headers: { "Content-Type": "application/json" },
+                                        body: JSON.stringify({ showProjectImages: newValue }),
+                                    });
+                                } catch {
+                                    setShowImages(!newValue);
+                                    toast.error("Failed to save setting");
+                                }
+                            }}
+                            className={`flex items-center gap-2 px-4 py-2 rounded-xl border transition-colors ${showImages
+                                ? "border-[var(--accent-cyan)] text-[var(--accent-cyan)]"
+                                : "border-[var(--border)] text-[var(--text-muted)]"
+                                }`}
+                        >
+                            {showImages ? <ImageIcon className="w-4 h-4" /> : <ImageOff className="w-4 h-4" />}
+                            {showImages ? "Images On" : "Images Off"}
+                        </button>
+                    )}
                 </div>
             )}
 
-            {/* Featured Projects Section - 2+3 Bento Layout */}
+            {/* Featured Projects Section */}
             {spotlightRepos.length > 0 && (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {/* Top Row - 2 Large Cards */}
-                    {spotlightRepos.slice(0, 2).map((repo) => (
-                        <ProjectCard
-                            key={repo.id}
-                            repo={repo}
-                            size="large"
-                            editMode={editMode}
-                            isAdmin={isAdmin}
-                            isDragged={draggedId === repo.id}
-                            isDragOver={dragOverId === repo.id}
-                            onDragStart={handleDragStart}
-                            onDragOver={handleDragOver}
-                            onDragLeave={handleDragLeave}
-                            onDrop={handleDrop}
-                            onDragEnd={handleDragEnd}
-                            onToggleFeatured={toggleFeatured}
-                            onToggleVisibility={toggleVisibility}
-                            onEdit={handleEdit}
-                            showImages={showImages ?? false}
-                        />
-                    ))}
+                viewMode === "grid" ? (
+                    // Grid: 2+3 Bento Layout
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {spotlightRepos.slice(0, 2).map((repo) => (
+                            <ProjectCard
+                                key={repo.id}
+                                repo={repo}
+                                size="large"
+                                editMode={editMode}
+                                isAdmin={isAdmin}
+                                isDragged={draggedId === repo.id}
+                                isDragOver={dragOverId === repo.id}
+                                onDragStart={handleDragStart}
+                                onDragOver={handleDragOver}
+                                onDragLeave={handleDragLeave}
+                                onDrop={handleDrop}
+                                onDragEnd={handleDragEnd}
+                                onToggleFeatured={toggleFeatured}
+                                onToggleVisibility={toggleVisibility}
+                                onEdit={handleEdit}
+                                showImages={showImages ?? false}
+                            />
+                        ))}
+                        {spotlightRepos.length > 2 && (
+                            <div className="md:col-span-2 grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                {spotlightRepos.slice(2, 5).map((repo) => (
+                                    <ProjectCard
+                                        key={repo.id}
+                                        repo={repo}
+                                        size="medium"
+                                        editMode={editMode}
+                                        isAdmin={isAdmin}
+                                        isDragged={draggedId === repo.id}
+                                        isDragOver={dragOverId === repo.id}
+                                        onDragStart={handleDragStart}
+                                        onDragOver={handleDragOver}
+                                        onDragLeave={handleDragLeave}
+                                        onDrop={handleDrop}
+                                        onDragEnd={handleDragEnd}
+                                        onToggleFeatured={toggleFeatured}
+                                        onToggleVisibility={toggleVisibility}
+                                        onEdit={handleEdit}
+                                        showImages={showImages ?? false}
+                                    />
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                ) : (
+                    // List: Vertical stack
+                    <div className="space-y-3">
+                        {spotlightRepos.map((repo) => (
+                            <ProjectCard
+                                key={repo.id}
+                                repo={repo}
+                                size="list"
+                                editMode={editMode}
+                                isAdmin={isAdmin}
+                                isDragged={draggedId === repo.id}
+                                isDragOver={dragOverId === repo.id}
+                                onDragStart={handleDragStart}
+                                onDragOver={handleDragOver}
+                                onDragLeave={handleDragLeave}
+                                onDrop={handleDrop}
+                                onDragEnd={handleDragEnd}
+                                onToggleFeatured={toggleFeatured}
+                                onToggleVisibility={toggleVisibility}
+                                onEdit={handleEdit}
+                                showImages={showImages ?? false}
+                            />
+                        ))}
+                    </div>
+                )
+            )}
 
-                    {/* Bottom Row - 3 Smaller Cards */}
-                    {spotlightRepos.length > 2 && (
-                        <div className="md:col-span-2 grid grid-cols-1 sm:grid-cols-3 gap-4">
-                            {spotlightRepos.slice(2, 5).map((repo) => (
+            {/* Other Projects Section */}
+            {otherRepos.length > 0 && (
+                <>
+                    <div className="flex items-center gap-4">
+                        <h3 className="text-xl font-semibold text-[var(--text-muted)]">More Projects</h3>
+                        <span className="flex-1 h-px bg-[var(--border)]" />
+                        {!editMode && otherRepos.length > 6 && (
+                            <span className="text-sm text-[var(--text-muted)]">
+                                {Math.min(visibleOtherCount, otherRepos.length)} of {otherRepos.length}
+                            </span>
+                        )}
+                    </div>
+                    {viewMode === "grid" ? (
+                        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            {(editMode ? otherRepos : otherRepos.slice(0, visibleOtherCount)).map((repo) => (
                                 <ProjectCard
                                     key={repo.id}
                                     repo={repo}
-                                    size="medium"
+                                    size="small"
+                                    editMode={editMode}
+                                    isAdmin={isAdmin}
+                                    isDragged={draggedId === repo.id}
+                                    isDragOver={dragOverId === repo.id}
+                                    onDragStart={handleDragStart}
+                                    onDragOver={handleDragOver}
+                                    onDragLeave={handleDragLeave}
+                                    onDrop={handleDrop}
+                                    onDragEnd={handleDragEnd}
+                                    onToggleFeatured={toggleFeatured}
+                                    onToggleVisibility={toggleVisibility}
+                                    onEdit={handleEdit}
+                                    showImages={showImages ?? false}
+                                />
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="space-y-3">
+                            {(editMode ? otherRepos : otherRepos.slice(0, visibleOtherCount)).map((repo) => (
+                                <ProjectCard
+                                    key={repo.id}
+                                    repo={repo}
+                                    size="list"
                                     editMode={editMode}
                                     isAdmin={isAdmin}
                                     isDragged={draggedId === repo.id}
@@ -375,43 +516,6 @@ export function ProjectsGrid({ repos: initialRepos }: ProjectsGridProps) {
                             ))}
                         </div>
                     )}
-                </div>
-            )}
-
-            {/* Other Projects Section */}
-            {otherRepos.length > 0 && (
-                <>
-                    <div className="flex items-center gap-4">
-                        <h3 className="text-xl font-semibold text-[var(--text-muted)]">More Projects</h3>
-                        <span className="flex-1 h-px bg-[var(--border)]" />
-                        {!editMode && otherRepos.length > 6 && (
-                            <span className="text-sm text-[var(--text-muted)]">
-                                {Math.min(visibleOtherCount, otherRepos.length)} of {otherRepos.length}
-                            </span>
-                        )}
-                    </div>
-                    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {(editMode ? otherRepos : otherRepos.slice(0, visibleOtherCount)).map((repo) => (
-                            <ProjectCard
-                                key={repo.id}
-                                repo={repo}
-                                size="small"
-                                editMode={editMode}
-                                isAdmin={isAdmin}
-                                isDragged={draggedId === repo.id}
-                                isDragOver={dragOverId === repo.id}
-                                onDragStart={handleDragStart}
-                                onDragOver={handleDragOver}
-                                onDragLeave={handleDragLeave}
-                                onDrop={handleDrop}
-                                onDragEnd={handleDragEnd}
-                                onToggleFeatured={toggleFeatured}
-                                onToggleVisibility={toggleVisibility}
-                                onEdit={handleEdit}
-                                showImages={showImages ?? false}
-                            />
-                        ))}
-                    </div>
                     {/* Show More/Less Buttons */}
                     {!editMode && otherRepos.length > 6 && (
                         <div className="mt-6 flex justify-center gap-3">
