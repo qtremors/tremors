@@ -8,6 +8,9 @@ All notable changes to the Tremors Portfolio project are documented in this file
 
 ### Added
 - **Skip Link for Accessibility** - Keyboard/screen reader users can now skip to main content
+- **Contact Form Modal** - Footer "Send a Message" button opens contact form with mailto fallback
+- **Project Name Editor** - Admin can edit custom names/descriptions via pencil icon in edit mode
+- **Reset Button** - Project editor allows resetting to original GitHub data
 - **New Tests** - 14 new tests added (89 total):
   - `github.test.ts` - Tests for LANGUAGE_COLORS constant
   - `activity.test.ts` - Tests for event conversion utilities
@@ -16,6 +19,12 @@ All notable changes to the Tremors Portfolio project are documented in this file
 - **ModeErrorBoundary for Nexus** - Added error boundary with purple theme to Nexus mode
 
 ### Changed
+- **Footer Overhaul** - Removed "Mode" suffix, removed "Built with Next.js", added contact button
+- **Theme Improvements** - Added inverted accent CSS variables for buttons and cards
+  - `--btn-bg`, `--btn-text`, `--btn-hover` for theme-aware buttons
+  - `--card-bg`, `--card-border`, `--card-text` for subtle card contrast
+- **Project Card Titles** - Auto-formatted from kebab-case to Title Case
+- **View Projects Button** - Uses cyan accent with proper contrast
 - **Test File Organization** - Consolidated all 11 test files in `src/__tests__/`
 - **Nexus Image Alt Text** - Improved for better accessibility
 - **README Clone URL** - Fixed incorrect GitHub URL
@@ -24,8 +33,10 @@ All notable changes to the Tremors Portfolio project are documented in this file
 - **git_commits.txt** - Removed dev artifact from repository
 
 ### Technical
+- `ContactModal.tsx` - New component for contact form
 - `activity.ts` - Shared `eventToActivityItem()` and `eventToDbActivity()` functions
 - `useTerminalAdmin.ts` - Hook for terminal admin authentication flow
+- `formatProjectTitle()` - Utility for converting repo names to readable titles
 - Removed ~60 lines of duplicate code from `data.ts` and `refresh/route.ts`
 
 ---

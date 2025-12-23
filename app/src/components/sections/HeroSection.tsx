@@ -174,7 +174,7 @@ function AnimatedCodeBlock({ availableForWork, onToggle, isAdmin, editMode }: An
     return (
         <div className="relative">
             <div className="absolute inset-0 bg-[var(--accent-cyan)] opacity-10 blur-3xl rounded-full" />
-            <div className="relative bg-[var(--bg-secondary)] border border-[var(--border)] rounded-2xl p-8 backdrop-blur-sm animate-float">
+            <div className="relative bg-[var(--card-bg)] border border-[var(--card-border)] rounded-2xl p-8 backdrop-blur-sm animate-float">
                 <div className="flex items-center gap-2 mb-6">
                     <div className="w-3 h-3 rounded-full bg-red-500" />
                     <div className="w-3 h-3 rounded-full bg-yellow-500" />
@@ -268,7 +268,7 @@ export function HeroSection() {
                 <div className="flex flex-wrap items-center gap-4">
                     <a
                         href="#projects"
-                        className="inline-flex items-center gap-2 px-6 py-3 bg-[var(--accent-cyan)] text-black rounded-full font-medium hover:opacity-90 transition-opacity"
+                        className="inline-flex items-center gap-2 px-6 py-3 bg-[var(--accent-cyan)] text-[var(--accent-inverted)] rounded-full font-medium hover:opacity-90 transition-opacity"
                     >
                         View Projects
                         <ArrowRight className="w-4 h-4" />

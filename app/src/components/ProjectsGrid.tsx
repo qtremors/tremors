@@ -9,7 +9,7 @@
 import { useState, useEffect } from "react";
 import { useAdmin } from "@/components/AdminContext";
 import { useToast } from "@/components/ToastProvider";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, X, Save, RotateCcw } from "lucide-react";
 import { ProjectCard, RepoWithStatus } from "@/components/ProjectCard";
 import type { GitHubRepo } from "@/types";
 
@@ -25,6 +25,9 @@ export function ProjectsGrid({ repos: initialRepos }: ProjectsGridProps) {
     const [draggedId, setDraggedId] = useState<number | null>(null);
     const [dragOverId, setDragOverId] = useState<number | null>(null);
     const [visibleOtherCount, setVisibleOtherCount] = useState(6);
+    const [editingRepo, setEditingRepo] = useState<RepoWithStatus | null>(null);
+    const [editName, setEditName] = useState("");
+    const [editDescription, setEditDescription] = useState("");
 
     // Fetch repos with hidden status from API when admin
     useEffect(() => {
@@ -163,6 +166,75 @@ export function ProjectsGrid({ repos: initialRepos }: ProjectsGridProps) {
         setDragOverId(null);
     };
 
+    // Edit handlers
+    const handleEdit = (e: React.MouseEvent, repo: RepoWithStatus) => {
+        e.stopPropagation();
+        setEditingRepo(repo);
+        setEditName(repo.name);
+        setEditDescription(repo.description || "");
+    };
+
+    const handleSaveEdit = async () => {
+        if (!editingRepo) return;
+
+        try {
+            const res = await fetch("/api/admin/repos", {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    id: editingRepo.id,
+                    customName: editName !== editingRepo.name ? editName : undefined,
+                    customDescription: editDescription !== editingRepo.description ? editDescription : undefined,
+                }),
+            });
+            const data = await res.json();
+            if (data.success) {
+                setRepos(repos.map(r =>
+                    r.id === editingRepo.id
+                        ? { ...r, name: editName, description: editDescription }
+                        : r
+                ));
+                toast.success("Project updated!");
+                setEditingRepo(null);
+            } else {
+                toast.error(data.error || "Failed to update");
+            }
+        } catch {
+            toast.error("Failed to update project");
+        }
+    };
+
+    const handleReset = async () => {
+        if (!editingRepo) return;
+
+        try {
+            const res = await fetch("/api/admin/repos", {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    id: editingRepo.id,
+                    customName: null,
+                    customDescription: null,
+                }),
+            });
+            const data = await res.json();
+            if (data.success && data.repo) {
+                // Update with the raw name from DB (will be formatted by formatProjectTitle)
+                setRepos(repos.map(r =>
+                    r.id === editingRepo.id
+                        ? { ...r, name: data.repo.name, description: data.repo.description }
+                        : r
+                ));
+                toast.success("Reset to GitHub data!");
+                setEditingRepo(null);
+            } else {
+                toast.error(data.error || "Failed to reset");
+            }
+        } catch {
+            toast.error("Failed to reset project");
+        }
+    };
+
     if (loading) {
         return (
             <div className="grid md:grid-cols-2 gap-6">
@@ -216,6 +288,7 @@ export function ProjectsGrid({ repos: initialRepos }: ProjectsGridProps) {
                             onDragEnd={handleDragEnd}
                             onToggleFeatured={toggleFeatured}
                             onToggleVisibility={toggleVisibility}
+                            onEdit={handleEdit}
                         />
                     ))}
 
@@ -238,6 +311,7 @@ export function ProjectsGrid({ repos: initialRepos }: ProjectsGridProps) {
                                     onDragEnd={handleDragEnd}
                                     onToggleFeatured={toggleFeatured}
                                     onToggleVisibility={toggleVisibility}
+                                    onEdit={handleEdit}
                                 />
                             ))}
                         </div>
@@ -274,6 +348,7 @@ export function ProjectsGrid({ repos: initialRepos }: ProjectsGridProps) {
                                 onDragEnd={handleDragEnd}
                                 onToggleFeatured={toggleFeatured}
                                 onToggleVisibility={toggleVisibility}
+                                onEdit={handleEdit}
                             />
                         ))}
                     </div>
@@ -302,6 +377,65 @@ export function ProjectsGrid({ repos: initialRepos }: ProjectsGridProps) {
                         </div>
                     )}
                 </>
+            )}
+
+            {/* Edit Modal */}
+            {editingRepo && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+                    <div className="relative w-full max-w-md bg-[var(--bg)] border border-[var(--border)] rounded-2xl shadow-2xl overflow-hidden">
+                        <div className="flex items-center justify-between p-5 border-b border-[var(--border)]">
+                            <h2 className="text-lg font-semibold">Edit Project</h2>
+                            <button
+                                onClick={() => setEditingRepo(null)}
+                                className="p-2 rounded-lg hover:bg-[var(--bg-secondary)] transition-colors"
+                            >
+                                <X className="w-5 h-5" />
+                            </button>
+                        </div>
+                        <div className="p-5 space-y-4">
+                            <div>
+                                <label className="block text-sm font-medium mb-2 text-[var(--text-muted)]">
+                                    Display Name
+                                </label>
+                                <input
+                                    type="text"
+                                    value={editName}
+                                    onChange={(e) => setEditName(e.target.value)}
+                                    className="w-full px-4 py-3 bg-[var(--bg-secondary)] border border-[var(--border)] rounded-xl focus:outline-none focus:border-[var(--accent-cyan)] transition-colors"
+                                    placeholder="Custom display name"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium mb-2 text-[var(--text-muted)]">
+                                    Description
+                                </label>
+                                <textarea
+                                    rows={3}
+                                    value={editDescription}
+                                    onChange={(e) => setEditDescription(e.target.value)}
+                                    className="w-full px-4 py-3 bg-[var(--bg-secondary)] border border-[var(--border)] rounded-xl focus:outline-none focus:border-[var(--accent-cyan)] transition-colors resize-none"
+                                    placeholder="Custom description"
+                                />
+                            </div>
+                            <div className="flex gap-2">
+                                <button
+                                    onClick={handleReset}
+                                    className="flex-1 py-3 px-4 border border-[var(--border)] text-[var(--text-muted)] rounded-xl font-medium flex items-center justify-center gap-2 hover:border-[var(--accent-cyan)] hover:text-[var(--text)] transition-colors"
+                                >
+                                    <RotateCcw className="w-4 h-4" />
+                                    Reset
+                                </button>
+                                <button
+                                    onClick={handleSaveEdit}
+                                    className="flex-1 py-3 px-4 bg-[var(--accent-cyan)] text-[var(--accent-inverted)] rounded-xl font-medium flex items-center justify-center gap-2 hover:opacity-90 transition-opacity"
+                                >
+                                    <Save className="w-4 h-4" />
+                                    Save
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             )}
         </div>
     );

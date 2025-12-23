@@ -5,9 +5,20 @@
 
 "use client";
 
-import { Star, EyeOff, Eye, StarOff, GripVertical, ExternalLink } from "lucide-react";
+import { Star, EyeOff, Eye, StarOff, GripVertical, ExternalLink, Pencil } from "lucide-react";
 import { LANGUAGE_COLORS } from "@/lib/github";
 import type { GitHubRepo } from "@/types";
+
+/**
+ * Format project title - converts kebab-case to Title Case
+ * "my-cool-project" -> "My Cool Project"
+ */
+function formatProjectTitle(name: string): string {
+    return name
+        .split(/[-_]/)
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+        .join(" ");
+}
 
 export interface RepoWithStatus extends GitHubRepo {
     hidden?: boolean;
@@ -19,14 +30,24 @@ interface AdminControlsProps {
     repo: RepoWithStatus;
     onToggleFeatured: (e: React.MouseEvent, id: number, featured: boolean) => void;
     onToggleVisibility: (e: React.MouseEvent, id: number, hidden: boolean) => void;
+    onEdit?: (e: React.MouseEvent, repo: RepoWithStatus) => void;
 }
 
-export function AdminControls({ repo, onToggleFeatured, onToggleVisibility }: AdminControlsProps) {
+export function AdminControls({ repo, onToggleFeatured, onToggleVisibility, onEdit }: AdminControlsProps) {
     return (
         <div className="absolute top-3 right-3 flex items-center gap-1 z-10">
             <div className="p-1.5 rounded-lg bg-[var(--bg)]/80 text-[var(--text-muted)]">
                 <GripVertical className="w-4 h-4" />
             </div>
+            {onEdit && (
+                <button
+                    onClick={(e) => onEdit(e, repo)}
+                    className="p-1.5 rounded-lg bg-[var(--bg)]/80 text-[var(--text-muted)] hover:text-[var(--accent-cyan)] transition-colors"
+                    title="Edit name & description"
+                >
+                    <Pencil className="w-4 h-4" />
+                </button>
+            )}
             <button
                 onClick={(e) => onToggleFeatured(e, repo.id, repo.featured || false)}
                 className={`p-1.5 rounded-lg transition-colors ${repo.featured
@@ -63,6 +84,7 @@ interface ProjectCardProps {
     onDragEnd?: () => void;
     onToggleFeatured: (e: React.MouseEvent, id: number, featured: boolean) => void;
     onToggleVisibility: (e: React.MouseEvent, id: number, hidden: boolean) => void;
+    onEdit?: (e: React.MouseEvent, repo: RepoWithStatus) => void;
 }
 
 export function ProjectCard({
@@ -79,20 +101,21 @@ export function ProjectCard({
     onDragEnd,
     onToggleFeatured,
     onToggleVisibility,
+    onEdit,
 }: ProjectCardProps) {
     const padding = size === "large" ? "p-6" : size === "medium" ? "p-5" : "p-5";
     const titleSize = size === "large" ? "text-xl" : size === "medium" ? "text-lg" : "text-lg";
     const languageSize = size === "large" ? "text-sm" : "text-xs";
 
     // U-004: Enhanced drag-drop visual feedback
-    const cardClasses = `group relative overflow-hidden rounded-2xl border transition-all hover:-translate-y-1 ${isDragged
+    const cardClasses = `group relative overflow-hidden rounded-2xl border transition-all hover:-translate-y-1 bg-[var(--card-bg)] ${isDragged
         ? "opacity-50 border-[var(--accent-cyan)] scale-[0.97] rotate-1 shadow-lg"
         : isDragOver
             ? "border-[var(--accent-cyan)] bg-[var(--accent-cyan)]/10 scale-[1.02] shadow-xl shadow-cyan-500/20 ring-2 ring-[var(--accent-cyan)]/30"
             : repo.hidden
                 ? "border-red-500/30 opacity-40 grayscale"
-                : "border-[var(--border)] hover:border-[var(--accent-cyan)]/50"
-        } ${editMode ? "cursor-grab active:cursor-grabbing" : ""} ${size === "small" ? "bg-[var(--bg-secondary)]" : ""}`;
+                : "border-[var(--card-border)] hover:border-[var(--accent-cyan)]/50"
+        } ${editMode ? "cursor-grab active:cursor-grabbing" : ""}`;
 
     return (
         <div
@@ -109,6 +132,7 @@ export function ProjectCard({
                     repo={repo}
                     onToggleFeatured={onToggleFeatured}
                     onToggleVisibility={onToggleVisibility}
+                    onEdit={onEdit}
                 />
             )}
             <div className={`relative ${padding} ${editMode && size === "small" ? "mt-8" : ""}`}>
@@ -146,7 +170,7 @@ export function ProjectCard({
                     onClick={(e) => editMode && e.preventDefault()}
                     className={`${titleSize} font-bold mb-2 block group-hover:!text-cyan-400 transition-colors ${size === "small" ? "truncate" : ""}`}
                 >
-                    {repo.name}
+                    {formatProjectTitle(repo.name)}
                 </a>
 
                 <p className={`text-[var(--text-muted)] line-clamp-2 mb-3 ${size === "small" ? "text-sm" : ""}`}>
