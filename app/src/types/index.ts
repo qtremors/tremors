@@ -36,6 +36,9 @@ export interface GitHubRepo {
     featured?: boolean;
     order?: number;
     hidden?: boolean;
+    // Image settings
+    imageSource?: "github" | "custom" | "none" | null;
+    customImageUrl?: string | null;
 }
 
 export interface GitHubEvent {

@@ -4,6 +4,74 @@ All notable changes to the Tremors Portfolio project are documented in this file
 
 ---
 
+## [1.5.3] - 2025-12-23
+
+### Added
+- **Project Card Images** - Projects now display preview images with 3 source options:
+  - GitHub OpenGraph (auto-fetched)
+  - Custom URL (from `/public` or external)
+  - None (disable image)
+- **Global Image Toggle** - Admin can toggle all project images on/off
+- **Scheduled Auto-Refresh** - Cron job refreshes GitHub data at 12AM IST
+- **Settings API** - New `/api/admin/settings` endpoint for showProjectImages persistence
+- **Cron API** - New `/api/cron/refresh` endpoint for scheduled updates
+- **New Tests** - `settings.test.ts` with 8 tests for Settings API
+
+### Fixed
+- **Activity Refresh Bug** - Removed Next.js ISR caching (`revalidate`) from GitHub API calls
+  - Data now only updates when admin clicks refresh or cron runs
+  - Changed all fetch calls to `cache: "no-store"`
+- **Global Toggle Persistence** - Settings now save/load from database, not local state
+
+### Changed
+- **Image Display** - Uses 2:1 aspect ratio with `object-contain` (no cropping)
+- **Admin Edit Modal** - Added image source dropdown and custom URL input
+
+### Technical
+- `vercel.json` - Cron schedule: `30 18 * * *` (12AM IST)
+- `route.ts` (cron) - Secured with CRON_SECRET env variable
+- `route.ts` (settings) - GET/PATCH for showProjectImages, availableForWork
+- `github.ts` - All fetch calls use `cache: "no-store"`
+
+---
+
+## [1.5.2] - 2025-12-23
+
+### Added
+- **Skip Link for Accessibility** - Keyboard/screen reader users can now skip to main content
+- **Contact Form Modal** - Footer "Send a Message" button opens contact form with mailto fallback
+- **Project Name Editor** - Admin can edit custom names/descriptions via pencil icon in edit mode
+- **Reset Button** - Project editor allows resetting to original GitHub data
+- **New Tests** - 14 new tests added (89 total):
+  - `github.test.ts` - Tests for LANGUAGE_COLORS constant
+  - `activity.test.ts` - Tests for event conversion utilities
+- **Shared Activity Utility** - Created `src/lib/activity.ts` for event-to-activity conversion
+- **useTerminalAdmin Hook** - Extracted admin auth logic from TerminalPage for better modularity
+- **ModeErrorBoundary for Nexus** - Added error boundary with purple theme to Nexus mode
+
+### Changed
+- **Footer Overhaul** - Removed "Mode" suffix, removed "Built with Next.js", added contact button
+- **Theme Improvements** - Added inverted accent CSS variables for buttons and cards
+  - `--btn-bg`, `--btn-text`, `--btn-hover` for theme-aware buttons
+  - `--card-bg`, `--card-border`, `--card-text` for subtle card contrast
+- **Project Card Titles** - Auto-formatted from kebab-case to Title Case
+- **View Projects Button** - Uses cyan accent with proper contrast
+- **Test File Organization** - Consolidated all 11 test files in `src/__tests__/`
+- **Nexus Image Alt Text** - Improved for better accessibility
+- **README Clone URL** - Fixed incorrect GitHub URL
+
+### Removed
+- **git_commits.txt** - Removed dev artifact from repository
+
+### Technical
+- `ContactModal.tsx` - New component for contact form
+- `activity.ts` - Shared `eventToActivityItem()` and `eventToDbActivity()` functions
+- `useTerminalAdmin.ts` - Hook for terminal admin authentication flow
+- `formatProjectTitle()` - Utility for converting repo names to readable titles
+- Removed ~60 lines of duplicate code from `data.ts` and `refresh/route.ts`
+
+---
+
 ## [1.5.1] - 2025-12-22
 
 ### Changed

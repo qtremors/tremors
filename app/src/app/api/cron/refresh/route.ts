@@ -1,32 +1,42 @@
 /**
- * Admin API: Refresh Repos, Commits, and Activity from GitHub
- * Fetches all repos, commits, and activity from GitHub and upserts to database
- * Protected: Requires valid admin session cookie + CSRF validation
+ * Cron API: Scheduled GitHub Refresh
+ * Triggers automatic refresh at 12AM, 8AM, 4PM (every 8 hours)
+ * 
+ * For Vercel: Add to vercel.json:
+ * {
+ *   "crons": [
+ *     { "path": "/api/cron/refresh", "schedule": "0 0,8,16 * * *" }
+ *   ]
+ * }
+ * 
+ * For external cron: Call this endpoint at scheduled times
+ * Security: Validates CRON_SECRET env var
  */
 
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { getRepos, getRecentCommits, getActivity } from "@/lib/github";
-import { verifyAdminCookie } from "@/lib/auth";
-import { validateCsrf } from "@/lib/csrf";
 import { eventToDbActivity } from "@/lib/activity";
 import type { GitHubEvent } from "@/types";
 
 const GITHUB_USERNAME = process.env.GITHUB_USERNAME || "qtremors";
 
-export async function POST(request: NextRequest) {
-    // Validate CSRF
-    const csrf = validateCsrf(request);
-    if (!csrf.valid) {
-        return NextResponse.json(
-            { success: false, error: csrf.error },
-            { status: 403 }
-        );
+// Verify cron secret for security
+function verifyCronSecret(request: NextRequest): boolean {
+    const authHeader = request.headers.get("authorization");
+    const cronSecret = process.env.CRON_SECRET;
+
+    // If no CRON_SECRET set, allow in development only
+    if (!cronSecret) {
+        return process.env.NODE_ENV === "development";
     }
 
-    // Verify admin session
-    const isAdmin = await verifyAdminCookie();
-    if (!isAdmin) {
+    return authHeader === `Bearer ${cronSecret}`;
+}
+
+export async function GET(request: NextRequest) {
+    // Verify authorization
+    if (!verifyCronSecret(request)) {
         return NextResponse.json(
             { success: false, error: "Unauthorized" },
             { status: 401 }
@@ -34,37 +44,34 @@ export async function POST(request: NextRequest) {
     }
 
     try {
-        // Fetch repos from GitHub
+        console.log("[CRON] Starting scheduled GitHub refresh...");
+
+        // Fetch all data from GitHub
         const repos = await getRepos(GITHUB_USERNAME);
 
-        // SAFEGUARD: Prevent data loss if GitHub API returns empty/incomplete results
-        // This protects against: rate limiting (403), service outages, network failures
+        // Safety check
         if (repos.length === 0) {
-            return NextResponse.json(
-                { success: false, error: "GitHub API returned no repos - refusing to sync to prevent data loss" },
-                { status: 422 }
-            );
+            console.log("[CRON] GitHub returned empty repos - skipping refresh");
+            return NextResponse.json({
+                success: false,
+                error: "GitHub API returned no repos",
+            });
         }
 
-        // Fetch commits in parallel with repo processing
         const commits = await getRecentCommits(repos, 50);
+        const events = await getActivity(GITHUB_USERNAME, 30);
 
-        // Use transaction to ensure data integrity (30s timeout for cloud DB)
+        // Use transaction for data integrity
         await prisma.$transaction(async (tx) => {
-            // Get list of current GitHub repo IDs
+            // Get current repo IDs
             const githubRepoIds = repos.map((repo) => repo.id);
 
-            // Delete repos that no longer exist on GitHub
-            // Safe because we verified repos.length > 0 above
+            // Delete repos no longer on GitHub
             await tx.repo.deleteMany({
-                where: {
-                    id: {
-                        notIn: githubRepoIds,
-                    },
-                },
+                where: { id: { notIn: githubRepoIds } },
             });
 
-            // Parallel upsert all repos
+            // Upsert all repos (preserving admin settings)
             await Promise.all(
                 repos.map((repo) =>
                     tx.repo.upsert({
@@ -102,10 +109,8 @@ export async function POST(request: NextRequest) {
                 )
             );
 
-            // Clear old commits and batch insert new ones
+            // Replace commits
             await tx.commit.deleteMany({});
-
-            // Use createMany for batch insert (much faster than individual creates)
             await tx.commit.createMany({
                 data: commits.map((commit) => ({
                     sha: commit.sha,
@@ -117,11 +122,8 @@ export async function POST(request: NextRequest) {
                 })),
             });
 
-            // Cache activity events using shared utility
-            const events = await getActivity(GITHUB_USERNAME, 30);
+            // Replace activity (excluding PushEvents - handled by commits)
             await tx.activity.deleteMany({});
-
-            // Convert events to activity items using shared utility
             const activityData = events
                 .filter((e: GitHubEvent) => e.type !== "PushEvent")
                 .map((event: GitHubEvent) => eventToDbActivity(event))
@@ -138,20 +140,21 @@ export async function POST(request: NextRequest) {
                 create: { id: "main", lastRefresh: new Date() },
             });
         }, {
-            maxWait: 10000,  // Max time to wait for a transaction slot (10s)
-            timeout: 30000, // Max time for the transaction to complete (30s)
+            maxWait: 10000,
+            timeout: 30000,
         });
+
+        console.log(`[CRON] Refresh complete: ${repos.length} repos, ${commits.length} commits`);
 
         return NextResponse.json({
             success: true,
-            count: repos.length,
-            commits: commits.length,
-            message: `Synced ${repos.length} repos and ${commits.length} commits from GitHub`,
+            message: `Scheduled refresh: ${repos.length} repos, ${commits.length} commits`,
+            timestamp: new Date().toISOString(),
         });
     } catch (error) {
-        console.error("Refresh error:", error);
+        console.error("[CRON] Refresh error:", error);
         return NextResponse.json(
-            { success: false, error: "Failed to refresh repos" },
+            { success: false, error: "Scheduled refresh failed" },
             { status: 500 }
         );
     }

@@ -1,6 +1,7 @@
 import { getUser, getActivity } from "@/lib/github";
 import { prisma } from "@/lib/db";
 import { parseTopics } from "@/lib/utils";
+import { eventToActivityItem } from "@/lib/activity";
 import type { PortfolioData, GitHubEvent, GitHubCommit, ActivityItem, GitHubRepo } from "@/types";
 
 // GitHub username - can be configured via env
@@ -25,6 +26,8 @@ function dbRepoToGitHubFormat(dbRepo: {
     featured: boolean;
     order: number;
     hidden: boolean;
+    imageSource?: string | null;
+    customImageUrl?: string | null;
 }): GitHubRepo {
     return {
         id: dbRepo.id,
@@ -44,64 +47,13 @@ function dbRepoToGitHubFormat(dbRepo: {
         featured: dbRepo.featured,
         order: dbRepo.order,
         hidden: dbRepo.hidden,
+        // Image settings
+        imageSource: dbRepo.imageSource as "github" | "custom" | "none" | null | undefined,
+        customImageUrl: dbRepo.customImageUrl,
     };
 }
 
-// Convert events to ActivityItems
-function eventToActivityItem(event: GitHubEvent): ActivityItem | null {
-    const repoName = event.repo.name.split("/")[1] || event.repo.name;
-    const repoUrl = `https://github.com/${event.repo.name}`;
 
-    switch (event.type) {
-        case "CreateEvent":
-            return {
-                id: event.id,
-                type: "create",
-                title: `Created ${event.payload.ref_type || "repository"}${event.payload.ref ? ` "${event.payload.ref}"` : ""}`,
-                repoName,
-                repoUrl,
-                date: event.created_at,
-            };
-        case "ReleaseEvent":
-            return {
-                id: event.id,
-                type: "release",
-                title: `Released ${event.payload.action || "version"}`,
-                repoName,
-                repoUrl,
-                date: event.created_at,
-            };
-        case "PullRequestEvent":
-            return {
-                id: event.id,
-                type: "pr",
-                title: `${event.payload.action || "Opened"} pull request`,
-                repoName,
-                repoUrl,
-                date: event.created_at,
-            };
-        case "WatchEvent":
-            return {
-                id: event.id,
-                type: "star",
-                title: "Starred repository",
-                repoName,
-                repoUrl,
-                date: event.created_at,
-            };
-        case "ForkEvent":
-            return {
-                id: event.id,
-                type: "fork",
-                title: "Forked repository",
-                repoName,
-                repoUrl,
-                date: event.created_at,
-            };
-        default:
-            return null;
-    }
-}
 
 // Convert DB activity to ActivityItem format
 function dbActivityToActivityItem(dbActivity: {

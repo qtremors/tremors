@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Hero from "./components/Hero";
+import { ModeErrorBoundary } from "@/components/ModeErrorBoundary";
 
 export const metadata: Metadata = {
     title: "Nexus | Tremors",
@@ -9,7 +10,9 @@ export const metadata: Metadata = {
 export default function NexusPage() {
     return (
         <main>
-            <Hero />
+            <ModeErrorBoundary mode="nexus">
+                <Hero />
+            </ModeErrorBoundary>
         </main>
     );
 }

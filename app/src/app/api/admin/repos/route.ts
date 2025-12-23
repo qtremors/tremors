@@ -72,7 +72,7 @@ export async function PATCH(request: NextRequest) {
 
     try {
         const body = await request.json();
-        const { id, hidden, featured, order, customName, customDescription } = body;
+        const { id, hidden, featured, order, customName, customDescription, imageSource, customImageUrl } = body;
 
         if (!id) {
             return NextResponse.json(
@@ -81,12 +81,37 @@ export async function PATCH(request: NextRequest) {
             );
         }
 
+        // Validate imageSource if provided
+        if (imageSource !== undefined && !["github", "custom", "none", null].includes(imageSource)) {
+            return NextResponse.json(
+                { success: false, error: "imageSource must be 'github', 'custom', or 'none'" },
+                { status: 400 }
+            );
+        }
+
+        // Validate customImageUrl format if provided
+        if (customImageUrl !== undefined && customImageUrl !== null && customImageUrl.trim() !== "") {
+            // Allow relative URLs starting with /
+            if (!customImageUrl.startsWith("/")) {
+                try {
+                    new URL(customImageUrl);
+                } catch {
+                    return NextResponse.json(
+                        { success: false, error: "customImageUrl must be a valid URL or start with /" },
+                        { status: 400 }
+                    );
+                }
+            }
+        }
+
         const updateData: Record<string, unknown> = {};
         if (hidden !== undefined) updateData.hidden = hidden;
         if (featured !== undefined) updateData.featured = featured;
         if (order !== undefined) updateData.order = order;
         if (customName !== undefined) updateData.customName = customName;
         if (customDescription !== undefined) updateData.customDescription = customDescription;
+        if (imageSource !== undefined) updateData.imageSource = imageSource;
+        if (customImageUrl !== undefined) updateData.customImageUrl = customImageUrl;
 
         const repo = await prisma.repo.update({
             where: { id: Number(id) },

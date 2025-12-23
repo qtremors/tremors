@@ -45,6 +45,7 @@ This repository contains two sites:
 - Fetches repositories, user profile, and activity from GitHub API
 - Caches data in SQLite/PostgreSQL for fast loading
 - Filters out forks and repos with `x` topic
+- **Scheduled auto-refresh** at 12AM IST via cron
 
 ### 📰 AI Newspaper Mode
 - Gemini AI generates hilarious tabloid-style headlines and articles
@@ -60,6 +61,8 @@ This repository contains two sites:
 - Drag-and-drop reordering of projects
 - Refresh button to sync from GitHub
 - Regenerate AI newspaper content
+- **Project card images** - GitHub preview, custom URL, or none
+- **Global image toggle** - Show/hide all project images
 
 ### 🎨 Theming
 - Dark and light mode support
@@ -124,7 +127,7 @@ An interactive space-themed landing page featuring:
 
 1. **Clone the repository**
    ```bash
-   git clone https://qtremors.github.io/tremors.git
+   git clone https://github.com/qtremors/tremors.git
    cd tremors/app
    ```
 

@@ -10,7 +10,7 @@ import { Component, ReactNode, ErrorInfo } from "react";
 interface ErrorBoundaryProps {
     children: ReactNode;
     fallback?: ReactNode;
-    mode: "default" | "terminal" | "paper" | "newspaper";
+    mode: "default" | "terminal" | "paper" | "newspaper" | "nexus";
 }
 
 interface ErrorBoundaryState {
@@ -24,6 +24,7 @@ const MODE_STYLES: Record<string, { bg: string; text: string; accent: string }> 
     terminal: { bg: "bg-[#191724]", text: "text-[#e0def4]", accent: "text-[#9ccfd8]" },
     paper: { bg: "bg-[#faf7f2]", text: "text-[#1a1a1a]", accent: "text-[#8b5a2b]" },
     newspaper: { bg: "bg-[#fef9f3]", text: "text-[#1a1a1a]", accent: "text-[#8b4513]" },
+    nexus: { bg: "bg-black", text: "text-white", accent: "text-purple-400" },
 };
 
 export class ModeErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
