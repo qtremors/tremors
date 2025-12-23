@@ -48,7 +48,7 @@ function dbRepoToGitHubFormat(dbRepo: {
         order: dbRepo.order,
         hidden: dbRepo.hidden,
         // Image settings
-        imageSource: dbRepo.imageSource,
+        imageSource: dbRepo.imageSource as "github" | "custom" | "none" | null | undefined,
         customImageUrl: dbRepo.customImageUrl,
     };
 }

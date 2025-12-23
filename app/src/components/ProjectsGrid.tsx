@@ -216,7 +216,7 @@ export function ProjectsGrid({ repos: initialRepos }: ProjectsGridProps) {
                             ...r,
                             name: editName,
                             description: editDescription,
-                            imageSource: editImageSource,
+                            imageSource: editImageSource as "github" | "custom" | "none",
                             customImageUrl: editImageSource === "custom" ? editImageUrl : null,
                         }
                         : r

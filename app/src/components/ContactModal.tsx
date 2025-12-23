@@ -52,8 +52,8 @@ export function ContactModal({ isOpen, onClose }: ContactModalProps) {
             `Name: ${formData.name}\nEmail: ${formData.email}\n\nMessage:\n${formData.message}`
         );
 
-        // Open email client
-        window.location.href = `mailto:contact@example.com?subject=${subject}&body=${body}`;
+        // Open email client - use email from site config
+        window.location.href = `mailto:singhamankumar207@gmail.com?subject=${subject}&body=${body}`;
 
         setStatus("sent");
         setTimeout(() => {
