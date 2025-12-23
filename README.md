@@ -45,7 +45,7 @@ This repository contains two sites:
 - Fetches repositories, user profile, and activity from GitHub API
 - Caches data in SQLite/PostgreSQL for fast loading
 - Filters out forks and repos with `x` topic
-- **Scheduled auto-refresh** at 12AM, 8AM, 4PM IST via cron
+- **Scheduled auto-refresh** at 12AM IST via cron
 
 ### 📰 AI Newspaper Mode
 - Gemini AI generates hilarious tabloid-style headlines and articles

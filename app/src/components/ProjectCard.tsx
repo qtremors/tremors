@@ -26,11 +26,12 @@ function formatProjectTitle(name: string): string {
 function getProjectImageUrl(repo: GitHubRepo): string | null {
     const source = repo.imageSource ?? "github";
     switch (source) {
-        case "github":
+        case "github": {
             // OpenGraph format: https://opengraph.githubassets.com/1/<owner>/<repo>
             const owner = repo.full_name.split("/")[0];
             const repoName = repo.full_name.split("/")[1];
             return `https://opengraph.githubassets.com/1/${owner}/${repoName}`;
+        }
         case "custom":
             return repo.customImageUrl || null;
         case "none":
@@ -149,16 +150,19 @@ export function ProjectCard({
             className={cardClasses}
         >
             {/* Project Image */}
-            {showImages && getProjectImageUrl(repo) && (
-                <div className="relative w-full aspect-[2/1] bg-[var(--bg-secondary)]">
-                    <img
-                        src={getProjectImageUrl(repo)!}
-                        alt={`${repo.name} preview`}
-                        className="w-full h-full object-contain"
-                        loading="lazy"
-                    />
-                </div>
-            )}
+            {(() => {
+                const imageUrl = showImages ? getProjectImageUrl(repo) : null;
+                return imageUrl && (
+                    <div className="relative w-full aspect-[2/1] bg-[var(--bg-secondary)]">
+                        <img
+                            src={imageUrl}
+                            alt={`${repo.name} preview`}
+                            className="w-full h-full object-contain"
+                            loading="lazy"
+                        />
+                    </div>
+                );
+            })()}
             <div className={`relative ${padding}`}>
                 {/* Admin Controls - positioned relative to content area */}
                 {editMode && (

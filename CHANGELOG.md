@@ -4,7 +4,7 @@ All notable changes to the Tremors Portfolio project are documented in this file
 
 ---
 
-## [1.5.3] - 2024-12-23
+## [1.5.3] - 2025-12-23
 
 ### Added
 - **Project Card Images** - Projects now display preview images with 3 source options:
@@ -12,7 +12,7 @@ All notable changes to the Tremors Portfolio project are documented in this file
   - Custom URL (from `/public` or external)
   - None (disable image)
 - **Global Image Toggle** - Admin can toggle all project images on/off
-- **Scheduled Auto-Refresh** - Cron job refreshes GitHub data at 12AM, 8AM, 4PM IST
+- **Scheduled Auto-Refresh** - Cron job refreshes GitHub data at 12AM IST
 - **Settings API** - New `/api/admin/settings` endpoint for showProjectImages persistence
 - **Cron API** - New `/api/cron/refresh` endpoint for scheduled updates
 - **New Tests** - `settings.test.ts` with 8 tests for Settings API
@@ -28,14 +28,14 @@ All notable changes to the Tremors Portfolio project are documented in this file
 - **Admin Edit Modal** - Added image source dropdown and custom URL input
 
 ### Technical
-- `vercel.json` - Cron schedule: `30 18,2,10 * * *` (IST times)
+- `vercel.json` - Cron schedule: `30 18 * * *` (12AM IST)
 - `route.ts` (cron) - Secured with CRON_SECRET env variable
 - `route.ts` (settings) - GET/PATCH for showProjectImages, availableForWork
 - `github.ts` - All fetch calls use `cache: "no-store"`
 
 ---
 
-## [1.5.2] - 2024-12-23
+## [1.5.2] - 2025-12-23
 
 ### Added
 - **Skip Link for Accessibility** - Keyboard/screen reader users can now skip to main content

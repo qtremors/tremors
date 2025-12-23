@@ -43,7 +43,7 @@ All identified issues from the comprehensive code review have been addressed:
 
 ---
 
-## � Future Improvements
+## 🔮 Future Improvements
 
 Low priority items that can be addressed later:
 
@@ -55,9 +55,9 @@ Low priority items that can be addressed later:
 
 ## 📁 Project Structure
 
-```
+```text
 app/src/
-├── __tests__/       # 11 test files (89 tests)
+├── __tests__/       # 12 test files (97 tests)
 ├── app/             # Next.js pages
 ├── components/      # Reusable components
 ├── config/          # Site configuration

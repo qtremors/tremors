@@ -254,9 +254,9 @@ model NewspaperEdition {
 | `/api/admin/repos` | GET | Admin | List all repos with status |
 | `/api/admin/repos` | PATCH | Admin | Update repo settings |
 | `/api/admin/refresh` | POST | Admin | Sync repos and commits from GitHub |
-| `/api/admin/settings` | GET | No | Get site settings (showProjectImages, etc) |
+| `/api/admin/settings` | GET | No | Get site settings (showProjectImages, etc.) |
 | `/api/admin/settings` | PATCH | Admin | Update site settings |
-| `/api/cron/refresh` | GET | CRON_SECRET | Scheduled refresh (12AM/8AM/4PM IST) |
+| `/api/cron/refresh` | GET | CRON_SECRET | Scheduled refresh (12AM IST) |
 | `/api/admin/availability` | GET | No | Get current availability status |
 | `/api/admin/availability` | POST | Admin | Toggle availability status |
 | `/api/stats/commits` | GET | No | Fetch total commits from all repos (GitHub API) |

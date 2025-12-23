@@ -37,7 +37,7 @@ export interface GitHubRepo {
     order?: number;
     hidden?: boolean;
     // Image settings
-    imageSource?: string | null;  // "github" | "custom" | "none"
+    imageSource?: "github" | "custom" | "none" | null;
     customImageUrl?: string | null;
 }
 
