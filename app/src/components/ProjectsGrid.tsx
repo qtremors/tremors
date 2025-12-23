@@ -9,7 +9,7 @@
 import { useState, useEffect } from "react";
 import { useAdmin } from "@/components/AdminContext";
 import { useToast } from "@/components/ToastProvider";
-import { ChevronDown, X, Save, RotateCcw } from "lucide-react";
+import { ChevronDown, X, Save, RotateCcw, ImageIcon, ImageOff } from "lucide-react";
 import { ProjectCard, RepoWithStatus } from "@/components/ProjectCard";
 import type { GitHubRepo } from "@/types";
 
@@ -28,6 +28,9 @@ export function ProjectsGrid({ repos: initialRepos }: ProjectsGridProps) {
     const [editingRepo, setEditingRepo] = useState<RepoWithStatus | null>(null);
     const [editName, setEditName] = useState("");
     const [editDescription, setEditDescription] = useState("");
+    const [editImageSource, setEditImageSource] = useState<string>("github");
+    const [editImageUrl, setEditImageUrl] = useState("");
+    const [showImages, setShowImages] = useState<boolean | null>(null);  // null = loading, prevents flash
 
     // Fetch repos with hidden status from API when admin
     useEffect(() => {
@@ -80,6 +83,20 @@ export function ProjectsGrid({ repos: initialRepos }: ProjectsGridProps) {
                 .finally(() => setLoading(false));
         }
     }, [isAdmin]);
+
+    // Fetch settings (showProjectImages) on mount
+    useEffect(() => {
+        fetch("/api/admin/settings")
+            .then((res) => res.json())
+            .then((data) => {
+                if (data.success && data.settings) {
+                    setShowImages(data.settings.showProjectImages ?? true);
+                }
+            })
+            .catch(() => {
+                // Silently fail - use default true
+            });
+    }, []);
 
     // Toggle visibility
     const toggleVisibility = async (e: React.MouseEvent, id: number, hidden: boolean) => {
@@ -172,6 +189,8 @@ export function ProjectsGrid({ repos: initialRepos }: ProjectsGridProps) {
         setEditingRepo(repo);
         setEditName(repo.name);
         setEditDescription(repo.description || "");
+        setEditImageSource(repo.imageSource ?? "github");
+        setEditImageUrl(repo.customImageUrl || "");
     };
 
     const handleSaveEdit = async () => {
@@ -185,13 +204,21 @@ export function ProjectsGrid({ repos: initialRepos }: ProjectsGridProps) {
                     id: editingRepo.id,
                     customName: editName !== editingRepo.name ? editName : undefined,
                     customDescription: editDescription !== editingRepo.description ? editDescription : undefined,
+                    imageSource: editImageSource,
+                    customImageUrl: editImageSource === "custom" ? editImageUrl : null,
                 }),
             });
             const data = await res.json();
             if (data.success) {
                 setRepos(repos.map(r =>
                     r.id === editingRepo.id
-                        ? { ...r, name: editName, description: editDescription }
+                        ? {
+                            ...r,
+                            name: editName,
+                            description: editDescription,
+                            imageSource: editImageSource,
+                            customImageUrl: editImageSource === "custom" ? editImageUrl : null,
+                        }
                         : r
                 ));
                 toast.success("Project updated!");
@@ -268,6 +295,36 @@ export function ProjectsGrid({ repos: initialRepos }: ProjectsGridProps) {
 
     return (
         <div className="space-y-8">
+            {/* Admin: Global Image Toggle */}
+            {editMode && (
+                <div className="flex justify-end">
+                    <button
+                        onClick={async () => {
+                            const newValue = !showImages;
+                            setShowImages(newValue);
+                            try {
+                                await fetch("/api/admin/settings", {
+                                    method: "PATCH",
+                                    headers: { "Content-Type": "application/json" },
+                                    body: JSON.stringify({ showProjectImages: newValue }),
+                                });
+                            } catch {
+                                // Revert on error
+                                setShowImages(!newValue);
+                                toast.error("Failed to save setting");
+                            }
+                        }}
+                        className={`flex items-center gap-2 px-4 py-2 rounded-xl border transition-colors ${showImages
+                            ? "border-[var(--accent-cyan)] text-[var(--accent-cyan)]"
+                            : "border-[var(--border)] text-[var(--text-muted)]"
+                            }`}
+                    >
+                        {showImages ? <ImageIcon className="w-4 h-4" /> : <ImageOff className="w-4 h-4" />}
+                        {showImages ? "Images On" : "Images Off"}
+                    </button>
+                </div>
+            )}
+
             {/* Featured Projects Section - 2+3 Bento Layout */}
             {spotlightRepos.length > 0 && (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -289,6 +346,7 @@ export function ProjectsGrid({ repos: initialRepos }: ProjectsGridProps) {
                             onToggleFeatured={toggleFeatured}
                             onToggleVisibility={toggleVisibility}
                             onEdit={handleEdit}
+                            showImages={showImages ?? false}
                         />
                     ))}
 
@@ -312,6 +370,7 @@ export function ProjectsGrid({ repos: initialRepos }: ProjectsGridProps) {
                                     onToggleFeatured={toggleFeatured}
                                     onToggleVisibility={toggleVisibility}
                                     onEdit={handleEdit}
+                                    showImages={showImages ?? false}
                                 />
                             ))}
                         </div>
@@ -349,6 +408,7 @@ export function ProjectsGrid({ repos: initialRepos }: ProjectsGridProps) {
                                 onToggleFeatured={toggleFeatured}
                                 onToggleVisibility={toggleVisibility}
                                 onEdit={handleEdit}
+                                showImages={showImages ?? false}
                             />
                         ))}
                     </div>
@@ -417,6 +477,37 @@ export function ProjectsGrid({ repos: initialRepos }: ProjectsGridProps) {
                                     placeholder="Custom description"
                                 />
                             </div>
+                            <div>
+                                <label className="block text-sm font-medium mb-2 text-[var(--text-muted)]">
+                                    <span className="flex items-center gap-2">
+                                        <ImageIcon className="w-4 h-4" />
+                                        Image Source
+                                    </span>
+                                </label>
+                                <select
+                                    value={editImageSource}
+                                    onChange={(e) => setEditImageSource(e.target.value)}
+                                    className="w-full px-4 py-3 bg-[var(--bg-secondary)] border border-[var(--border)] rounded-xl focus:outline-none focus:border-[var(--accent-cyan)] transition-colors"
+                                >
+                                    <option value="github">GitHub Preview</option>
+                                    <option value="custom">Custom URL</option>
+                                    <option value="none">No Image</option>
+                                </select>
+                            </div>
+                            {editImageSource === "custom" && (
+                                <div>
+                                    <label className="block text-sm font-medium mb-2 text-[var(--text-muted)]">
+                                        Custom Image URL
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={editImageUrl}
+                                        onChange={(e) => setEditImageUrl(e.target.value)}
+                                        className="w-full px-4 py-3 bg-[var(--bg-secondary)] border border-[var(--border)] rounded-xl focus:outline-none focus:border-[var(--accent-cyan)] transition-colors"
+                                        placeholder="/my-image.png or https://..."
+                                    />
+                                </div>
+                            )}
                             <div className="flex gap-2">
                                 <button
                                     onClick={handleReset}

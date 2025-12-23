@@ -26,6 +26,8 @@ function dbRepoToGitHubFormat(dbRepo: {
     featured: boolean;
     order: number;
     hidden: boolean;
+    imageSource?: string | null;
+    customImageUrl?: string | null;
 }): GitHubRepo {
     return {
         id: dbRepo.id,
@@ -45,6 +47,9 @@ function dbRepoToGitHubFormat(dbRepo: {
         featured: dbRepo.featured,
         order: dbRepo.order,
         hidden: dbRepo.hidden,
+        // Image settings
+        imageSource: dbRepo.imageSource,
+        customImageUrl: dbRepo.customImageUrl,
     };
 }
 

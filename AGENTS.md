@@ -117,7 +117,7 @@ tremors/                         # Repository root
     │   │   └── utils.ts         # Shared utilities
     │   ├── types/
     │   │   └── index.ts         # All shared TypeScript types
-    │   └── __tests__/           # Test files (11 files, 89 tests)
+    │   └── __tests__/           # Test files (12 files, 97 tests)
     │       ├── activity.test.ts
     │       ├── api-auth.test.ts
     │       ├── auth.test.ts
@@ -177,14 +177,19 @@ model Repo {
   customName        String?
   customDescription String?
 
+  // Image settings
+  imageSource       String?  @default("github")  // "github" | "custom" | "none"
+  customImageUrl    String?  // URL when imageSource = "custom"
+
   updatedAt   DateTime @updatedAt
 }
 
 model Settings {
-  id               String   @id @default("main")
-  lastRefresh      DateTime @default(now())
-  availableForWork Boolean  @default(true)
-  updatedAt        DateTime @updatedAt
+  id                 String   @id @default("main")
+  lastRefresh        DateTime @default(now())
+  availableForWork   Boolean  @default(true)
+  showProjectImages  Boolean  @default(true)
+  updatedAt          DateTime @updatedAt
 }
 
 // Cached commit data from GitHub
@@ -235,6 +240,7 @@ model NewspaperEdition {
 | `DATABASE_URL` | Required | Prisma database connection string (pooled for Neon) |
 | `DATABASE_URL_UNPOOLED` | Required* | Direct connection for migrations (*auto-set by Vercel+Neon) |
 | `GEMINI_API_KEY` | Optional | Google Gemini API key for AI newspaper content |
+| `CRON_SECRET` | Optional | Secret for authenticating scheduled cron jobs |
 
 > **Note**: Password is no longer stored in env variables. It's created on first use and stored hashed in the database.
 
@@ -248,6 +254,9 @@ model NewspaperEdition {
 | `/api/admin/repos` | GET | Admin | List all repos with status |
 | `/api/admin/repos` | PATCH | Admin | Update repo settings |
 | `/api/admin/refresh` | POST | Admin | Sync repos and commits from GitHub |
+| `/api/admin/settings` | GET | No | Get site settings (showProjectImages, etc) |
+| `/api/admin/settings` | PATCH | Admin | Update site settings |
+| `/api/cron/refresh` | GET | CRON_SECRET | Scheduled refresh (12AM/8AM/4PM IST) |
 | `/api/admin/availability` | GET | No | Get current availability status |
 | `/api/admin/availability` | POST | Admin | Toggle availability status |
 | `/api/stats/commits` | GET | No | Fetch total commits from all repos (GitHub API) |

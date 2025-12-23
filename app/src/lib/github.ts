@@ -25,7 +25,7 @@ function getHeaders(): HeadersInit {
 export async function getUser(username: string): Promise<GitHubUser> {
   const res = await fetch(`${GITHUB_API}/users/${username}`, {
     headers: getHeaders(),
-    next: { revalidate: 3600 }, // Cache for 1 hour
+    cache: "no-store", // No ISR - data only updates when admin refreshes
   });
 
   if (!res.ok) {
@@ -41,7 +41,7 @@ export async function getRepos(username: string): Promise<GitHubRepo[]> {
     `${GITHUB_API}/users/${username}/repos?sort=pushed&per_page=100`,
     {
       headers: getHeaders(),
-      next: { revalidate: 1800 }, // Cache for 30 minutes
+      cache: "no-store", // No ISR - data only updates when admin refreshes
     }
   );
 
@@ -65,7 +65,7 @@ export async function getActivity(username: string, limit = 10): Promise<GitHubE
     `${GITHUB_API}/users/${username}/events/public?per_page=30`,
     {
       headers: getHeaders(),
-      next: { revalidate: 300 }, // Cache for 5 minutes
+      cache: "no-store", // No ISR - data only updates when admin refreshes
     }
   );
 
@@ -99,7 +99,7 @@ export async function getRecentCommits(repos: GitHubRepo[], limit = 10): Promise
         `${GITHUB_API}/repos/${repo.full_name}/commits?per_page=10`,
         {
           headers: getHeaders(),
-          next: { revalidate: 300 }, // Cache for 5 minutes
+          cache: "no-store", // No ISR - data only updates when admin refreshes
         }
       );
 

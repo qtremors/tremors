@@ -72,7 +72,7 @@ export async function PATCH(request: NextRequest) {
 
     try {
         const body = await request.json();
-        const { id, hidden, featured, order, customName, customDescription } = body;
+        const { id, hidden, featured, order, customName, customDescription, imageSource, customImageUrl } = body;
 
         if (!id) {
             return NextResponse.json(
@@ -87,6 +87,8 @@ export async function PATCH(request: NextRequest) {
         if (order !== undefined) updateData.order = order;
         if (customName !== undefined) updateData.customName = customName;
         if (customDescription !== undefined) updateData.customDescription = customDescription;
+        if (imageSource !== undefined) updateData.imageSource = imageSource;
+        if (customImageUrl !== undefined) updateData.customImageUrl = customImageUrl;
 
         const repo = await prisma.repo.update({
             where: { id: Number(id) },

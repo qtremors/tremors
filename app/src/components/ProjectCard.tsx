@@ -20,6 +20,25 @@ function formatProjectTitle(name: string): string {
         .join(" ");
 }
 
+/**
+ * Get project image URL based on imageSource setting
+ */
+function getProjectImageUrl(repo: GitHubRepo): string | null {
+    const source = repo.imageSource ?? "github";
+    switch (source) {
+        case "github":
+            // OpenGraph format: https://opengraph.githubassets.com/1/<owner>/<repo>
+            const owner = repo.full_name.split("/")[0];
+            const repoName = repo.full_name.split("/")[1];
+            return `https://opengraph.githubassets.com/1/${owner}/${repoName}`;
+        case "custom":
+            return repo.customImageUrl || null;
+        case "none":
+        default:
+            return null;
+    }
+}
+
 export interface RepoWithStatus extends GitHubRepo {
     hidden?: boolean;
     featured?: boolean;
@@ -85,6 +104,7 @@ interface ProjectCardProps {
     onToggleFeatured: (e: React.MouseEvent, id: number, featured: boolean) => void;
     onToggleVisibility: (e: React.MouseEvent, id: number, hidden: boolean) => void;
     onEdit?: (e: React.MouseEvent, repo: RepoWithStatus) => void;
+    showImages?: boolean;  // Global toggle for images
 }
 
 export function ProjectCard({
@@ -102,6 +122,7 @@ export function ProjectCard({
     onToggleFeatured,
     onToggleVisibility,
     onEdit,
+    showImages = true,
 }: ProjectCardProps) {
     const padding = size === "large" ? "p-6" : size === "medium" ? "p-5" : "p-5";
     const titleSize = size === "large" ? "text-xl" : size === "medium" ? "text-lg" : "text-lg";
@@ -127,15 +148,27 @@ export function ProjectCard({
             onDragEnd={editMode ? onDragEnd : undefined}
             className={cardClasses}
         >
-            {editMode && (
-                <AdminControls
-                    repo={repo}
-                    onToggleFeatured={onToggleFeatured}
-                    onToggleVisibility={onToggleVisibility}
-                    onEdit={onEdit}
-                />
+            {/* Project Image */}
+            {showImages && getProjectImageUrl(repo) && (
+                <div className="relative w-full aspect-[2/1] bg-[var(--bg-secondary)]">
+                    <img
+                        src={getProjectImageUrl(repo)!}
+                        alt={`${repo.name} preview`}
+                        className="w-full h-full object-contain"
+                        loading="lazy"
+                    />
+                </div>
             )}
-            <div className={`relative ${padding} ${editMode && size === "small" ? "mt-8" : ""}`}>
+            <div className={`relative ${padding}`}>
+                {/* Admin Controls - positioned relative to content area */}
+                {editMode && (
+                    <AdminControls
+                        repo={repo}
+                        onToggleFeatured={onToggleFeatured}
+                        onToggleVisibility={onToggleVisibility}
+                        onEdit={onEdit}
+                    />
+                )}
                 {/* Top row: Language + Live link */}
                 <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center gap-2">

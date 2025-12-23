@@ -32,15 +32,20 @@ model Repo {
   customName        String?
   customDescription String?
 
+  // Image settings
+  imageSource       String?  @default("github")  // "github" | "custom" | "none"
+  customImageUrl    String?  // URL when imageSource = "custom"
+
   updatedAt   DateTime @updatedAt
 }
 
 // Site settings
 model Settings {
-  id               String   @id @default("main")
-  lastRefresh      DateTime @default(now())
-  availableForWork Boolean  @default(true)
-  updatedAt        DateTime @updatedAt
+  id                 String   @id @default("main")
+  lastRefresh        DateTime @default(now())
+  availableForWork   Boolean  @default(true)
+  showProjectImages  Boolean  @default(true)
+  updatedAt          DateTime @updatedAt
 }
 
 // Admin account - single row for site admin
