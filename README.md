@@ -74,8 +74,8 @@ This repository contains two sites:
 | Shortcut | Action |
 |----------|--------|
 | `Ctrl + `` | Toggle Terminal mode |
-| `Ctrl + Alt + P` | Switch to Paper mode |
-| `Ctrl + Alt + N` | Switch to Newspaper mode |
+| `Ctrl + Alt + P` | Switch to Resume mode |
+| `Ctrl + Alt + N` | Switch to News mode |
 | `Ctrl + Alt + X` | Switch to Nexus mode |
 
 ### 🚀 Nexus Mode
@@ -103,11 +103,11 @@ An interactive space-themed landing page featuring:
   </tr>
   <tr>
     <td width="50%">
-      <strong>Paper Mode</strong><br/>
+      <strong>Resume Mode</strong><br/>
       Document layout with sidebar table of contents
     </td>
     <td width="50%">
-      <strong>Newspaper Mode</strong><br/>
+      <strong>News Mode</strong><br/>
       Editorial style with ticker and multi-column layout
     </td>
   </tr>
@@ -239,9 +239,9 @@ tremors/
     ├── src/
     │   ├── app/            # Next.js App Router
     │   │   ├── api/        # API routes
-    │   │   ├── newspaper/  # Newspaper mode
+    │   │   ├── news/       # News mode (AI newspaper)
     │   │   ├── nexus/      # Nexus space mode
-    │   │   ├── paper/      # Paper mode
+    │   │   ├── resume/     # Resume mode (paper layout)
     │   │   ├── terminal/   # Terminal mode
     │   │   └── ...
     │   ├── components/     # Shared React components
@@ -488,7 +488,7 @@ npm run test:coverage
 
 | File | Description |
 |------|-------------|
-| [CHANGELOG.md](CHANGELOG.md) | Complete version history (v0.0.0 - v1.8.0) |
+| [CHANGELOG.md](CHANGELOG.md) | Complete version history (v0.0.0 - v1.8.5) |
 | [AGENTS.md](AGENTS.md) | Technical documentation for AI assistants |
 | [TASKS.md](TASKS.md) | Bug tracking and improvement backlog |
 | [app/.env.example](app/.env.example) | Environment variable template |

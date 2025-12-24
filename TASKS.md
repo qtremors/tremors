@@ -1,46 +1,14 @@
 # TASKS.md - Tremors Portfolio
 
-> **Last Updated**: December 24, 2025  
-> **Version**: 1.8.0 | **Status**: ✅ Complete
+> **Version**: 1.8.5 | **Status**: ✅ Stable
 
 ---
 
-## 📊 Project Health Summary
+## � Open Issues
 
-| Area | Status | Notes |
-|------|--------|-------|
-| Security | ✅ Excellent | HMAC sessions, PBKDF2, CSRF, CSP, XSS prevention, rate limiting |
-| Architecture | ✅ Solid | Modular components, custom hooks, clear separation |
-| Testing | ✅ Good | 12 test files, 97 tests |
-| Documentation | ✅ Comprehensive | AGENTS.md, README.md, CHANGELOG.md |
-| Performance | ✅ Good | DB caching, optimized images, proper timeouts |
-| UI/UX | ✅ Polished | Multi-mode, responsive, accessible |
-
----
-
-## ✅ Mobile Compatibility (Complete)
-
-All pages are now responsive:
-
-| Page | Breakpoints |
-|------|-------------|
-| Home | md (768px) - grid, text sizing |
-| Resume | lg (1024px) - sidebar hidden, mobile back button |
-| News | md (768px) columns, sm (600px) controls/table/stats |
-| Terminal | Full-height responsive, flex layout |
-| Nexus | Already mobile-first |
-
----
-
-## ✅ Resolved Issues (v1.7.5)
-
-| ID | File | Description |
-|----|------|-------------|
-| **B-010** | `api/admin/settings/route.ts` | ✅ Validate `projectViewMode` to only accept "grid" or "list" |
-| **B-011** | `api/news/rss/route.ts` | ✅ Fixed doc comment to reference `/api/news/rss` |
-| **B-012** | `api/news/rss/route.ts` | ✅ Fixed `rssUrl` to use `/api/news/rss` |
-| **B-013** | `components/ProjectEditModal.tsx` | ✅ Reset handler now resets image settings too |
-| **B-014** | `.env.example` | ✅ Added `NEXT_PUBLIC_SITE_URL` entry |
+| ID | File | Description | Priority |
+|----|------|-------------|----------|
+| **R-001** | `cron/refresh`, `newspaper/generate` | ~150 lines duplicated - extract to shared `lib/newspaper.ts` | Medium |
 
 ---
 
@@ -48,21 +16,6 @@ All pages are now responsive:
 
 | ID | Description | Status |
 |----|-------------|--------|
-| **P-001** | PostgreSQL-based rate limiting | Not critical |
 | **F-001** | Section reordering via drag-drop | Config ready |
 | **F-002** | Resume PDF upload via admin | Uses external URL |
-
----
-
-## 📁 Project Structure
-
-```text
-app/src/
-├── __tests__/       # 12 test files (97 tests)
-├── app/             # Next.js pages (nexus, news, resume, terminal)
-├── components/      # 16 reusable components
-├── config/          # Site configuration
-├── hooks/           # 3 custom hooks
-├── lib/             # 8 utility files
-└── types/           # TypeScript types
-```
+| **F-003** | Extract newspaper generation to shared lib | Reduces duplication (R-001) |

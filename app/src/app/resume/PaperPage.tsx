@@ -12,7 +12,7 @@ import type { ModeProps } from "@/types";
 import { PERSONAL, SKILLS } from "@/config/site";
 import { ArrowLeft, Check } from "lucide-react";
 import { ContactLinks } from "@/components/ContactLinks";
-import "./paper.css";
+import "./resume.css";
 
 // Table of contents sections
 const sections = [

@@ -4,6 +4,26 @@ All notable changes to the Tremors Portfolio project are documented in this file
 
 ---
 
+## [1.8.5] - 2025-12-24
+
+### Added
+- **Rich Newspaper Context** - AI now has 15+ context fields for better headlines:
+  - **Calendar**: Today's date, day of week, weekend detection, holiday awareness
+  - **Repo stats**: Total count, stars, top languages, featured, most active, dormant repos
+  - **Activity patterns**: Days since commit, commit time of day, streak count
+  - Full commit messages included for content inspiration
+
+### Fixed
+- **Header Mode Names** - Updated `HeaderProps` type from `paper`/`newspaper` to `resume`/`news`
+- **Mobile Header** - Fixed logo color logic to check `currentMode === "news"` instead of `"newspaper"`
+- **CSS Naming** - Renamed `paper.css` to `resume.css` for consistency
+
+### Changed
+- **Documentation** - Updated README and AGENTS.md with correct folder paths (`/news/`, `/resume/`)
+- **Mode References** - Updated all mode name references in keyboard shortcuts and screenshots
+
+---
+
 ## [1.8.0] - 2025-12-24
 
 ### Added
@@ -693,7 +713,8 @@ All notable changes to the Tremors Portfolio project are documented in this file
 
 ---
 
-[Unreleased]: https://github.com/qtremors/tremors/compare/v1.8.0...HEAD
+[Unreleased]: https://github.com/qtremors/tremors/compare/v1.8.5...HEAD
+[1.8.5]: https://github.com/qtremors/tremors/compare/v1.8.0...v1.8.5
 [1.8.0]: https://github.com/qtremors/tremors/compare/v1.7.5...v1.8.0
 [1.7.5]: https://github.com/qtremors/tremors/compare/v1.7.0...v1.7.5
 [1.7.0]: https://github.com/qtremors/tremors/compare/v1.6.0...v1.7.0

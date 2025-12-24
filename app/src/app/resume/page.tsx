@@ -15,7 +15,7 @@ export default async function Page() {
     return (
         <ModeErrorBoundary mode="paper">
             <main className="min-h-screen">
-                <Header currentMode="paper" />
+                <Header currentMode="resume" />
                 <PaperPage data={data} />
             </main>
         </ModeErrorBoundary>

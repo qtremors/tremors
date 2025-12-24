@@ -16,7 +16,7 @@ import { PERSONAL } from "@/config/site";
 import { Terminal, Moon, Sun, Pencil, RefreshCw, Check, FolderOpen, Newspaper, FileText } from "lucide-react";
 
 interface HeaderProps {
-    currentMode: "default" | "paper" | "newspaper" | "terminal" | "nexus";
+    currentMode: "default" | "resume" | "news" | "terminal" | "nexus";
 }
 
 export function Header({ currentMode }: HeaderProps) {
@@ -172,7 +172,7 @@ export function Header({ currentMode }: HeaderProps) {
             <div className="md:hidden fixed top-0 left-0 right-0 z-40 px-4 py-3 flex items-center justify-between bg-transparent">
                 <Link href="/" className="flex items-center gap-2 font-bold">
                     <img src="/alien.svg" alt="Tremors logo" className="w-5 h-5" />
-                    <span className={currentMode === "newspaper" ? (theme === "dark" ? "text-[#1a1a1a]" : "text-[#f5f0e8]") : ""}>{PERSONAL.handle.toLowerCase()}</span>
+                    <span className={currentMode === "news" ? (theme === "dark" ? "text-[#1a1a1a]" : "text-[#f5f0e8]") : ""}>{PERSONAL.handle.toLowerCase()}</span>
                 </Link>
 
                 <div className="flex items-center gap-1">
