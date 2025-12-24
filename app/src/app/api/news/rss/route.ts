@@ -1,5 +1,5 @@
 /**
- * API Route: /api/newspaper/rss
+ * API Route: /api/news/rss
  * Generates RSS 2.0 feed for newspaper editions
  */
 
@@ -41,7 +41,7 @@ export async function GET() {
         const feedTitle = "The Tremors Chronicle";
         const feedDescription = `AI-generated news about ${PERSONAL.name} - "${PERSONAL.tagline}"`;
         const feedUrl = `${SITE_URL}/news`;
-        const rssUrl = `${SITE_URL}/api/newspaper/rss`;
+        const rssUrl = `${SITE_URL}/api/news/rss`;
         const lastBuildDate = editions.length > 0
             ? new Date(editions[0].date).toUTCString()
             : new Date().toUTCString();
@@ -51,12 +51,16 @@ export async function GET() {
             const pubDate = new Date(edition.date).toUTCString();
             const link = `${feedUrl}?edition=${edition.id}`;
 
-            // Parse body content for description
+            // Parse body content
             let description = edition.subheadline;
+            let fullContent = "";
             try {
                 const bodyParts = JSON.parse(edition.bodyContent) as string[];
                 if (bodyParts.length > 0) {
                     description = `${edition.subheadline} — ${bodyParts[0].substring(0, 200)}...`;
+                    // Build full HTML content
+                    fullContent = `<h2>${escapeXml(edition.subheadline)}</h2>\n` +
+                        bodyParts.map(p => `<p>${escapeXml(p)}</p>`).join("\n");
                 }
             } catch {
                 // Keep subheadline as description
@@ -66,13 +70,14 @@ export async function GET() {
       <title>${escapeXml(edition.headline)}</title>
       <link>${escapeXml(link)}</link>
       <description>${escapeXml(description)}</description>
+      <content:encoded><![CDATA[${fullContent}]]></content:encoded>
       <pubDate>${pubDate}</pubDate>
       <guid isPermaLink="false">${edition.id}</guid>
     </item>`;
         }).join("\n");
 
         const rss = `<?xml version="1.0" encoding="UTF-8"?>
-<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
   <channel>
     <title>${escapeXml(feedTitle)}</title>
     <link>${escapeXml(feedUrl)}</link>

@@ -4,6 +4,26 @@ All notable changes to the Tremors Portfolio project are documented in this file
 
 ---
 
+## [1.8.0] - 2025-12-24
+
+### Added
+- **Automatic Newspaper Generation** - Cron job now generates daily newspaper edition
+  - Runs after GitHub refresh completes
+  - Only generates if no edition exists for that day
+  - Uses Gemini AI with fallback content
+- **RSS Full Content** - RSS feed now includes full article content via `content:encoded`
+- **RSS Tests** - 9 new tests for RSS feed structure and content
+- **Settings Validation** - `projectViewMode` now validates to only accept "grid" or "list"
+
+### Fixed
+- **RSS Route Path** - Fixed doc comment and `rssUrl` to reference `/api/news/rss`
+- **Project Reset** - Reset handler now also resets `imageSource` and `customImageUrl`
+
+### Changed
+- **Environment Template** - Added `NEXT_PUBLIC_SITE_URL` to `.env.example`
+
+---
+
 ## [1.7.5] - 2025-12-24
 
 ### Added
@@ -673,7 +693,8 @@ All notable changes to the Tremors Portfolio project are documented in this file
 
 ---
 
-[Unreleased]: https://github.com/qtremors/tremors/compare/v1.7.5...HEAD
+[Unreleased]: https://github.com/qtremors/tremors/compare/v1.8.0...HEAD
+[1.8.0]: https://github.com/qtremors/tremors/compare/v1.7.5...v1.8.0
 [1.7.5]: https://github.com/qtremors/tremors/compare/v1.7.0...v1.7.5
 [1.7.0]: https://github.com/qtremors/tremors/compare/v1.6.0...v1.7.0
 [1.6.0]: https://github.com/qtremors/tremors/compare/v1.5.3...v1.6.0

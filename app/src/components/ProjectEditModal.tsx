@@ -63,6 +63,8 @@ export function ProjectEditModal({ repo, onClose, onUpdate }: ProjectEditModalPr
                     id: repo.id,
                     customName: null,
                     customDescription: null,
+                    imageSource: "github",
+                    customImageUrl: null,
                 }),
             });
             const data = await res.json();
@@ -70,7 +72,13 @@ export function ProjectEditModal({ repo, onClose, onUpdate }: ProjectEditModalPr
                 onUpdate({
                     name: data.repo.name,
                     description: data.repo.description,
+                    imageSource: data.repo.imageSource ?? "github",
+                    customImageUrl: data.repo.customImageUrl ?? null,
                 });
+                setEditName(data.repo.name);
+                setEditDescription(data.repo.description || "");
+                setEditImageSource(data.repo.imageSource ?? "github");
+                setEditImageUrl("");
                 toast.success("Reset to GitHub data!");
                 onClose();
             } else {

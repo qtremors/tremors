@@ -16,8 +16,8 @@
 A personal portfolio website with multiple viewing modes:
 1. **Default Mode** (`/`) - Modern card-based layout with GitHub data
 2. **Terminal Mode** (`/terminal`) - Interactive CLI-style interface with commands
-3. **Paper Mode** (`/paper`) - Document/resume-style layout with sidebar TOC
-4. **Newspaper Mode** (`/newspaper`) - Editorial magazine-style layout
+3. **Resume Mode** (`/resume`) - Document/resume-style layout with sidebar TOC
+4. **News Mode** (`/news`) - Editorial magazine-style layout with AI content + RSS
 5. **Nexus Mode** (`/nexus`) - Interactive space environment with animated elements
 
 ### Key Features
@@ -36,7 +36,7 @@ A personal portfolio website with multiple viewing modes:
 tremors/                         # Repository root
 ├── .gitignore                   # Root gitignore for monorepo
 ├── README.md                    # Full project documentation
-├── CHANGELOG.md                 # Version history (v0.0.0 - v1.5.1)
+├── CHANGELOG.md                 # Version history (v0.0.0 - v1.8.0)
 ├── AGENTS.md                    # This file - AI agent context
 ├── TASKS.md                     # Bug tracking
 ├── index.html                   # GitHub Pages redirect (legacy)
@@ -73,6 +73,8 @@ tremors/                         # Repository root
     │   │   │   ├── NewspaperPage.tsx
     │   │   │   ├── newspaper.css
     │   │   │   └── page.tsx
+    │   │   ├── news/             # News mode (alias for newspaper)
+    │   │   │   └── ...           # Same structure as newspaper
     │   │   ├── nexus/           # Nexus space mode
     │   │   │   ├── components/  # Space-themed components
     │   │   │   │   ├── Hero.tsx
@@ -82,7 +84,7 @@ tremors/                         # Repository root
     │   │   │   │   └── Voyager.tsx
     │   │   │   ├── layout.tsx
     │   │   │   └── page.tsx
-    │   │   ├── paper/           # Paper mode page
+    │   │   ├── resume/          # Resume mode page
     │   │   ├── terminal/        # Terminal mode page
     │   │   │   ├── components/  # Terminal-specific components
     │   │   │   └── lib/         # Commands, themes, types
@@ -117,7 +119,7 @@ tremors/                         # Repository root
     │   │   └── utils.ts         # Shared utilities
     │   ├── types/
     │   │   └── index.ts         # All shared TypeScript types
-    │   └── __tests__/           # Test files (12 files, 97 tests)
+    │   └── __tests__/           # Test files (13 files, 106 tests)
     │       ├── activity.test.ts
     │       ├── api-auth.test.ts
     │       ├── auth.test.ts
@@ -128,6 +130,7 @@ tremors/                         # Repository root
     │       ├── ProjectCard.test.ts
     │       ├── sanitize.test.ts
     │       ├── terminal-commands.test.ts
+    │       ├── rss-feed.test.ts
     │       └── utils.test.ts
     ├── .env.example             # Environment template (tracked)
     ├── .env                     # Environment variables (gitignored)
@@ -189,6 +192,7 @@ model Settings {
   lastRefresh        DateTime @default(now())
   availableForWork   Boolean  @default(true)
   showProjectImages  Boolean  @default(true)
+  projectViewMode    String   @default("grid")  // "grid" | "list"
   updatedAt          DateTime @updatedAt
 }
 
@@ -241,6 +245,7 @@ model NewspaperEdition {
 | `DATABASE_URL_UNPOOLED` | Required* | Direct connection for migrations (*auto-set by Vercel+Neon) |
 | `GEMINI_API_KEY` | Optional | Google Gemini API key for AI newspaper content |
 | `CRON_SECRET` | Optional | Secret for authenticating scheduled cron jobs |
+| `NEXT_PUBLIC_SITE_URL` | Optional | Site URL for RSS feeds and meta tags |
 
 > **Note**: Password is no longer stored in env variables. It's created on first use and stored hashed in the database.
 
@@ -256,7 +261,7 @@ model NewspaperEdition {
 | `/api/admin/refresh` | POST | Admin | Sync repos and commits from GitHub |
 | `/api/admin/settings` | GET | No | Get site settings (showProjectImages, etc.) |
 | `/api/admin/settings` | PATCH | Admin | Update site settings |
-| `/api/cron/refresh` | GET | CRON_SECRET | Scheduled refresh (12AM IST) |
+| `/api/cron/refresh` | GET | CRON_SECRET | Scheduled refresh + newspaper gen (12AM IST) |
 | `/api/admin/availability` | GET | No | Get current availability status |
 | `/api/admin/availability` | POST | Admin | Toggle availability status |
 | `/api/stats/commits` | GET | No | Fetch total commits from all repos (GitHub API) |
@@ -264,6 +269,7 @@ model NewspaperEdition {
 | `/api/newspaper/generate` | POST | Admin | Generate new AI edition (Gemini) |
 | `/api/newspaper/editions` | GET | No | List all editions for archive |
 | `/api/newspaper/active` | POST | Admin | Set edition as active for today |
+| `/api/news/rss` | GET | No | RSS 2.0 feed of newspaper editions |
 
 ---
 
@@ -409,11 +415,15 @@ terminal/page.tsx
     └── MatrixRain        # Screensaver overlay
 
 paper/page.tsx
-└── PaperPage             # Document layout
+└── PaperPage             # Document layout (redirects to /resume)
     └── sidebar + sections
 
-newspaper/page.tsx
-└── NewspaperPage         # Editorial layout
+resume/page.tsx
+└── ResumePage            # Document layout
+    └── sidebar + sections
+
+news/page.tsx
+└── NewspaperPage         # Editorial layout + RSS button
 
 nexus/page.tsx
 └── NexusLayout           # Space environment
