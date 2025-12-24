@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import Image from 'next/image';
 import { motion, AnimatePresence, type Variants } from 'framer-motion';
 import styles from './Hero.module.css';
@@ -9,9 +10,9 @@ import BlackholeBackground from './BlackholeBackground';
 import PlanetBackground from './PlanetBackground';
 
 const spaceships = [
-  { id: 1, name: 'Paper', url: '/paper', image: '/ship66.png', imageBack: '/ship66-rev.png' },
+  { id: 1, name: 'Resume', url: '/resume', image: '/ship66.png', imageBack: '/ship66-rev.png' },
   { id: 2, name: 'Terminal', url: '/terminal', image: '/ship55.png', imageBack: '/ship55-rev.png' },
-  { id: 3, name: 'Newspaper', url: '/newspaper', image: '/ship66.png', imageBack: '/ship66-rev.png' },
+  { id: 3, name: 'News', url: '/news', image: '/ship66.png', imageBack: '/ship66-rev.png' },
 ];
 
 const REVEAL_DURATION = 1.0;
@@ -138,7 +139,7 @@ const Hero = () => {
         </div>
       </div>
 
-      <a href="https://qtremors.github.io" target="_blank" rel="noopener noreferrer" className={styles.wormholeLink} aria-label="Main Portfolio">
+      <Link href="/" className={styles.wormholeLink} aria-label="Home">
         <motion.div
           className={styles.wormholeImageContainer}
           initial={{ opacity: 0, scale: 0.5 }}
@@ -157,14 +158,14 @@ const Hero = () => {
         >
           <Image
             src="/wormhole.png"
-            alt="Wormhole portal - navigate to main portfolio"
+            alt="Wormhole portal - navigate to home"
             className={styles.wormholeImage}
             fill
             sizes="100px"
           />
         </motion.div>
         <span className={styles.wormholeText}></span>
-      </a>
+      </Link>
     </section>
   );
 };

@@ -107,8 +107,8 @@ export const commands: Record<string, (args: string[], ctx: CommandContext) => C
         const lines: TerminalLine[] = [];
         addLine(lines, "heading", "Global Keyboard Shortcuts");
         addLine(lines, "output", "  Ctrl + `         Open/close terminal");
-        addLine(lines, "output", "  Ctrl + Alt + P   Go to Paper mode");
-        addLine(lines, "output", "  Ctrl + Alt + N   Go to Newspaper mode");
+        addLine(lines, "output", "  Ctrl + Alt + P   Go to Resume");
+        addLine(lines, "output", "  Ctrl + Alt + N   Go to News");
         addLine(lines, "heading", "Terminal Shortcuts");
         addLine(lines, "output", "  ↑/↓              Navigate command history");
         addLine(lines, "output", "  Tab              Autocomplete command");

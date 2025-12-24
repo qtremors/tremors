@@ -45,6 +45,7 @@ model Settings {
   lastRefresh        DateTime @default(now())
   availableForWork   Boolean  @default(true)
   showProjectImages  Boolean  @default(true)
+  projectViewMode    String   @default("grid")  // "grid" | "list"
   updatedAt          DateTime @updatedAt
 }
 

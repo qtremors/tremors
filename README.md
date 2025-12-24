@@ -37,8 +37,8 @@ This repository contains two sites:
 |------|-------------|------|
 | **Default** | Modern card-based layout with animated hero | `/` |
 | **Terminal** | Interactive CLI with 30+ commands | `/terminal` |
-| **Paper** | Document/resume-style with sidebar TOC | `/paper` |
-| **Newspaper** | Editorial magazine-style with AI-generated content | `/newspaper` |
+| **Resume** | Document/resume-style with sidebar TOC | `/resume` |
+| **News** | Editorial magazine-style with AI-generated content + RSS | `/news` |
 | **Nexus** | Interactive space environment with animated elements | `/nexus` |
 
 ### 🔗 GitHub Integration
@@ -488,7 +488,7 @@ npm run test:coverage
 
 | File | Description |
 |------|-------------|
-| [CHANGELOG.md](CHANGELOG.md) | Complete version history (v0.0.0 - v0.9.5) |
+| [CHANGELOG.md](CHANGELOG.md) | Complete version history (v0.0.0 - v1.7.5) |
 | [AGENTS.md](AGENTS.md) | Technical documentation for AI assistants |
 | [TASKS.md](TASKS.md) | Bug tracking and improvement backlog |
 | [app/.env.example](app/.env.example) | Environment variable template |

@@ -4,7 +4,7 @@ import { NewspaperHeader } from "./NewspaperHeader";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-    title: "Newspaper Mode | Tremors",
+    title: "News | Tremors",
     description: "Editorial-style portfolio layout. Projects and skills presented in a classic newspaper format.",
 };
 

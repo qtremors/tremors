@@ -93,7 +93,7 @@ export function ActivitySection({ activity }: ActivitySectionProps) {
                             href={item.repoUrl}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className={`group flex gap-4 p-4 rounded-xl bg-[var(--card-bg)] border border-[var(--card-border)] hover:border-[var(--accent-cyan)]/50 hover:-translate-y-0.5 transition-all ${isNewlyRevealed ? 'animate-fade-in' : ''
+                            className={`group flex gap-4 p-4 rounded-xl bg-[var(--card-bg)] backdrop-blur-sm border border-[var(--card-border)] hover:border-[var(--accent-cyan)]/50 hover:-translate-y-0.5 transition-all ${isNewlyRevealed ? 'animate-fade-in' : ''
                                 }`}
                             style={isNewlyRevealed ? { animationDelay: `${(index % ITEMS_PER_PAGE) * 50}ms` } : undefined}
                         >

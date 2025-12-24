@@ -4,6 +4,79 @@ All notable changes to the Tremors Portfolio project are documented in this file
 
 ---
 
+## [1.7.5] - 2025-12-24
+
+### Added
+- **RSS Feed** - News archive now has an RSS 2.0 feed
+  - Endpoint: `/api/news/rss`
+  - RSS button in news page masthead controls
+  - Fetches up to 20 most recent editions (non-fallback)
+  - Proper XML headers and 1-hour cache
+
+### Changed
+- **Site Configuration** - Added `SITE_URL` constant for generating absolute URLs
+
+---
+
+## [1.7.0] - 2025-12-24
+
+### Changed
+- **Route Renames** - Cleaner, shorter URLs:
+  - `/paper` → `/resume` (folder and all references)
+  - `/newspaper` → `/news` (folder and all references)
+- **Transparent UI** - Glassmorphism effect across components:
+  - Hero code block, project cards, activity cards now use transparent backgrounds with `backdrop-blur`
+  - Footer made transparent to blend with page instead of separate block
+- **Page Titles** - Updated metadata: "Paper Mode" → "Resume", "Newspaper Mode" → "News"
+
+### Added
+- **ModeErrorBoundary** on Resume page - Consistent error handling across all modes
+- **CSP media-src** - Added `media-src 'self' blob:` for Nexus video support
+
+### Fixed
+- **ProjectsGrid useEffect** - Added missing `toast` dependency to prevent stale closures
+- **Header accessibility** - Added `alt="Tremors logo"` to logo images
+- **Header consistency** - Mobile now uses same alien.svg logo as desktop
+
+### Refactored
+- **ProjectEditModal** - Extracted from ProjectsGrid into dedicated component (reduced ~80 lines)
+
+### Documentation
+- Updated README version reference to v1.7.0
+- Added CHANGELOG links for v1.0.0 - v1.7.0
+- Cleaned up TASKS.md with resolved issues summary
+
+---
+
+## [1.6.0] - 2025-12-23
+
+### Added
+- **Scroll-Triggered Nav Buttons** - Hero section buttons (Projects, News, Resume) animate into the navbar when scrolled out of view
+  - Uses Framer Motion `layoutId` for smooth position animation
+  - Navbar buttons appear with subtle blur backdrop
+  - Early trigger at 50px before buttons leave viewport
+- **Projects View Toggle** - Admin can switch between Grid and List view layouts
+  - Toggle visible only in edit mode
+  - View preference persisted in database (`projectViewMode` setting)
+  - List view shows horizontal cards with thumbnail on left, content on right
+- **NavButtonsContext** - New React context for sharing button visibility state between HeroSection and Header
+
+### Changed
+- **Hero Section Buttons** - Refactored to use Framer Motion components with `layoutId` for smooth transitions
+- **Header Component** - Now displays animated nav buttons in center when in "default" mode and buttons are scrolled
+- **ProjectCard Component** - Added `size="list"` variant for horizontal layout
+- **Loading Skeleton** - Updated hero skeleton to match new layout with three navigation buttons
+- **Settings API** - Extended to handle `projectViewMode` field
+
+### Technical
+- `NavButtonsContext.tsx` - New context provider for `showInHeader` state
+- `schema.prisma` - Added `projectViewMode` field to Settings model
+- `layout.tsx` - Wrapped app with `NavButtonsProvider`
+- `HeroSection.tsx` - Added intersection observer for scroll detection
+- `ProjectCard.tsx` - Added list view layout with horizontal card design
+
+---
+
 ## [1.5.3] - 2025-12-23
 
 ### Added
@@ -600,7 +673,15 @@ All notable changes to the Tremors Portfolio project are documented in this file
 
 ---
 
-[Unreleased]: https://github.com/qtremors/tremors/compare/v0.9.6...HEAD
+[Unreleased]: https://github.com/qtremors/tremors/compare/v1.7.5...HEAD
+[1.7.5]: https://github.com/qtremors/tremors/compare/v1.7.0...v1.7.5
+[1.7.0]: https://github.com/qtremors/tremors/compare/v1.6.0...v1.7.0
+[1.6.0]: https://github.com/qtremors/tremors/compare/v1.5.3...v1.6.0
+[1.5.3]: https://github.com/qtremors/tremors/compare/v1.5.2...v1.5.3
+[1.5.2]: https://github.com/qtremors/tremors/compare/v1.5.1...v1.5.2
+[1.5.1]: https://github.com/qtremors/tremors/compare/v1.5.0...v1.5.1
+[1.5.0]: https://github.com/qtremors/tremors/compare/v1.0.0...v1.5.0
+[1.0.0]: https://github.com/qtremors/tremors/compare/v0.9.6...v1.0.0
 [0.9.6]: https://github.com/qtremors/tremors/compare/v0.9.5...v0.9.6
 [0.9.5]: https://github.com/qtremors/tremors/compare/v0.9.4...v0.9.5
 [0.9.4]: https://github.com/qtremors/tremors/compare/v0.9.3...v0.9.4
@@ -643,3 +724,4 @@ All notable changes to the Tremors Portfolio project are documented in this file
 [0.1.1]: https://github.com/qtremors/tremors/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/qtremors/tremors/compare/v0.0.0...v0.1.0
 [0.0.0]: https://github.com/qtremors/tremors/releases/tag/v0.0.0
+

@@ -5,6 +5,9 @@
 
 import type { ContactLink, SkillCategory, SectionConfig } from "@/types";
 
+// Site URL (for RSS feeds, meta tags, etc.)
+export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://tremors.vercel.app";
+
 // Personal Info
 export const PERSONAL = {
     name: "Tremors",

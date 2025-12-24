@@ -6,10 +6,13 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
+import Link from "next/link";
+import { motion, LayoutGroup } from "framer-motion";
 import { PERSONAL, CONTACT_LINKS } from "@/config/site";
-import { ArrowRight, Github, Linkedin, Mail } from "lucide-react";
+import { Github, Linkedin, Mail, Newspaper, FileText, FolderOpen } from "lucide-react";
 import { useAdmin } from "@/components/AdminContext";
 import { useToast } from "@/components/ToastProvider";
+import { useNavButtons } from "@/components/NavButtonsContext";
 
 // Helper to get URL from CONTACT_LINKS by id
 const getContactUrl = (id: string): string => {
@@ -207,7 +210,9 @@ function AnimatedCodeBlock({ availableForWork, onToggle, isAdmin, editMode }: An
 export function HeroSection() {
     const { isAdmin, editMode } = useAdmin();
     const toast = useToast();
+    const { showInHeader, setShowInHeader } = useNavButtons();
     const [availableForWork, setAvailableForWork] = useState<boolean>(PERSONAL.availableForWork);
+    const buttonsRef = useRef<HTMLDivElement>(null);
 
     // Fetch current availability from DB
     useEffect(() => {
@@ -222,6 +227,38 @@ export function HeroSection() {
                 // Use config default but warn user if they're admin
                 toast.warning("Could not load availability status");
             });
+    }, []);
+
+    // Intersection Observer to detect when buttons scroll out of view
+    // Use debounce to prevent glitching at the exact threshold
+    const lastScrollY = useRef(0);
+
+    useEffect(() => {
+        const buttonsEl = buttonsRef.current;
+        if (!buttonsEl) return;
+
+        const observer = new IntersectionObserver(
+            ([entry]) => {
+                const currentScrollY = window.scrollY;
+                const isScrollingDown = currentScrollY > lastScrollY.current;
+                lastScrollY.current = currentScrollY;
+
+                // Only change state based on scroll direction to prevent flickering
+                if (!entry.isIntersecting && isScrollingDown) {
+                    setShowInHeader(true);
+                } else if (entry.isIntersecting && !isScrollingDown) {
+                    setShowInHeader(false);
+                }
+            },
+            {
+                root: null,
+                rootMargin: "-50px 0px 0px 0px", // Trigger before buttons touch screen edge
+                threshold: [0, 1],
+            }
+        );
+
+        observer.observe(buttonsEl);
+        return () => observer.disconnect();
     }, []);
 
     // Toggle availability
@@ -245,80 +282,116 @@ export function HeroSection() {
         }
     };
 
+    // Motion Link component for navigation
+    const MotionLink = motion.create(Link);
+
     return (
-        <section className="relative grid lg:grid-cols-2 gap-12 lg:gap-16 items-center mb-24 min-h-[70vh]">
-            {/* Background Animation */}
-            <FloatingParticles />
+        <LayoutGroup>
+            <section className="relative grid lg:grid-cols-2 gap-12 lg:gap-16 items-center mb-24 min-h-[70vh]">
+                {/* Background Animation */}
+                <FloatingParticles />
 
-            {/* Left - Text Content */}
-            <div className="relative order-2 lg:order-1">
-                <p className="text-[var(--accent-cyan)] font-medium mb-3 flex items-center gap-2">
-                    <span className="w-8 h-px bg-[var(--accent-cyan)]" />
-                    Hi, I&apos;m
-                </p>
+                {/* Left - Text Content */}
+                <div className="relative order-2 lg:order-1">
+                    <p className="text-[var(--accent-cyan)] font-medium mb-3 flex items-center gap-2">
+                        <span className="w-8 h-px bg-[var(--accent-cyan)]" />
+                        Hi, I&apos;m
+                    </p>
 
-                <h1 className="text-5xl md:text-7xl font-bold mb-6 leading-tight">{PERSONAL.name}</h1>
+                    <h1 className="text-5xl md:text-7xl font-bold mb-6 leading-tight">{PERSONAL.name}</h1>
 
-                <h2 className="text-2xl md:text-3xl text-[var(--text-muted)] font-light mb-6">
-                    {PERSONAL.tagline}
-                </h2>
+                    <h2 className="text-2xl md:text-3xl text-[var(--text-muted)] font-light mb-6">
+                        {PERSONAL.tagline}
+                    </h2>
 
-                <p className="text-lg text-[var(--text-muted)] max-w-lg mb-8 leading-relaxed">{PERSONAL.bio}</p>
+                    <p className="text-lg text-[var(--text-muted)] max-w-lg mb-8 leading-relaxed">{PERSONAL.bio}</p>
 
-                <div className="flex flex-wrap items-center gap-4">
-                    <a
-                        href="#projects"
-                        className="inline-flex items-center gap-2 px-6 py-3 bg-[var(--accent-cyan)] text-[var(--accent-inverted)] rounded-full font-medium hover:opacity-90 transition-opacity"
-                    >
-                        View Projects
-                        <ArrowRight className="w-4 h-4" />
-                    </a>
+                    {/* Row 1: Social Links + Available */}
+                    <div className="flex flex-wrap items-center gap-3 mb-4">
+                        <div className="flex items-center gap-2">
+                            <a
+                                href={getContactUrl("github")}
+                                target="_blank"
+                                rel="noopener"
+                                className="p-2.5 rounded-full border border-[var(--border)] hover:border-[var(--accent-cyan)] hover:text-[var(--accent-cyan)] transition-all"
+                            >
+                                <Github className="w-4 h-4" />
+                            </a>
+                            <a
+                                href={getContactUrl("linkedin")}
+                                target="_blank"
+                                rel="noopener"
+                                className="p-2.5 rounded-full border border-[var(--border)] hover:border-[var(--accent-cyan)] hover:text-[var(--accent-cyan)] transition-all"
+                            >
+                                <Linkedin className="w-4 h-4" />
+                            </a>
+                            <a
+                                href={getContactUrl("email")}
+                                className="p-2.5 rounded-full border border-[var(--border)] hover:border-[var(--accent-cyan)] hover:text-[var(--accent-cyan)] transition-all"
+                            >
+                                <Mail className="w-4 h-4" />
+                            </a>
+                        </div>
 
-                    <div className="h-8 w-px bg-[var(--border)] hidden sm:block" />
+                        <div className="h-8 w-px bg-[var(--border)] hidden sm:block" />
 
-                    <div className="flex items-center gap-2">
-                        <a
-                            href={getContactUrl("github")}
-                            target="_blank"
-                            rel="noopener"
-                            className="p-2.5 rounded-full border border-[var(--border)] hover:border-[var(--accent-cyan)] hover:text-[var(--accent-cyan)] transition-all"
-                        >
-                            <Github className="w-4 h-4" />
-                        </a>
-                        <a
-                            href={getContactUrl("linkedin")}
-                            target="_blank"
-                            rel="noopener"
-                            className="p-2.5 rounded-full border border-[var(--border)] hover:border-[var(--accent-cyan)] hover:text-[var(--accent-cyan)] transition-all"
-                        >
-                            <Linkedin className="w-4 h-4" />
-                        </a>
-                        <a
-                            href={getContactUrl("email")}
-                            className="p-2.5 rounded-full border border-[var(--border)] hover:border-[var(--accent-cyan)] hover:text-[var(--accent-cyan)] transition-all"
-                        >
-                            <Mail className="w-4 h-4" />
-                        </a>
+                        {availableForWork && (
+                            <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-green-500/10 text-green-400 text-sm">
+                                <span className="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse" />
+                                Available
+                            </span>
+                        )}
                     </div>
 
-                    {availableForWork && (
-                        <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-green-500/10 text-green-400 text-sm">
-                            <span className="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse" />
-                            Available
-                        </span>
-                    )}
+                    {/* Row 2: Navigation Buttons - tracked with ref */}
+                    <div ref={buttonsRef} className="flex flex-wrap items-center gap-3">
+                        {!showInHeader && (
+                            <>
+                                <motion.a
+                                    href="#projects"
+                                    layoutId="btn-projects"
+                                    className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full font-medium"
+                                    style={{ backgroundColor: 'var(--btn-bg)', color: 'var(--btn-text)' }}
+                                    transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                                >
+                                    <FolderOpen className="w-4 h-4" />
+                                    Projects
+                                </motion.a>
+                                <MotionLink
+                                    href="/news"
+                                    layoutId="btn-news"
+                                    className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full font-medium"
+                                    style={{ backgroundColor: 'var(--btn-bg)', color: 'var(--btn-text)' }}
+                                    transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                                >
+                                    <Newspaper className="w-4 h-4" />
+                                    News
+                                </MotionLink>
+                                <MotionLink
+                                    href="/resume"
+                                    layoutId="btn-resume"
+                                    className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full font-medium"
+                                    style={{ backgroundColor: 'var(--btn-bg)', color: 'var(--btn-text)' }}
+                                    transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                                >
+                                    <FileText className="w-4 h-4" />
+                                    Resume
+                                </MotionLink>
+                            </>
+                        )}
+                    </div>
                 </div>
-            </div>
 
-            {/* Right - Animated Element */}
-            <div className="relative order-1 lg:order-2 flex justify-center lg:justify-end">
-                <AnimatedCodeBlock
-                    availableForWork={availableForWork}
-                    onToggle={handleToggleAvailability}
-                    isAdmin={isAdmin}
-                    editMode={editMode}
-                />
-            </div>
-        </section>
+                {/* Right - Animated Element */}
+                <div className="relative order-1 lg:order-2 flex justify-center lg:justify-end">
+                    <AnimatedCodeBlock
+                        availableForWork={availableForWork}
+                        onToggle={handleToggleAvailability}
+                        isAdmin={isAdmin}
+                        editMode={editMode}
+                    />
+                </div>
+            </section>
+        </LayoutGroup>
     );
 }

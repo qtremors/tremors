@@ -54,7 +54,7 @@
 
 @media (max-width: 768px) {
     .newspaper-container {
-        padding: 24px;
+        padding: 64px 24px 24px 24px;
     }
 }
 
@@ -92,6 +92,18 @@
     display: flex;
     justify-content: center;
     gap: 16px;
+    flex-wrap: wrap;
+}
+
+@media (max-width: 600px) {
+    .np-masthead-controls {
+        gap: 8px;
+    }
+
+    .np-control-btn {
+        padding: 6px 12px;
+        font-size: 0.8rem;
+    }
 }
 
 .np-control-btn {
@@ -275,13 +287,13 @@
     font-style: italic;
 }
 
-/* Fixed Back Button - Top Left Corner */
+/* Fixed Back Button - Top Left Corner (Desktop only, below navbar) */
 .np-back-btn {
     position: fixed;
-    top: 2px;
-    left: 2px;
+    top: 70px;
+    left: 8px;
     z-index: 100;
-    display: inline-flex;
+    display: none;
     align-items: center;
     gap: 8px;
     background: var(--np-paper);
@@ -293,6 +305,13 @@
     color: var(--np-ink);
     text-decoration: none;
     transition: all 0.2s ease;
+}
+
+/* Show on desktop */
+@media (min-width: 768px) {
+    .np-back-btn {
+        display: inline-flex;
+    }
 }
 
 .np-back-btn:hover {
@@ -439,7 +458,8 @@
 
 @media (max-width: 600px) {
     .np-stats-block {
-        grid-template-columns: repeat(2, 1fr);
+        gap: 40px;
+        flex-wrap: wrap;
     }
 }
 
@@ -467,6 +487,16 @@
     border-collapse: collapse;
     margin: 32px 0;
     font-size: 0.95rem;
+}
+
+/* Mobile: Make table scrollable horizontally */
+@media (max-width: 600px) {
+    .np-data-table {
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
+        font-size: 0.85rem;
+    }
 }
 
 .np-data-table caption {

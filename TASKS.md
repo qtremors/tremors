@@ -1,7 +1,7 @@
 # TASKS.md - Tremors Portfolio
 
-> **Last Updated**: December 23, 2025  
-> **Version**: 1.5.3 | **Status**: ✅ Production Ready — All Issues Resolved
+> **Last Updated**: December 24, 2025  
+> **Version**: 1.7.0 | **Status**: ✅ Complete
 
 ---
 
@@ -9,47 +9,36 @@
 
 | Area | Status | Notes |
 |------|--------|-------|
-| Security | ✅ Excellent | HMAC sessions, PBKDF2, CSRF, CSP, XSS prevention |
+| Security | ✅ Excellent | HMAC sessions, PBKDF2, CSRF, CSP, XSS prevention, rate limiting |
 | Architecture | ✅ Solid | Modular components, custom hooks, clear separation |
 | Testing | ✅ Good | 12 test files, 97 tests |
 | Documentation | ✅ Comprehensive | AGENTS.md, README.md, CHANGELOG.md |
 | Performance | ✅ Good | DB caching, optimized images, proper timeouts |
-| UI/UX | ✅ Polished | Multi-mode, responsive, accessible (skip links) |
+| UI/UX | ✅ Polished | Multi-mode, responsive, accessible |
 
 ---
 
-## ✅ Resolved Issues (December 2024 Deep Review)
+## ✅ Mobile Compatibility (Complete)
 
-All identified issues from the comprehensive code review have been addressed:
+All pages are now responsive:
 
-### High Priority — Completed
-- **D-004**: Fixed README clone URL (`github.io` → `github.com`)
-- **DC-003**: Removed `git_commits.txt` dev artifact
-
-### Medium Priority — Completed
-- **B-001**: Added `ModeErrorBoundary` to Nexus mode with purple theme
-- **A-003**: Created shared `activity.ts` utility (removed ~60 lines duplicate code)
-- **T-003**: Consolidated all test files in `src/__tests__/` (moved 5 files)
-
-### Low Priority — Completed
-- **U-003**: Added skip link for keyboard/screen reader accessibility
-- **U-004**: Improved Nexus image alt text for better accessibility
-- **T-002**: Expanded test coverage (+14 tests: `github.test.ts`, `activity.test.ts`)
-- **A-002**: Created `useTerminalAdmin` hook for better modularity
-
-### Intentionally Skipped
-- **A-004**: Nexus loading state — *User confirmed: intended behavior*
-- **D-003**: API documentation — *Covered by AGENTS.md*
+| Page | Breakpoints |
+|------|-------------|
+| Home | md (768px) - grid, text sizing |
+| Resume | lg (1024px) - sidebar hidden, mobile back button |
+| News | md (768px) columns, sm (600px) controls/table/stats |
+| Terminal | Full-height responsive, flex layout |
+| Nexus | Already mobile-first |
 
 ---
 
 ## 🔮 Future Improvements
 
-Low priority items that can be addressed later:
-
-- **B-003**: PostgreSQL-based rate limiting for serverless environments
-  - Current in-memory rate limiting works but doesn't persist across Vercel invocations
-  - Not critical for personal portfolio (admin secret + PBKDF2 provide adequate protection)
+| ID | Description | Status |
+|----|-------------|--------|
+| **P-001** | PostgreSQL-based rate limiting | Not critical |
+| **F-001** | Section reordering via drag-drop | Config ready |
+| **F-002** | Resume PDF upload via admin | Uses external URL |
 
 ---
 
@@ -58,12 +47,10 @@ Low priority items that can be addressed later:
 ```text
 app/src/
 ├── __tests__/       # 12 test files (97 tests)
-├── app/             # Next.js pages
-├── components/      # Reusable components
+├── app/             # Next.js pages (nexus, news, resume, terminal)
+├── components/      # 16 reusable components
 ├── config/          # Site configuration
-├── hooks/           # Custom hooks (4 exports)
-├── lib/             # Utilities (12 files)
+├── hooks/           # 3 custom hooks
+├── lib/             # 8 utility files
 └── types/           # TypeScript types
 ```
-
-See `AGENTS.md` for complete project knowledge.

@@ -21,18 +21,18 @@ export function DefaultLoadingSkeleton() {
             {/* Hero skeleton */}
             <section className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center mb-24 min-h-[70vh]">
                 <div className="order-2 lg:order-1">
-                    <Skeleton className="w-20 h-4 mb-3" />
-                    <Skeleton className="w-64 h-14 mb-6" />
-                    <Skeleton className="w-48 h-8 mb-6" />
-                    <Skeleton className="w-full max-w-lg h-20 mb-8" />
-                    <div className="flex gap-4">
-                        <Skeleton className="w-32 h-12 rounded-full" />
-                        <Skeleton className="w-10 h-10 rounded-full" />
-                        <Skeleton className="w-10 h-10 rounded-full" />
+                    <Skeleton className="w-32 h-6 mb-4" /> {/* Available badge */}
+                    <Skeleton className="w-80 h-14 mb-4" /> {/* Name */}
+                    <Skeleton className="w-56 h-8 mb-6" /> {/* Title */}
+                    <Skeleton className="w-full max-w-lg h-20 mb-8" /> {/* Bio */}
+                    <div className="flex gap-3"> {/* Navigation buttons */}
+                        <Skeleton className="w-28 h-11 rounded-full" />
+                        <Skeleton className="w-24 h-11 rounded-full" />
+                        <Skeleton className="w-28 h-11 rounded-full" />
                     </div>
                 </div>
-                <div className="order-1 lg:order-2 flex justify-center">
-                    <Skeleton className="w-72 h-48 rounded-2xl" />
+                <div className="order-1 lg:order-2 flex justify-center lg:justify-end">
+                    <Skeleton className="w-80 h-56 rounded-2xl" /> {/* Code block */}
                 </div>
             </section>
 

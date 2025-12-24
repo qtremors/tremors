@@ -23,6 +23,7 @@ export async function GET() {
                 settings: {
                     showProjectImages: true,
                     availableForWork: true,
+                    projectViewMode: "grid",
                 },
             });
         }
@@ -32,6 +33,7 @@ export async function GET() {
             settings: {
                 showProjectImages: settings.showProjectImages,
                 availableForWork: settings.availableForWork,
+                projectViewMode: settings.projectViewMode,
                 lastRefresh: settings.lastRefresh,
             },
         });
@@ -66,11 +68,12 @@ export async function PATCH(request: NextRequest) {
 
     try {
         const body = await request.json();
-        const { showProjectImages, availableForWork } = body;
+        const { showProjectImages, availableForWork, projectViewMode } = body;
 
         const updateData: Record<string, unknown> = {};
         if (showProjectImages !== undefined) updateData.showProjectImages = showProjectImages;
         if (availableForWork !== undefined) updateData.availableForWork = availableForWork;
+        if (projectViewMode !== undefined) updateData.projectViewMode = projectViewMode;
 
         const settings = await prisma.settings.upsert({
             where: { id: "main" },
@@ -87,6 +90,7 @@ export async function PATCH(request: NextRequest) {
             settings: {
                 showProjectImages: settings.showProjectImages,
                 availableForWork: settings.availableForWork,
+                projectViewMode: settings.projectViewMode,
             },
         });
     } catch (error) {

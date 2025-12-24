@@ -4,6 +4,7 @@ import "./globals.css";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { AdminProvider } from "@/components/AdminContext";
 import { ToastProvider } from "@/components/ToastProvider";
+import { NavButtonsProvider } from "@/components/NavButtonsContext";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { KeyboardShortcuts } from "@/components/KeyboardShortcuts";
 
@@ -61,10 +62,12 @@ export default function RootLayout({
         <ThemeProvider>
           <AdminProvider>
             <ToastProvider>
-              <ErrorBoundary>
-                <KeyboardShortcuts />
-                <main id="main-content">{children}</main>
-              </ErrorBoundary>
+              <NavButtonsProvider>
+                <ErrorBoundary>
+                  <KeyboardShortcuts />
+                  <main id="main-content">{children}</main>
+                </ErrorBoundary>
+              </NavButtonsProvider>
             </ToastProvider>
           </AdminProvider>
         </ThemeProvider>
