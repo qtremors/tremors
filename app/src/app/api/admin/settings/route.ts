@@ -70,10 +70,21 @@ export async function PATCH(request: NextRequest) {
         const body = await request.json();
         const { showProjectImages, availableForWork, projectViewMode } = body;
 
+        // Validate projectViewMode if provided
+        if (projectViewMode !== undefined) {
+            const normalized = String(projectViewMode).toLowerCase();
+            if (normalized !== "grid" && normalized !== "list") {
+                return NextResponse.json(
+                    { success: false, error: "projectViewMode must be 'grid' or 'list'" },
+                    { status: 400 }
+                );
+            }
+        }
+
         const updateData: Record<string, unknown> = {};
         if (showProjectImages !== undefined) updateData.showProjectImages = showProjectImages;
         if (availableForWork !== undefined) updateData.availableForWork = availableForWork;
-        if (projectViewMode !== undefined) updateData.projectViewMode = projectViewMode;
+        if (projectViewMode !== undefined) updateData.projectViewMode = String(projectViewMode).toLowerCase();
 
         const settings = await prisma.settings.upsert({
             where: { id: "main" },

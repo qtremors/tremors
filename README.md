@@ -488,7 +488,7 @@ npm run test:coverage
 
 | File | Description |
 |------|-------------|
-| [CHANGELOG.md](CHANGELOG.md) | Complete version history (v0.0.0 - v1.7.5) |
+| [CHANGELOG.md](CHANGELOG.md) | Complete version history (v0.0.0 - v1.8.0) |
 | [AGENTS.md](AGENTS.md) | Technical documentation for AI assistants |
 | [TASKS.md](TASKS.md) | Bug tracking and improvement backlog |
 | [app/.env.example](app/.env.example) | Environment variable template |

@@ -1,7 +1,7 @@
 # TASKS.md - Tremors Portfolio
 
 > **Last Updated**: December 24, 2025  
-> **Version**: 1.7.0 | **Status**: ✅ Complete
+> **Version**: 1.8.0 | **Status**: ✅ Complete
 
 ---
 
@@ -29,6 +29,18 @@ All pages are now responsive:
 | News | md (768px) columns, sm (600px) controls/table/stats |
 | Terminal | Full-height responsive, flex layout |
 | Nexus | Already mobile-first |
+
+---
+
+## ✅ Resolved Issues (v1.7.5)
+
+| ID | File | Description |
+|----|------|-------------|
+| **B-010** | `api/admin/settings/route.ts` | ✅ Validate `projectViewMode` to only accept "grid" or "list" |
+| **B-011** | `api/news/rss/route.ts` | ✅ Fixed doc comment to reference `/api/news/rss` |
+| **B-012** | `api/news/rss/route.ts` | ✅ Fixed `rssUrl` to use `/api/news/rss` |
+| **B-013** | `components/ProjectEditModal.tsx` | ✅ Reset handler now resets image settings too |
+| **B-014** | `.env.example` | ✅ Added `NEXT_PUBLIC_SITE_URL` entry |
 
 ---
 
