@@ -12,7 +12,7 @@ import { PERSONAL, SKILLS } from "@/config/site";
 import { ContactLinks } from "@/components/ContactLinks";
 import { useTheme } from "@/components/ThemeProvider";
 import { useAdmin } from "@/components/AdminContext";
-import { Sun, Moon, ArrowLeft, GitCommit, Star, GitBranch, GitPullRequest, Rocket, ChevronDown, Loader2, RefreshCw, Calendar, Check, Folder, FolderOpen, ChevronRight } from "lucide-react";
+import { Sun, Moon, ArrowLeft, GitCommit, Star, GitBranch, GitPullRequest, Rocket, ChevronDown, Loader2, RefreshCw, Calendar, Check, Folder, FolderOpen, ChevronRight, Rss } from "lucide-react";
 import "./newspaper.css";
 
 // Types for AI-generated content
@@ -349,6 +349,10 @@ export function NewspaperPage({ data }: ModeProps) {
                                 {isRegenerating ? "Generating..." : "Regenerate"}
                             </button>
                         )}
+                        <a href="/api/news/rss" target="_blank" rel="noopener noreferrer" className="np-control-btn">
+                            <Rss className="w-4 h-4" />
+                            RSS
+                        </a>
                         <button onClick={toggleTheme} className="np-control-btn">
                             {theme === "dark" ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
                             {theme === "dark" ? "Light Edition" : "Dark Edition"}

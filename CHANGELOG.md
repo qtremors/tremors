@@ -4,6 +4,20 @@ All notable changes to the Tremors Portfolio project are documented in this file
 
 ---
 
+## [1.7.5] - 2025-12-24
+
+### Added
+- **RSS Feed** - News archive now has an RSS 2.0 feed
+  - Endpoint: `/api/news/rss`
+  - RSS button in news page masthead controls
+  - Fetches up to 20 most recent editions (non-fallback)
+  - Proper XML headers and 1-hour cache
+
+### Changed
+- **Site Configuration** - Added `SITE_URL` constant for generating absolute URLs
+
+---
+
 ## [1.7.0] - 2025-12-24
 
 ### Changed
@@ -659,7 +673,8 @@ All notable changes to the Tremors Portfolio project are documented in this file
 
 ---
 
-[Unreleased]: https://github.com/qtremors/tremors/compare/v1.7.0...HEAD
+[Unreleased]: https://github.com/qtremors/tremors/compare/v1.7.5...HEAD
+[1.7.5]: https://github.com/qtremors/tremors/compare/v1.7.0...v1.7.5
 [1.7.0]: https://github.com/qtremors/tremors/compare/v1.6.0...v1.7.0
 [1.6.0]: https://github.com/qtremors/tremors/compare/v1.5.3...v1.6.0
 [1.5.3]: https://github.com/qtremors/tremors/compare/v1.5.2...v1.5.3
