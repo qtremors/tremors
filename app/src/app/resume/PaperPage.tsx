@@ -69,12 +69,7 @@ export function PaperPage({ data }: ModeProps) {
 
     return (
         <div className="paper-mode">
-            {/* Mobile Back Button */}
-            <Link href="/" className="paper-mobile-back">
-                ← Back to Main
-            </Link>
-
-            <div className="paper-layout">
+            <div className="paper-layout pt-16 md:pt-0">
                 {/* TOC Sidebar - Desktop only */}
                 <aside className="paper-sidebar">
                     <Link href="/" className="paper-back-link">

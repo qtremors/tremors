@@ -12,8 +12,8 @@ import { ContactModal } from "./ContactModal";
 
 const modes = [
     { id: "terminal", label: "Terminal", href: "/terminal", icon: Terminal },
-    { id: "paper", label: "Resume", href: "/paper", icon: FileText },
-    { id: "newspaper", label: "News", href: "/newspaper", icon: Newspaper },
+    { id: "resume", label: "Resume", href: "/resume", icon: FileText },
+    { id: "news", label: "News", href: "/news", icon: Newspaper },
     { id: "nexus", label: "Nexus", href: "/nexus", icon: Rocket },
 ];
 
@@ -31,7 +31,7 @@ export function Footer() {
 
     return (
         <>
-            <footer className="border-t border-[var(--border)] bg-[var(--bg-secondary)]">
+            <footer className="border-t border-[var(--border)]/50 bg-[var(--bg)]/60 backdrop-blur-sm">
                 <div className="max-w-6xl mx-auto px-6 py-12">
                     <div className="grid md:grid-cols-3 gap-8 mb-8">
                         {/* Brand */}

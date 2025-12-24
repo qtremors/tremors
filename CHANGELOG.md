@@ -4,6 +4,36 @@ All notable changes to the Tremors Portfolio project are documented in this file
 
 ---
 
+## [1.7.0] - 2025-12-24
+
+### Changed
+- **Route Renames** - Cleaner, shorter URLs:
+  - `/paper` → `/resume` (folder and all references)
+  - `/newspaper` → `/news` (folder and all references)
+- **Transparent UI** - Glassmorphism effect across components:
+  - Hero code block, project cards, activity cards now use transparent backgrounds with `backdrop-blur`
+  - Footer made transparent to blend with page instead of separate block
+- **Page Titles** - Updated metadata: "Paper Mode" → "Resume", "Newspaper Mode" → "News"
+
+### Added
+- **ModeErrorBoundary** on Resume page - Consistent error handling across all modes
+- **CSP media-src** - Added `media-src 'self' blob:` for Nexus video support
+
+### Fixed
+- **ProjectsGrid useEffect** - Added missing `toast` dependency to prevent stale closures
+- **Header accessibility** - Added `alt="Tremors logo"` to logo images
+- **Header consistency** - Mobile now uses same alien.svg logo as desktop
+
+### Refactored
+- **ProjectEditModal** - Extracted from ProjectsGrid into dedicated component (reduced ~80 lines)
+
+### Documentation
+- Updated README version reference to v1.7.0
+- Added CHANGELOG links for v1.0.0 - v1.7.0
+- Cleaned up TASKS.md with resolved issues summary
+
+---
+
 ## [1.6.0] - 2025-12-23
 
 ### Added
@@ -629,7 +659,14 @@ All notable changes to the Tremors Portfolio project are documented in this file
 
 ---
 
-[Unreleased]: https://github.com/qtremors/tremors/compare/v0.9.6...HEAD
+[Unreleased]: https://github.com/qtremors/tremors/compare/v1.7.0...HEAD
+[1.7.0]: https://github.com/qtremors/tremors/compare/v1.6.0...v1.7.0
+[1.6.0]: https://github.com/qtremors/tremors/compare/v1.5.3...v1.6.0
+[1.5.3]: https://github.com/qtremors/tremors/compare/v1.5.2...v1.5.3
+[1.5.2]: https://github.com/qtremors/tremors/compare/v1.5.1...v1.5.2
+[1.5.1]: https://github.com/qtremors/tremors/compare/v1.5.0...v1.5.1
+[1.5.0]: https://github.com/qtremors/tremors/compare/v1.0.0...v1.5.0
+[1.0.0]: https://github.com/qtremors/tremors/compare/v0.9.6...v1.0.0
 [0.9.6]: https://github.com/qtremors/tremors/compare/v0.9.5...v0.9.6
 [0.9.5]: https://github.com/qtremors/tremors/compare/v0.9.4...v0.9.5
 [0.9.4]: https://github.com/qtremors/tremors/compare/v0.9.3...v0.9.4
@@ -672,3 +709,4 @@ All notable changes to the Tremors Portfolio project are documented in this file
 [0.1.1]: https://github.com/qtremors/tremors/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/qtremors/tremors/compare/v0.0.0...v0.1.0
 [0.0.0]: https://github.com/qtremors/tremors/releases/tag/v0.0.0
+

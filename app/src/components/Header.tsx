@@ -61,7 +61,7 @@ export function Header({ currentMode }: HeaderProps) {
                     className="flex items-center gap-2 text-lg font-bold hover:opacity-80 transition-opacity"
                 >
                     <span className={`relative w-5 h-5 ${isAdmin ? "admin-logo-glow" : ""}`}>
-                        <img src="/alien.svg" alt="" className="w-full h-full relative z-10" />
+                        <img src="/alien.svg" alt="Tremors logo" className="w-full h-full relative z-10" />
                     </span>
                     <span>{PERSONAL.handle.toLowerCase()}</span>
                 </Link>
@@ -91,7 +91,7 @@ export function Header({ currentMode }: HeaderProps) {
                                 Projects
                             </motion.a>
                             <MotionLink
-                                href="/newspaper"
+                                href="/news"
                                 layoutId="btn-news"
                                 className="inline-flex items-center gap-1.5 text-sm font-medium text-[var(--text-muted)] hover:text-[var(--text)] transition-colors"
                                 transition={{ type: "spring", stiffness: 400, damping: 30 }}
@@ -100,7 +100,7 @@ export function Header({ currentMode }: HeaderProps) {
                                 News
                             </MotionLink>
                             <MotionLink
-                                href="/paper"
+                                href="/resume"
                                 layoutId="btn-resume"
                                 className="inline-flex items-center gap-1.5 text-sm font-medium text-[var(--text-muted)] hover:text-[var(--text)] transition-colors"
                                 transition={{ type: "spring", stiffness: 400, damping: 30 }}
@@ -171,9 +171,10 @@ export function Header({ currentMode }: HeaderProps) {
             {/* Mobile: Simple top bar - fully transparent */}
             <div className="md:hidden fixed top-0 left-0 right-0 z-40 px-4 py-3 flex items-center justify-between bg-transparent">
                 <Link href="/" className="flex items-center gap-2 font-bold">
-                    <Terminal className="w-5 h-5 text-[var(--accent-cyan)]" />
-                    <span>{PERSONAL.handle.toLowerCase()}</span>
+                    <img src="/alien.svg" alt="Tremors logo" className="w-5 h-5" />
+                    <span className={currentMode === "newspaper" ? (theme === "dark" ? "text-[#1a1a1a]" : "text-[#f5f0e8]") : ""}>{PERSONAL.handle.toLowerCase()}</span>
                 </Link>
+
                 <div className="flex items-center gap-1">
                     {isAdmin && (
                         <>
@@ -181,12 +182,14 @@ export function Header({ currentMode }: HeaderProps) {
                                 onClick={handleRefresh}
                                 disabled={refreshing}
                                 className={`p-2 rounded-lg text-[var(--text-muted)] ${refreshing ? "animate-spin" : ""}`}
+                                title="Refresh data"
                             >
                                 <RefreshCw className="w-5 h-5" />
                             </button>
                             <button
                                 onClick={() => setEditMode(!editMode)}
                                 className={`p-2 rounded-lg ${editMode ? "text-green-400 bg-green-500/10" : "text-[var(--text-muted)]"}`}
+                                title={editMode ? "Exit edit mode" : "Enter edit mode"}
                             >
                                 {editMode ? <Check className="w-5 h-5" /> : <Pencil className="w-5 h-5" />}
                             </button>
@@ -201,7 +204,7 @@ export function Header({ currentMode }: HeaderProps) {
                     >
                         <img src="/blackhole-icon.png" alt="Portal" className="w-6 h-6 nexus-portal-icon" />
                     </a>
-                    <button onClick={toggleTheme} className="p-2 rounded-lg text-[var(--text-muted)]">
+                    <button onClick={toggleTheme} className="p-2 rounded-lg text-[var(--text-muted)]" title="Toggle theme">
                         {theme === "dark" ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
                     </button>
                 </div>

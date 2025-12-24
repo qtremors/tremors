@@ -11,8 +11,8 @@ import { useRouter, usePathname } from "next/navigation";
 
 const SHORTCUTS: Record<string, { key: string; ctrl?: boolean; alt?: boolean; path: string }> = {
     terminal: { key: "`", ctrl: true, path: "/terminal" },
-    paper: { key: "p", ctrl: true, alt: true, path: "/paper" },
-    newspaper: { key: "n", ctrl: true, alt: true, path: "/newspaper" },
+    resume: { key: "p", ctrl: true, alt: true, path: "/resume" },
+    news: { key: "n", ctrl: true, alt: true, path: "/news" },
     nexus: { key: "x", ctrl: true, alt: true, path: "/nexus" },
 };
 

@@ -358,7 +358,7 @@ export function HeroSection() {
                                     Projects
                                 </motion.a>
                                 <MotionLink
-                                    href="/newspaper"
+                                    href="/news"
                                     layoutId="btn-news"
                                     className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full font-medium"
                                     style={{ backgroundColor: 'var(--btn-bg)', color: 'var(--btn-text)' }}
@@ -368,7 +368,7 @@ export function HeroSection() {
                                     News
                                 </MotionLink>
                                 <MotionLink
-                                    href="/paper"
+                                    href="/resume"
                                     layoutId="btn-resume"
                                     className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full font-medium"
                                     style={{ backgroundColor: 'var(--btn-bg)', color: 'var(--btn-text)' }}
