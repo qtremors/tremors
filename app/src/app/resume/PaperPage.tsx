@@ -9,17 +9,31 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import type { ModeProps } from "@/types";
-import { PERSONAL, SKILLS } from "@/config/site";
-import { ArrowLeft, Check } from "lucide-react";
+import { PERSONAL, SKILLS, RESUME } from "@/config/site";
+import { Download, Check } from "lucide-react";
 import { ContactLinks } from "@/components/ContactLinks";
 import "./resume.css";
+
+/**
+ * Format project title - converts kebab-case to Title Case
+ * "my-cool-project" -> "My Cool Project"
+ */
+function formatProjectTitle(name: string): string {
+    return name
+        .split(/[-_]/)
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+        .join(" ");
+}
 
 // Table of contents sections
 const sections = [
     { id: "intro", label: "Intro" },
     { id: "about", label: "About Me" },
-    { id: "skills", label: "My Skills" },
+    { id: "education", label: "Education" },
+    { id: "experience", label: "Experience" },
+    { id: "skills", label: "Skills" },
     { id: "projects", label: "Projects" },
+    { id: "certifications", label: "Certifications" },
     { id: "contact", label: "Contact" },
 ] as const;
 
@@ -40,13 +54,20 @@ export function PaperPage({ data }: ModeProps) {
     useEffect(() => {
         const observer = new IntersectionObserver(
             (entries) => {
-                entries.forEach((entry) => {
-                    if (entry.isIntersecting) {
-                        setActiveSection(entry.target.id);
-                    }
-                });
+                // Find the entry with highest intersection ratio
+                const visibleEntries = entries.filter(e => e.isIntersecting);
+                if (visibleEntries.length > 0) {
+                    // Get the one closest to top of viewport
+                    const topEntry = visibleEntries.reduce((prev, curr) =>
+                        prev.boundingClientRect.top < curr.boundingClientRect.top ? prev : curr
+                    );
+                    setActiveSection(topEntry.target.id);
+                }
             },
-            { rootMargin: "-45% 0px -45% 0px" }
+            {
+                rootMargin: "-80px 0px -60% 0px", // Account for header, activate when entering top 40%
+                threshold: 0
+            }
         );
 
         sections.forEach((section) => {
@@ -59,7 +80,10 @@ export function PaperPage({ data }: ModeProps) {
 
     const scrollToSection = (id: string) => {
         setActiveSection(id);
-        document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
+        const element = document.getElementById(id);
+        if (element) {
+            element.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
     };
 
     // Get visible repos (filter hidden ones)
@@ -72,12 +96,16 @@ export function PaperPage({ data }: ModeProps) {
             <div className="paper-layout pt-16 md:pt-0">
                 {/* TOC Sidebar - Desktop only */}
                 <aside className="paper-sidebar">
-                    <Link href="/" className="paper-back-link">
+                    <a
+                        href="/Aman_Singh.pdf"
+                        download="Aman_Singh.pdf"
+                        className="paper-back-link"
+                    >
                         <span className="flex items-center justify-center gap-2">
-                            <ArrowLeft className="w-4 h-4" />
-                            Back to Main
+                            <Download className="w-4 h-4" />
+                            Download PDF
                         </span>
-                    </Link>
+                    </a>
 
                     <nav className="paper-toc">
                         {sections.map((section) => (
@@ -99,35 +127,49 @@ export function PaperPage({ data }: ModeProps) {
                         <section id="intro" className="paper-section">
                             <h1>{PERSONAL.name}</h1>
                             <p><strong>{PERSONAL.tagline}</strong></p>
-                            <p>{PERSONAL.bio}</p>
+                            <p>{RESUME.summary}</p>
                         </section>
 
                         {/* ABOUT */}
                         <section id="about" className="paper-section">
                             <h2>About Me</h2>
-                            <p>
-                                I am a Computer Science graduate and a {PERSONAL.tagline} focused on the Django and
-                                FastAPI ecosystems. I build scalable backend systems and web applications,
-                                with experience ranging from real-time features using WebSockets to
-                                integrating generative AI models into production-ready apps.
-                            </p>
-                            <p>
-                                Beyond application development, I enjoy building utilities that improve workflows
-                                or solve specific system-level problems. My recent work includes creating a CLI for
-                                Git visualization, a remote control API for system management, and a custom
-                                Terminal UI. I appreciate the details of how software interacts with the underlying
-                                system and strive to write clean, efficient code.
-                            </p>
-                            <p>
-                                Currently, I am working on combining traditional web engineering with LLM capabilities
-                                to create smarter applications. I am looking for a developer role where I can apply
-                                my skills in Python and modern web technologies to build reliable and practical software.
-                            </p>
+                            {RESUME.about.map((paragraph, i) => (
+                                <p key={i}>{paragraph}</p>
+                            ))}
+                        </section>
+
+                        {/* EDUCATION */}
+                        <section id="education" className="paper-section">
+                            <h2>Education</h2>
+                            {RESUME.education.map((edu, i) => (
+                                <div key={i} className="paper-entry">
+                                    <h3>{edu.institution}</h3>
+                                    <p><strong>{edu.degree}</strong></p>
+                                    <p>CGPA: {edu.cgpa} • Graduation: {edu.graduation}</p>
+                                </div>
+                            ))}
+                        </section>
+
+                        {/* EXPERIENCE */}
+                        <section id="experience" className="paper-section">
+                            <h2>Experience</h2>
+                            {RESUME.experience.map((exp, i) => (
+                                <div key={i} className="paper-entry">
+                                    <h3>{exp.title}</h3>
+                                    <p><strong>{exp.company}</strong>, {exp.location}</p>
+                                    <p className="paper-date">{exp.period}</p>
+                                    <ul className="paper-bullets">
+                                        {exp.bullets.map((bullet, j) => (
+                                            <li key={j}>{bullet}</li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            ))}
                         </section>
 
                         {/* SKILLS */}
                         <section id="skills" className="paper-section">
-                            <h2>My Skills</h2>
+                            <h2>Technical Skills</h2>
                             {SKILLS.map((category) => (
                                 <div key={category.id}>
                                     <h3>{category.label}</h3>
@@ -144,8 +186,8 @@ export function PaperPage({ data }: ModeProps) {
                         <section id="projects" className="paper-section">
                             <h2>Projects</h2>
                             {displayedRepos.map((repo) => (
-                                <div key={repo.id}>
-                                    <h3>{repo.name}</h3>
+                                <div key={repo.id} className="paper-entry">
+                                    <h3>{formatProjectTitle(repo.name)}</h3>
                                     <p>{repo.description || "No description available."}</p>
                                     <p>
                                         {repo.homepage && (
@@ -161,7 +203,17 @@ export function PaperPage({ data }: ModeProps) {
 
                             {hasMoreProjects && (
                                 <button
-                                    onClick={() => setShowAllProjects(true)}
+                                    onClick={() => {
+                                        const firstNewIndex = visibleProjects;
+                                        setShowAllProjects(true);
+                                        // Scroll to the first newly revealed project
+                                        setTimeout(() => {
+                                            const projectEntries = document.querySelectorAll('#projects .paper-entry');
+                                            if (projectEntries[firstNewIndex]) {
+                                                projectEntries[firstNewIndex].scrollIntoView({ behavior: 'smooth', block: 'start' });
+                                            }
+                                        }, 50);
+                                    }}
                                     className="paper-load-more"
                                 >
                                     Load More Projects...
@@ -170,12 +222,31 @@ export function PaperPage({ data }: ModeProps) {
 
                             {showAllProjects && visibleRepos.length > INITIAL_PROJECTS && (
                                 <button
-                                    onClick={() => setShowAllProjects(false)}
+                                    onClick={() => {
+                                        // Standard collapse: scroll to section header first, then collapse
+                                        document.getElementById('projects')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                                        // Delay collapse until scroll animation completes
+                                        setTimeout(() => {
+                                            setShowAllProjects(false);
+                                        }, 300);
+                                    }}
                                     className="paper-load-more"
                                 >
                                     Show Less
                                 </button>
                             )}
+                        </section>
+
+                        {/* CERTIFICATIONS */}
+                        <section id="certifications" className="paper-section">
+                            <h2>Certifications</h2>
+                            <ul className="paper-certifications">
+                                {RESUME.certifications.map((cert, i) => (
+                                    <li key={i}>
+                                        <strong>{cert.name}</strong> – {cert.issuer} – {cert.date}
+                                    </li>
+                                ))}
+                            </ul>
                         </section>
 
                         {/* CONTACT */}
@@ -191,16 +262,6 @@ export function PaperPage({ data }: ModeProps) {
                                 </div>
                             )}
                         </section>
-
-                        {/* FOOTER */}
-                        <footer className="paper-footer">
-                            <p>© {new Date().getFullYear()} {PERSONAL.name}. All rights reserved.</p>
-                            <p style={{ marginTop: "0.5rem" }}>
-                                <Link href="/">Full Portfolio</Link>
-                                {" • "}
-                                <Link href="/terminal">Terminal Mode</Link>
-                            </p>
-                        </footer>
                     </main>
                 </div>
             </div>

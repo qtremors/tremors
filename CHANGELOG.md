@@ -4,6 +4,34 @@ All notable changes to the Tremors Portfolio project are documented in this file
 
 ---
 
+## [1.9.1] - 2025-12-29
+
+### Added
+- **Resume Page Content Structure** - Added configurable `RESUME` config in `site.ts`:
+  - Summary, About paragraphs, Education, Experience, Certifications
+  - All resume content now editable from single config file
+- **Resume Sections** - Added Education, Experience, Certifications sections to resume page
+- **Download PDF Button** - Replaced "Back to Main" with download resume button in sidebar
+- **Project Title Formatting** - `formatProjectTitle()` converts kebab-case to Title Case
+
+### Changed
+- **TOC Highlighting** - Fixed intersection observer for accurate section highlighting
+  - Better `rootMargin` for header offset and viewport detection
+  - Selects topmost visible section when multiple intersect
+- **Load More/Show Less** - Smooth expand/collapse behavior:
+  - Load More scrolls to first newly revealed project
+  - Show Less scrolls to section header, then collapses
+- **Resume PDF** - Now served from local `/Aman_Singh.pdf` instead of external URL
+- **Paper Skeleton** - Uses paper theme colors (`#f5f3ef`/`#1a1a1a`) instead of main page theme
+- **Skills Border Radius** - Increased from `3px` to `6px` to match TOC links
+- **Entry Separators** - Added dashed borders between project entries (except last)
+
+### Removed
+- **Duplicate Footer** - Removed "Full Portfolio • Terminal Mode" links from resume page
+- **External Resume Links** - All resume links now use local PDF
+
+---
+
 ## [1.9.0] - 2025-12-29
 
 ### Added
@@ -745,7 +773,8 @@ All notable changes to the Tremors Portfolio project are documented in this file
 
 ---
 
-[Unreleased]: https://github.com/qtremors/tremors/compare/v1.9.0...HEAD
+[Unreleased]: https://github.com/qtremors/tremors/compare/v1.9.1...HEAD
+[1.9.1]: https://github.com/qtremors/tremors/compare/v1.9.0...v1.9.1
 [1.9.0]: https://github.com/qtremors/tremors/compare/v1.8.5...v1.9.0
 [1.8.5]: https://github.com/qtremors/tremors/compare/v1.8.0...v1.8.5
 [1.8.0]: https://github.com/qtremors/tremors/compare/v1.7.5...v1.8.0

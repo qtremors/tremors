@@ -42,9 +42,24 @@ export function DefaultLoadingSkeleton() {
                     <Skeleton className="w-32 h-8" />
                     <div className="flex-1 h-px bg-[var(--border)]" />
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {[1, 2, 3, 4, 5, 6].map((i) => (
-                        <Skeleton key={i} className="h-48 rounded-xl" />
+                {/* Featured Projects - 5 column layout with center placeholder */}
+                <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-4">
+                    <div className="md:col-span-2 aspect-[2/1]">
+                        <Skeleton className="w-full h-full rounded-xl" />
+                    </div>
+                    <div className="hidden md:flex md:col-span-1 aspect-square items-center justify-center">
+                        <Skeleton className="w-16 h-16 rounded-full" />
+                    </div>
+                    <div className="md:col-span-2 aspect-[2/1]">
+                        <Skeleton className="w-full h-full rounded-xl" />
+                    </div>
+                </div>
+                {/* Second row - 3 medium cards */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {[1, 2, 3].map((i) => (
+                        <div key={i} className="aspect-[2/1]">
+                            <Skeleton className="w-full h-full rounded-xl" />
+                        </div>
                     ))}
                 </div>
             </section>
@@ -66,41 +81,55 @@ export function DefaultLoadingSkeleton() {
 }
 
 // Paper Mode skeleton - Sidebar + Content
+// Uses paper-mode CSS variables for proper theming
 export function PaperLoadingSkeleton() {
     return (
-        <div className="min-h-screen bg-[var(--bg)] text-[var(--text)]">
-            <div className="max-w-6xl mx-auto px-6 py-12">
-                <div className="grid md:grid-cols-[240px_1fr] gap-12">
-                    {/* Sidebar skeleton */}
-                    <aside className="hidden md:block">
-                        <div className="sticky top-24 space-y-4">
-                            <Skeleton className="w-full h-6" />
-                            <div className="space-y-2 pt-4">
-                                {[1, 2, 3, 4, 5, 6].map((i) => (
-                                    <Skeleton key={i} className="w-full h-8" />
-                                ))}
+        <>
+            {/* Import paper styles for theming */}
+            <style>{`
+                .paper-skeleton {
+                    --paper-bg: #f5f3ef;
+                    --paper-border: #d4d0c8;
+                }
+                [data-theme="dark"] .paper-skeleton {
+                    --paper-bg: #1a1a1a;
+                    --paper-border: #3a3a3a;
+                }
+            `}</style>
+            <div className="paper-skeleton min-h-screen" style={{ backgroundColor: 'var(--paper-bg)' }}>
+                <div className="max-w-6xl mx-auto px-6 py-12">
+                    <div className="grid md:grid-cols-[240px_1fr] gap-12">
+                        {/* Sidebar skeleton */}
+                        <aside className="hidden md:block">
+                            <div className="sticky top-24 space-y-4">
+                                <div className="animate-pulse rounded h-10 w-full" style={{ backgroundColor: 'var(--paper-border)' }} />
+                                <div className="space-y-2 pt-4">
+                                    {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+                                        <div key={i} className="animate-pulse rounded h-8 w-full" style={{ backgroundColor: 'var(--paper-border)' }} />
+                                    ))}
+                                </div>
                             </div>
-                        </div>
-                    </aside>
-                    {/* Main content skeleton */}
-                    <main className="space-y-16">
-                        {/* Hero */}
-                        <section>
-                            <Skeleton className="w-64 h-10 mb-4" />
-                            <Skeleton className="w-48 h-6 mb-2" />
-                            <Skeleton className="w-full h-20" />
-                        </section>
-                        {/* Content sections */}
-                        {[1, 2, 3].map((i) => (
-                            <section key={i}>
-                                <Skeleton className="w-32 h-8 mb-4" />
-                                <Skeleton className="w-full h-32" />
+                        </aside>
+                        {/* Main content skeleton */}
+                        <main className="space-y-12">
+                            {/* Hero */}
+                            <section>
+                                <div className="animate-pulse rounded h-10 w-64 mb-4" style={{ backgroundColor: 'var(--paper-border)' }} />
+                                <div className="animate-pulse rounded h-6 w-48 mb-2" style={{ backgroundColor: 'var(--paper-border)' }} />
+                                <div className="animate-pulse rounded h-20 w-full" style={{ backgroundColor: 'var(--paper-border)' }} />
                             </section>
-                        ))}
-                    </main>
+                            {/* Content sections */}
+                            {[1, 2, 3, 4].map((i) => (
+                                <section key={i}>
+                                    <div className="animate-pulse rounded h-8 w-32 mb-4" style={{ backgroundColor: 'var(--paper-border)' }} />
+                                    <div className="animate-pulse rounded h-24 w-full" style={{ backgroundColor: 'var(--paper-border)' }} />
+                                </section>
+                            ))}
+                        </main>
+                    </div>
                 </div>
             </div>
-        </div>
+        </>
     );
 }
 

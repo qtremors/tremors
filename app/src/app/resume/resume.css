@@ -56,21 +56,23 @@
     margin-right: 2rem;
 }
 
-/* Sidebar Back Link */
+/* Sidebar Download Link */
 .paper-back-link {
-    display: block;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     padding: 0.75rem 1rem;
     margin-bottom: 2rem;
     color: var(--paper-muted);
     text-decoration: none !important;
-    font-size: 0.85rem;
+    font-size: 0.8rem;
     text-transform: uppercase;
     letter-spacing: 0.05em;
     font-weight: 600;
     border: 1px solid var(--paper-border);
     border-radius: 6px;
     transition: all 0.2s ease;
-    text-align: center;
+    white-space: nowrap;
 }
 
 .paper-back-link:hover {
@@ -160,16 +162,13 @@
 
 .paper-mode h3 {
     font-size: 1.25rem;
-    margin-top: 2rem;
-    padding-top: 1.5rem;
-    border-top: 1px dashed var(--paper-border);
+    margin-top: 1.5rem;
 }
 
-/* First h3 in section - no top border */
-.paper-section>h3:first-of-type {
-    margin-top: 1.5rem;
-    padding-top: 0;
-    border-top: none;
+/* First h3 in section - less top margin */
+.paper-section>h3:first-of-type,
+.paper-entry:first-of-type h3 {
+    margin-top: 0.5rem;
 }
 
 /* Paragraphs */
@@ -206,7 +205,7 @@
     background: var(--paper-highlight);
     border: 1px solid var(--paper-border);
     padding: 0.4rem 0.8rem;
-    border-radius: 3px;
+    border-radius: 6px;
     font-size: 0.9rem;
 }
 
@@ -259,6 +258,62 @@
 /* Section */
 .paper-section {
     margin-bottom: 3rem;
+    scroll-margin-top: 100px;
+    /* Account for header when scrolling to section */
+}
+
+/* Entry block (for education, experience, projects) */
+.paper-entry {
+    margin-bottom: 1.5rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px dashed var(--paper-border);
+}
+
+/* Remove border from last entry (works with expanded/collapsed states) */
+.paper-entry:last-of-type {
+    margin-bottom: 0;
+    padding-bottom: 0;
+    border-bottom: none;
+}
+
+/* Date/period styling */
+.paper-date {
+    color: var(--paper-muted);
+    font-style: italic;
+    font-size: 0.95rem;
+    margin-bottom: 0.5rem;
+}
+
+/* Bullet list for experience */
+.paper-bullets {
+    list-style: disc;
+    padding-left: 1.5rem;
+    margin: 0.5rem 0 0 0;
+}
+
+.paper-bullets li {
+    margin-bottom: 0.5rem;
+    text-align: left;
+}
+
+.paper-bullets li:last-child {
+    margin-bottom: 0;
+}
+
+/* Certifications list */
+.paper-certifications {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.paper-certifications li {
+    padding: 0.75rem 0;
+    border-bottom: 1px dashed var(--paper-border);
+}
+
+.paper-certifications li:last-child {
+    border-bottom: none;
 }
 
 /* Available badge */
