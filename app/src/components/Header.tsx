@@ -60,10 +60,9 @@ export function Header({ currentMode }: HeaderProps) {
                     href="/"
                     className="flex items-center gap-2 text-lg font-bold hover:opacity-80 transition-opacity"
                 >
-                    <span className={`relative w-5 h-5 ${isAdmin ? "admin-logo-glow" : ""}`}>
-                        <img src="/alien.svg" alt="Tremors logo" className="w-full h-full relative z-10" />
+                    <span className={`relative w-6 h-6 ${isAdmin ? "admin-logo-glow" : ""}`}>
+                        <img src="/alien.svg" alt="Logo" className="w-full h-full relative z-10" />
                     </span>
-                    <span>{PERSONAL.handle.toLowerCase()}</span>
                 </Link>
 
                 {/* Center: Nav buttons that slide in from hero */}

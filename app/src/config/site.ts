@@ -102,3 +102,18 @@ export const DATA_LIMITS = {
     initialProjects: 5,     // Projects shown before "Load More"
     featuredProjects: 8,    // Max featured projects in newspaper mode
 } as const;
+
+// Hero Section Terminal Configuration
+// Edit this to change what appears in the code block
+export const HERO_TERMINAL = {
+    filename: "developer.py",
+    lines: [
+        { text: "class Developer:", color: "accent-cyan" },
+        { text: `    name = "${PERSONAL.name}"`, color: "text" },
+        { text: `    role = "${PERSONAL.tagline}"`, color: "text" },
+        { text: '    focus = ["AI", "Backend", "DevTools"]', color: "text" },
+        // The "available" line is handled dynamically - don't include it here
+    ],
+    // Animation speed in milliseconds (how long each line stays highlighted)
+    highlightInterval: 2000,
+} as const;

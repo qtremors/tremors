@@ -4,6 +4,38 @@ All notable changes to the Tremors Portfolio project are documented in this file
 
 ---
 
+## [1.9.0] - 2025-12-29
+
+### Added
+- **Configurable Hero Terminal** - Content now defined in `HERO_TERMINAL` config in `site.ts`
+  - Customizable filename, lines, colors, and highlight interval
+  - Dynamic color mapping from config to CSS variables
+- **Projects Logo GitHub Link** - Center placeholder logo now links to GitHub profile
+- **Rotating Border Animation** - Rainbow gradient ring on hover for projects logo
+  - Uses Dracula theme colors (pink, purple, cyan, green, orange, yellow)
+  - Smooth fade-in on hover with `isolation: isolate` for proper layering
+- **Theme-Aware Dotted Background** - Entire page now has subtle dotted grid pattern
+  - Uses `var(--border)` for automatic light/dark mode adaptation
+- **Footer Quick Links Column** - Added Projects, Skills, Activity, Contact section links
+- **Demo Pages** - Created `/demo.html` (hero concepts) and `/footer-demo.html` (footer layouts)
+
+### Changed
+- **Header Simplified** - Removed "tremors" text, now shows only logo icon (slightly larger)
+- **Header Logo Size** - Increased from 20px to 24px
+- **Footer Layout** - More compact 4-column grid with reduced vertical spacing
+  - Smaller font sizes (headers: `text-xs`, links: `text-sm`)
+  - Tighter spacing: `py-12` → `py-8`, reduced margins
+  - Smaller social icons: `w-11` → `w-9`
+- **Footer Hover Effects** - Links slide right on hover, icons scale up, buttons scale
+- **Hero Nav Buttons** - Reduced padding from `px-5 py-2.5` to `px-4 py-2`
+
+### UI Polish
+- All footer links now use `hover:text-[var(--accent-cyan)]` for consistent theming
+- Added `hover:translate-x-1` transition to footer links for subtle animation
+- Social icons have `hover:scale-110` effect
+
+---
+
 ## [1.8.5] - 2025-12-24
 
 ### Added
@@ -713,7 +745,8 @@ All notable changes to the Tremors Portfolio project are documented in this file
 
 ---
 
-[Unreleased]: https://github.com/qtremors/tremors/compare/v1.8.5...HEAD
+[Unreleased]: https://github.com/qtremors/tremors/compare/v1.9.0...HEAD
+[1.9.0]: https://github.com/qtremors/tremors/compare/v1.8.5...v1.9.0
 [1.8.5]: https://github.com/qtremors/tremors/compare/v1.8.0...v1.8.5
 [1.8.0]: https://github.com/qtremors/tremors/compare/v1.7.5...v1.8.0
 [1.7.5]: https://github.com/qtremors/tremors/compare/v1.7.0...v1.7.5

@@ -68,16 +68,16 @@ export function DefaultLoadingSkeleton() {
 // Paper Mode skeleton - Sidebar + Content
 export function PaperLoadingSkeleton() {
     return (
-        <div className="min-h-screen bg-[#fafaf9] text-[#1c1917]">
+        <div className="min-h-screen bg-[var(--bg)] text-[var(--text)]">
             <div className="max-w-6xl mx-auto px-6 py-12">
                 <div className="grid md:grid-cols-[240px_1fr] gap-12">
                     {/* Sidebar skeleton */}
                     <aside className="hidden md:block">
                         <div className="sticky top-24 space-y-4">
-                            <Skeleton className="w-full h-6 bg-[#e5e5e5]" />
+                            <Skeleton className="w-full h-6" />
                             <div className="space-y-2 pt-4">
                                 {[1, 2, 3, 4, 5, 6].map((i) => (
-                                    <Skeleton key={i} className="w-full h-8 bg-[#e5e5e5]" />
+                                    <Skeleton key={i} className="w-full h-8" />
                                 ))}
                             </div>
                         </div>
@@ -86,15 +86,15 @@ export function PaperLoadingSkeleton() {
                     <main className="space-y-16">
                         {/* Hero */}
                         <section>
-                            <Skeleton className="w-64 h-10 mb-4 bg-[#e5e5e5]" />
-                            <Skeleton className="w-48 h-6 mb-2 bg-[#e5e5e5]" />
-                            <Skeleton className="w-full h-20 bg-[#e5e5e5]" />
+                            <Skeleton className="w-64 h-10 mb-4" />
+                            <Skeleton className="w-48 h-6 mb-2" />
+                            <Skeleton className="w-full h-20" />
                         </section>
                         {/* Content sections */}
                         {[1, 2, 3].map((i) => (
                             <section key={i}>
-                                <Skeleton className="w-32 h-8 mb-4 bg-[#e5e5e5]" />
-                                <Skeleton className="w-full h-32 bg-[#e5e5e5]" />
+                                <Skeleton className="w-32 h-8 mb-4" />
+                                <Skeleton className="w-full h-32" />
                             </section>
                         ))}
                     </main>
@@ -107,29 +107,29 @@ export function PaperLoadingSkeleton() {
 // Newspaper Mode skeleton - Editorial layout
 export function NewspaperLoadingSkeleton() {
     return (
-        <div className="min-h-screen bg-[#fef9f3] text-[#1a1a1a]">
+        <div className="min-h-screen bg-[var(--bg)] text-[var(--text)]">
             {/* Masthead skeleton */}
-            <header className="border-b border-[#d4c8b8] py-6 text-center">
-                <Skeleton className="w-48 h-10 mx-auto mb-2 bg-[#e8dfd1]" />
-                <Skeleton className="w-32 h-4 mx-auto bg-[#e8dfd1]" />
+            <header className="border-b border-[var(--border)] py-6 text-center">
+                <Skeleton className="w-48 h-10 mx-auto mb-2" />
+                <Skeleton className="w-32 h-4 mx-auto" />
             </header>
 
             <div className="max-w-6xl mx-auto px-6 py-8">
                 {/* Headline skeleton */}
-                <section className="border-b border-[#d4c8b8] pb-8 mb-8">
-                    <Skeleton className="w-3/4 h-12 mx-auto mb-4 bg-[#e8dfd1]" />
-                    <Skeleton className="w-1/2 h-6 mx-auto bg-[#e8dfd1]" />
+                <section className="border-b border-[var(--border)] pb-8 mb-8">
+                    <Skeleton className="w-3/4 h-12 mx-auto mb-4" />
+                    <Skeleton className="w-1/2 h-6 mx-auto" />
                 </section>
 
                 {/* Two-column layout skeleton */}
                 <div className="grid md:grid-cols-2 gap-8">
                     <div className="space-y-6">
-                        <Skeleton className="w-full h-40 bg-[#e8dfd1]" />
-                        <Skeleton className="w-full h-32 bg-[#e8dfd1]" />
+                        <Skeleton className="w-full h-40" />
+                        <Skeleton className="w-full h-32" />
                     </div>
                     <div className="space-y-6">
-                        <Skeleton className="w-full h-32 bg-[#e8dfd1]" />
-                        <Skeleton className="w-full h-40 bg-[#e8dfd1]" />
+                        <Skeleton className="w-full h-32" />
+                        <Skeleton className="w-full h-40" />
                     </div>
                 </div>
             </div>
@@ -140,13 +140,13 @@ export function NewspaperLoadingSkeleton() {
 // Terminal Mode skeleton
 export function TerminalLoadingSkeleton() {
     return (
-        <div className="h-screen bg-[#191724] flex flex-col items-center justify-center">
+        <div className="h-screen bg-[var(--bg)] flex flex-col items-center justify-center">
             <div className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded-full bg-[#9ccfd8] animate-bounce" style={{ animationDelay: "0ms" }} />
-                <div className="w-3 h-3 rounded-full bg-[#c4a7e7] animate-bounce" style={{ animationDelay: "150ms" }} />
-                <div className="w-3 h-3 rounded-full bg-[#f6c177] animate-bounce" style={{ animationDelay: "300ms" }} />
+                <div className="w-3 h-3 rounded-full bg-cyan-400 animate-bounce" style={{ animationDelay: "0ms" }} />
+                <div className="w-3 h-3 rounded-full bg-violet-400 animate-bounce" style={{ animationDelay: "150ms" }} />
+                <div className="w-3 h-3 rounded-full bg-amber-400 animate-bounce" style={{ animationDelay: "300ms" }} />
             </div>
-            <p className="text-sm text-[#908caa] mt-4 animate-pulse">Loading terminal...</p>
+            <p className="text-sm text-[var(--text-muted)] mt-4 animate-pulse">Loading terminal...</p>
         </div>
     );
 }

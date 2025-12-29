@@ -171,25 +171,25 @@
 }
 
 .np-folder-header:hover {
-    background: rgba(0, 0, 0, 0.05);
+    background: color-mix(in srgb, var(--np-ink) 8%, transparent);
 }
 
 /* Yellow folder when contains active news */
 .np-folder-active {
-    background: #fef3c7;
+    background: color-mix(in srgb, var(--np-accent) 15%, var(--np-paper));
 }
 
 .np-folder-active:hover {
-    background: #fde68a;
+    background: color-mix(in srgb, var(--np-accent) 25%, var(--np-paper));
 }
 
 /* Red fallback folder header */
 .np-folder-header-fallback {
-    color: #b91c1c;
+    color: var(--np-accent);
 }
 
 .np-folder-fallback {
-    background: #fef2f2;
+    background: color-mix(in srgb, var(--np-accent) 10%, var(--np-paper));
 }
 
 .np-folder-chevron {
@@ -239,17 +239,17 @@
 
 /* Green active variant */
 .np-variant-active {
-    background: #dcfce7;
+    background: color-mix(in srgb, var(--np-ink) 8%, var(--np-paper));
 }
 
 .np-variant-active .np-variant-name {
-    color: #15803d;
+    color: var(--np-ink);
     font-weight: 600;
 }
 
 /* Red fallback variant text */
 .np-variant-fallback .np-variant-name {
-    color: #b91c1c;
+    color: var(--np-accent);
 }
 
 /* Use button */
@@ -269,16 +269,16 @@
     color: var(--np-paper);
 }
 
-/* Green checkmark for active */
+/* Checkmark for active */
 .np-variant-use-active {
-    background: #15803d;
-    border-color: #15803d;
-    color: white;
+    background: var(--np-ink);
+    border-color: var(--np-ink);
+    color: var(--np-paper);
 }
 
 .np-variant-use-active:hover {
-    background: #166534;
-    border-color: #166534;
+    background: color-mix(in srgb, var(--np-ink) 80%, var(--np-paper));
+    border-color: color-mix(in srgb, var(--np-ink) 80%, var(--np-paper));
 }
 
 /* Loading text */

@@ -130,7 +130,7 @@ export function ProjectCard({
     const languageSize = size === "large" ? "text-sm" : "text-xs";
 
     // U-004: Enhanced drag-drop visual feedback
-    const cardClasses = `group relative overflow-hidden rounded-2xl border transition-all hover:-translate-y-1 bg-[var(--card-bg)] backdrop-blur-sm ${isDragged
+    const cardClasses = `group relative overflow-hidden rounded-2xl border transition-all hover:-translate-y-1 bg-[var(--card-bg)] backdrop-blur-sm h-full ${isDragged
         ? "opacity-50 border-[var(--accent-cyan)] scale-[0.97] rotate-1 shadow-lg"
         : isDragOver
             ? "border-[var(--accent-cyan)] bg-[var(--accent-cyan)]/10 scale-[1.02] shadow-xl shadow-cyan-500/20 ring-2 ring-[var(--accent-cyan)]/30"
