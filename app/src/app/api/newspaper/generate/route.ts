@@ -21,6 +21,7 @@ const FALLBACK_CONTENT = {
         `When reached for comment, ${PERSONAL.name.split(" ")[0]} simply muttered something about "one more commit" before returning to what witnesses describe as "an unhealthy number of browser tabs."`
     ]),
     pullQuote: `"I'll refactor it tomorrow." — ${PERSONAL.name.split(" ")[0]}, reportedly every single day`,
+    location: "VØID",
 };
 
 interface GeminiResponse {
@@ -213,7 +214,7 @@ ${context.recentCommits || "None"}
 STYLE: 1920s tabloid + The Onion. Absurdly dramatic about coding. Developer humor. Use ALL the context creatively - holidays, streaks, dormant repos, late night commits, etc.
 
 RESPOND WITH ONLY THIS JSON (no markdown, no code blocks):
-{"headline":"ALL CAPS HEADLINE","subheadline":"Witty secondary headline","bodyContent":["Dramatic paragraph 1","Paragraph 2","Paragraph 3"],"pullQuote":"Funny quote from developer"}`;
+{"headline":"ALL CAPS HEADLINE","subheadline":"Witty secondary headline","bodyContent":["Dramatic paragraph 1","Paragraph 2","Paragraph 3"],"pullQuote":"Funny quote from developer","location":"Creative nerdy location like 'localhost:3000', '127.0.0.1', '/dev/null', 'The Stack', 'Buffer Zone', etc."}`;
 
     try {
         const response = await fetch(`${GEMINI_API_URL}/${MODEL}:generateContent?key=${apiKey}`, {
@@ -262,6 +263,7 @@ RESPOND WITH ONLY THIS JSON (no markdown, no code blocks):
                 subheadline: parsed.subheadline || FALLBACK_CONTENT.subheadline,
                 bodyContent: JSON.stringify(parsed.bodyContent || JSON.parse(FALLBACK_CONTENT.bodyContent)),
                 pullQuote: parsed.pullQuote || FALLBACK_CONTENT.pullQuote,
+                location: parsed.location || FALLBACK_CONTENT.location,
             };
         } catch (parseError) {
             console.error("JSON parse failed, response may be truncated:", text.substring(0, 300));
@@ -389,6 +391,7 @@ export async function POST(request: Request) {
                     ? content.bodyContent
                     : JSON.stringify(content.bodyContent),
                 pullQuote: content.pullQuote,
+                location: content.location || "VØID",
                 isActive: true, // Auto-activate new edition
                 isFallback: false, // Never fallback - this is admin-generated for today
                 generatedBy: generated ? MODEL : "fallback-content",

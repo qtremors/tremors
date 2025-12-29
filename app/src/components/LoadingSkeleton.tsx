@@ -134,35 +134,74 @@ export function PaperLoadingSkeleton() {
 }
 
 // Newspaper Mode skeleton - Editorial layout
+// Uses newspaper theme colors for proper styling
 export function NewspaperLoadingSkeleton() {
     return (
-        <div className="min-h-screen bg-[var(--bg)] text-[var(--text)]">
-            {/* Masthead skeleton */}
-            <header className="border-b border-[var(--border)] py-6 text-center">
-                <Skeleton className="w-48 h-10 mx-auto mb-2" />
-                <Skeleton className="w-32 h-4 mx-auto" />
-            </header>
+        <>
+            {/* Inject newspaper theme styles */}
+            <style>{`
+                .newspaper-skeleton {
+                    --np-bg: #0d0d0d;
+                    --np-paper: #f5f0e8;
+                    --np-border: #d4cfc4;
+                    --np-accent: #c41e3a;
+                }
+            `}</style>
+            <div className="newspaper-skeleton min-h-screen" style={{ backgroundColor: 'var(--np-bg)' }}>
+                <div style={{
+                    maxWidth: '1100px',
+                    margin: '0 auto',
+                    background: 'var(--np-paper)',
+                    minHeight: '100vh',
+                    padding: '40px 60px'
+                }}>
+                    {/* Masthead skeleton */}
+                    <header style={{ textAlign: 'center', borderBottom: '3px double var(--np-border)', paddingBottom: '24px', marginBottom: '32px' }}>
+                        <div className="animate-pulse rounded mx-auto mb-2" style={{ width: '200px', height: '48px', backgroundColor: 'var(--np-border)' }} />
+                        <div className="animate-pulse rounded mx-auto" style={{ width: '160px', height: '16px', backgroundColor: 'var(--np-border)' }} />
+                    </header>
 
-            <div className="max-w-6xl mx-auto px-6 py-8">
-                {/* Headline skeleton */}
-                <section className="border-b border-[var(--border)] pb-8 mb-8">
-                    <Skeleton className="w-3/4 h-12 mx-auto mb-4" />
-                    <Skeleton className="w-1/2 h-6 mx-auto" />
-                </section>
+                    {/* Headline skeleton */}
+                    <section style={{ marginBottom: '32px' }}>
+                        <div className="animate-pulse rounded mx-auto mb-4" style={{ width: '75%', height: '48px', backgroundColor: 'var(--np-border)' }} />
+                        <div className="animate-pulse rounded mx-auto" style={{ width: '50%', height: '24px', backgroundColor: 'var(--np-border)' }} />
+                    </section>
 
-                {/* Two-column layout skeleton */}
-                <div className="grid md:grid-cols-2 gap-8">
-                    <div className="space-y-6">
-                        <Skeleton className="w-full h-40" />
-                        <Skeleton className="w-full h-32" />
+                    {/* Two-column content skeleton */}
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '32px', marginBottom: '32px' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                            <div className="animate-pulse rounded" style={{ height: '120px', backgroundColor: 'var(--np-border)' }} />
+                            <div className="animate-pulse rounded" style={{ height: '100px', backgroundColor: 'var(--np-border)' }} />
+                        </div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                            <div className="animate-pulse rounded" style={{ height: '100px', backgroundColor: 'var(--np-border)' }} />
+                            <div className="animate-pulse rounded" style={{ height: '120px', backgroundColor: 'var(--np-border)' }} />
+                        </div>
                     </div>
-                    <div className="space-y-6">
-                        <Skeleton className="w-full h-32" />
-                        <Skeleton className="w-full h-40" />
+
+                    {/* Projects table skeleton */}
+                    <div style={{ marginBottom: '32px' }}>
+                        <div className="animate-pulse rounded mb-3" style={{ width: '150px', height: '24px', backgroundColor: 'var(--np-border)' }} />
+                        <div className="animate-pulse rounded" style={{ height: '200px', backgroundColor: 'var(--np-border)' }} />
+                    </div>
+
+                    {/* Skills 5-column skeleton */}
+                    <div style={{ marginBottom: '32px' }}>
+                        <div className="animate-pulse rounded mb-3" style={{ width: '180px', height: '20px', backgroundColor: 'var(--np-border)' }} />
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '0', border: '1px solid var(--np-border)' }}>
+                            {[1, 2, 3, 4, 5].map(i => (
+                                <div key={i} style={{ padding: '16px', borderRight: i < 5 ? '1px dotted var(--np-border)' : 'none', textAlign: 'center' }}>
+                                    <div className="animate-pulse rounded mx-auto mb-3" style={{ width: '70%', height: '16px', backgroundColor: 'var(--np-accent)', opacity: 0.3 }} />
+                                    <div className="animate-pulse rounded mx-auto mb-2" style={{ width: '80%', height: '12px', backgroundColor: 'var(--np-border)' }} />
+                                    <div className="animate-pulse rounded mx-auto mb-2" style={{ width: '60%', height: '12px', backgroundColor: 'var(--np-border)' }} />
+                                    <div className="animate-pulse rounded mx-auto" style={{ width: '70%', height: '12px', backgroundColor: 'var(--np-border)' }} />
+                                </div>
+                            ))}
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
+        </>
     );
 }
 

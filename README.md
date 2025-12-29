@@ -49,8 +49,9 @@ This repository contains two sites:
 
 ### 📰 AI Newspaper Mode
 - Gemini AI generates hilarious tabloid-style headlines and articles
-- Archive dropdown with collapsible date folders
+- **Archive modal** with month navigation and scroll-based loading
 - Multiple content variants per day
+- Dynamic AI-generated locations (creative nerdy locations)
 - Admin controls to set active edition
 - Fallback content when AI is unavailable
 
@@ -61,6 +62,7 @@ This repository contains two sites:
 - Drag-and-drop reordering of projects
 - Refresh button to sync from GitHub
 - Regenerate AI newspaper content
+- **Resume PDF upload** - Upload resume directly via Vercel Blob
 - **Project card images** - GitHub preview, custom URL, or none
 - **Global image toggle** - Show/hide all project images
 
@@ -410,6 +412,7 @@ For production on Vercel or similar:
 | `DATABASE_URL` | Yes | PostgreSQL connection string (pooled) |
 | `DATABASE_URL_UNPOOLED` | Yes* | Direct connection for Prisma migrations (*auto-set by Vercel+Neon) |
 | `GEMINI_API_KEY` | Optional | For AI newspaper content |
+| `BLOB_READ_WRITE_TOKEN` | Optional | For resume PDF upload via Vercel Blob |
 
 > **Note**: No password in env vars! Password is created on first login and stored hashed in the database.
 
@@ -488,7 +491,7 @@ npm run test:coverage
 
 | File | Description |
 |------|-------------|
-| [CHANGELOG.md](CHANGELOG.md) | Complete version history (v0.0.0 - v1.8.5) |
+| [CHANGELOG.md](CHANGELOG.md) | Complete version history (v0.0.0 - v1.9.5) |
 | [AGENTS.md](AGENTS.md) | Technical documentation for AI assistants |
 | [TASKS.md](TASKS.md) | Bug tracking and improvement backlog |
 | [app/.env.example](app/.env.example) | Environment variable template |

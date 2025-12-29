@@ -6,14 +6,26 @@
 "use client";
 
 import Link from "next/link";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import type { ModeProps } from "@/types";
 import { PERSONAL, SKILLS } from "@/config/site";
 import { ContactLinks } from "@/components/ContactLinks";
 import { useTheme } from "@/components/ThemeProvider";
 import { useAdmin } from "@/components/AdminContext";
-import { Sun, Moon, ArrowLeft, GitCommit, Star, GitBranch, GitPullRequest, Rocket, ChevronDown, Loader2, RefreshCw, Calendar, Check, Folder, FolderOpen, ChevronRight, Rss } from "lucide-react";
+import { Sun, Moon, GitCommit, Star, GitBranch, GitPullRequest, Rocket, ChevronDown, Loader2, RefreshCw, Calendar, Rss } from "lucide-react";
+import { NewspaperArchiveModal } from "./components/NewspaperArchiveModal";
 import "./newspaper.css";
+
+/**
+ * Format project title - converts kebab-case to Title Case
+ * "my-cool-project" -> "My Cool Project"
+ */
+function formatProjectTitle(name: string): string {
+    return name
+        .split(/[-_]/)
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+        .join(" ");
+}
 
 // Types for AI-generated content
 interface NewspaperEdition {
@@ -23,6 +35,7 @@ interface NewspaperEdition {
     subheadline: string;
     bodyContent: string[];
     pullQuote: string;
+    location: string;
     isFallback: boolean;
     generatedBy: string | null;
 }
@@ -30,6 +43,7 @@ interface NewspaperEdition {
 interface EditionSummary {
     id: string;
     date: string;
+    createdAt: string;
     headline: string;
     isActive: boolean;
     isFallback: boolean;
@@ -50,39 +64,21 @@ export function NewspaperPage({ data }: ModeProps) {
     const [isLoadingContent, setIsLoadingContent] = useState(true);
     const [isRegenerating, setIsRegenerating] = useState(false);
     const [showArchive, setShowArchive] = useState(false);
-    const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set());
 
     // State for show more projects
     const [showMoreProjects, setShowMoreProjects] = useState(false);
 
-    // Ref for archive dropdown click-outside detection
-    const archiveRef = useRef<HTMLDivElement>(null);
-
-    // Close archive dropdown when clicking outside (U-002)
+    // Close archive on escape key
     useEffect(() => {
-        function handleClickOutside(event: MouseEvent) {
-            if (archiveRef.current && !archiveRef.current.contains(event.target as Node)) {
+        function handleEscape(event: KeyboardEvent) {
+            if (event.key === "Escape" && showArchive) {
                 setShowArchive(false);
             }
         }
-        if (showArchive) {
-            document.addEventListener("mousedown", handleClickOutside);
-        }
-        return () => document.removeEventListener("mousedown", handleClickOutside);
+        document.addEventListener("keydown", handleEscape);
+        return () => document.removeEventListener("keydown", handleEscape);
     }, [showArchive]);
 
-    // Toggle folder expansion
-    const toggleFolder = (dateKey: string) => {
-        setExpandedFolders(prev => {
-            const next = new Set(prev);
-            if (next.has(dateKey)) {
-                next.delete(dateKey);
-            } else {
-                next.add(dateKey);
-            }
-            return next;
-        });
-    };
 
     // Fetch total commits from API on mount
     useEffect(() => {
@@ -215,12 +211,6 @@ export function NewspaperPage({ data }: ModeProps) {
 
     return (
         <div className="newspaper-mode">
-            {/* Fixed Back Button - Top Left (shifts down for admin navbar) */}
-            <Link href="/" className={`np-back-btn ${isAdmin ? "np-back-btn-admin" : ""}`}>
-                <ArrowLeft className="w-4 h-4" />
-                Back to Main
-            </Link>
-
             <div className="newspaper-container">
                 {/* Masthead */}
                 <header className="np-masthead">
@@ -228,116 +218,11 @@ export function NewspaperPage({ data }: ModeProps) {
                     <h1>TREMORS</h1>
                     <p className="np-masthead-tagline">"All the Code That's Fit to Ship"</p>
                     <div className="np-masthead-controls">
-                        {/* Archive dropdown */}
-                        <div className="np-archive-wrapper" ref={archiveRef}>
-                            <button onClick={() => setShowArchive(!showArchive)} className="np-control-btn">
-                                <Calendar className="w-4 h-4" />
-                                Archive
-                            </button>
-                            {showArchive && editions.length > 0 && (() => {
-                                // Separate fallbacks and non-fallbacks
-                                const regularEditions = editions.filter(e => !e.isFallback);
-                                const fallbackEditions = editions.filter(e => e.isFallback);
-
-                                // Group regular editions by date
-                                const grouped = regularEditions.reduce((acc, e) => {
-                                    const dateKey = new Date(e.date).toLocaleDateString();
-                                    if (!acc[dateKey]) acc[dateKey] = [];
-                                    acc[dateKey].push(e);
-                                    return acc;
-                                }, {} as Record<string, typeof editions>);
-
-                                // Check if any edition in a date group is active
-                                const hasActiveEdition = (editionList: typeof editions) =>
-                                    editionList.some(e => e.isActive);
-
-                                return (
-                                    <div className="np-archive-dropdown">
-                                        {/* Regular date folders */}
-                                        {Object.entries(grouped).map(([dateKey, dateEditions]) => {
-                                            const isExpanded = expandedFolders.has(dateKey);
-                                            const hasActive = hasActiveEdition(dateEditions);
-                                            return (
-                                                <div key={dateKey} className="np-folder">
-                                                    <button
-                                                        className={`np-folder-header ${hasActive && isAdmin ? "np-folder-active" : ""}`}
-                                                        onClick={() => toggleFolder(dateKey)}
-                                                    >
-                                                        {isExpanded ? <FolderOpen className="w-4 h-4" /> : <Folder className="w-4 h-4" />}
-                                                        <span>{dateKey}</span>
-                                                        <ChevronRight className={`w-3 h-3 np-folder-chevron ${isExpanded ? "np-folder-chevron-open" : ""}`} />
-                                                    </button>
-                                                    {isExpanded && (
-                                                        <div className="np-folder-contents">
-                                                            {dateEditions.map((e, idx) => (
-                                                                <div
-                                                                    key={e.id}
-                                                                    className={`np-variant ${e.isActive && isAdmin ? "np-variant-active" : ""}`}
-                                                                >
-                                                                    <button
-                                                                        onClick={() => loadEdition(e.id)}
-                                                                        className="np-variant-name"
-                                                                    >
-                                                                        v{dateEditions.length - idx}
-                                                                    </button>
-                                                                    {isAdmin && (
-                                                                        <button
-                                                                            onClick={() => setActiveEdition(e.id)}
-                                                                            className={`np-variant-use ${e.isActive ? "np-variant-use-active" : ""}`}
-                                                                            title="Set as active"
-                                                                        >
-                                                                            {e.isActive ? <Check className="w-3 h-3" /> : "Use"}
-                                                                        </button>
-                                                                    )}
-                                                                </div>
-                                                            ))}
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            );
-                                        })}
-
-                                        {/* Fallback folder - admin only */}
-                                        {isAdmin && fallbackEditions.length > 0 && (
-                                            <div className="np-folder np-folder-fallback">
-                                                <button
-                                                    className="np-folder-header np-folder-header-fallback"
-                                                    onClick={() => toggleFolder("fallback")}
-                                                >
-                                                    {expandedFolders.has("fallback") ? <FolderOpen className="w-4 h-4" /> : <Folder className="w-4 h-4" />}
-                                                    <span>Fallbacks</span>
-                                                    <ChevronRight className={`w-3 h-3 np-folder-chevron ${expandedFolders.has("fallback") ? "np-folder-chevron-open" : ""}`} />
-                                                </button>
-                                                {expandedFolders.has("fallback") && (
-                                                    <div className="np-folder-contents">
-                                                        {fallbackEditions.map((e, idx) => (
-                                                            <div
-                                                                key={e.id}
-                                                                className={`np-variant np-variant-fallback ${e.isActive ? "np-variant-active" : ""}`}
-                                                            >
-                                                                <button
-                                                                    onClick={() => loadEdition(e.id)}
-                                                                    className="np-variant-name"
-                                                                >
-                                                                    v{fallbackEditions.length - idx}
-                                                                </button>
-                                                                <button
-                                                                    onClick={() => setActiveEdition(e.id)}
-                                                                    className={`np-variant-use ${e.isActive ? "np-variant-use-active" : ""}`}
-                                                                    title="Set as active"
-                                                                >
-                                                                    {e.isActive ? <Check className="w-3 h-3" /> : "Use"}
-                                                                </button>
-                                                            </div>
-                                                        ))}
-                                                    </div>
-                                                )}
-                                            </div>
-                                        )}
-                                    </div>
-                                );
-                            })()}
-                        </div>
+                        {/* Archive button */}
+                        <button onClick={() => setShowArchive(true)} className="np-control-btn">
+                            <Calendar className="w-4 h-4" />
+                            Archive
+                        </button>
                         {/* Admin regenerate button */}
                         {isAdmin && (
                             <button
@@ -406,7 +291,7 @@ export function NewspaperPage({ data }: ModeProps) {
                     <span>
                         <span className="np-byline-author">{PERSONAL.name.toUpperCase()}</span> • {PERSONAL.tagline}
                     </span>
-                    <span>📍 {PERSONAL.location || "India"}</span>
+                    <span>📍 {edition?.location || "VØID"}</span>
                 </div>
 
                 {/* Main Content - AI Generated */}
@@ -485,7 +370,7 @@ export function NewspaperPage({ data }: ModeProps) {
                             <tr key={repo.id}>
                                 <td>
                                     <a href={repo.html_url} target="_blank" rel="noopener noreferrer">
-                                        {repo.name}
+                                        {formatProjectTitle(repo.name)}
                                     </a>
                                 </td>
                                 <td>{repo.language || "—"}</td>
@@ -501,7 +386,7 @@ export function NewspaperPage({ data }: ModeProps) {
                             <tr key={repo.id} className="np-more-project">
                                 <td>
                                     <a href={repo.html_url} target="_blank" rel="noopener noreferrer">
-                                        {repo.name}
+                                        {formatProjectTitle(repo.name)}
                                     </a>
                                 </td>
                                 <td>{repo.language || "—"}</td>
@@ -529,11 +414,15 @@ export function NewspaperPage({ data }: ModeProps) {
 
                 {/* Skills */}
                 <h3 className="np-section-header">Technical Proficiencies</h3>
-                <div className="np-skills-grouped">
+                <div className="np-skills-columns">
                     {SKILLS.map((category) => (
-                        <div key={category.id} className="np-skill-row">
-                            <span className="np-skill-category">{category.label}:</span>
-                            <span className="np-skill-items">{category.skills.join(" • ")}</span>
+                        <div key={category.id} className="np-skill-column">
+                            <h4 className="np-skill-column-header">{category.label}</h4>
+                            <ul className="np-skill-column-list">
+                                {category.skills.map((skill, idx) => (
+                                    <li key={idx}>{skill}</li>
+                                ))}
+                            </ul>
                         </div>
                     ))}
                 </div>
@@ -550,6 +439,29 @@ export function NewspaperPage({ data }: ModeProps) {
                     <p>© {new Date().getFullYear()} The Tremors Chronicle. All Rights Reserved.</p>
                 </footer>
             </div>
+
+            {/* Archive Modal */}
+            <NewspaperArchiveModal
+                isOpen={showArchive}
+                onClose={() => setShowArchive(false)}
+                editions={editions}
+                isAdmin={isAdmin}
+                currentEditionId={edition?.id}
+                onLoadEdition={loadEdition}
+                onSetActive={setActiveEdition}
+                onResetToActive={async () => {
+                    // Reload the active edition from server
+                    try {
+                        const res = await fetch("/api/newspaper/generate");
+                        if (res.ok) {
+                            const data = await res.json();
+                            setEdition(data);
+                        }
+                    } catch (err) {
+                        console.error("Failed to reset:", err);
+                    }
+                }}
+            />
         </div>
     );
 }

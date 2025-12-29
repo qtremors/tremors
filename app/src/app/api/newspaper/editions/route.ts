@@ -9,10 +9,11 @@ import { prisma } from "@/lib/db";
 export async function GET() {
     try {
         const editions = await prisma.newspaperEdition.findMany({
-            orderBy: { date: "desc" },
+            orderBy: { createdAt: "desc" }, // Order by actual creation time (newest first)
             select: {
                 id: true,
                 date: true,
+                createdAt: true, // Return actual creation timestamp
                 headline: true,
                 isActive: true,
                 isFallback: true,

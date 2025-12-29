@@ -6,12 +6,14 @@
 
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import type { ModeProps } from "@/types";
 import { PERSONAL, SKILLS, RESUME } from "@/config/site";
-import { Download, Check } from "lucide-react";
+import { Download, Upload, Check, Loader2 } from "lucide-react";
 import { ContactLinks } from "@/components/ContactLinks";
+import { useAdmin } from "@/components/AdminContext";
+import { useToast } from "@/components/ToastProvider";
 import "./resume.css";
 
 /**
@@ -42,9 +44,62 @@ const INITIAL_PROJECTS = 5;
 
 export function PaperPage({ data }: ModeProps) {
     const { repos, error } = data;
+    const { isAdmin } = useAdmin();
+    const toast = useToast();
     const [activeSection, setActiveSection] = useState("intro");
     const [visibleProjects, setVisibleProjects] = useState(INITIAL_PROJECTS);
     const [showAllProjects, setShowAllProjects] = useState(false);
+
+    // Resume upload state
+    const [resumeUrl, setResumeUrl] = useState("/Aman_Singh.pdf");
+    const [isUploading, setIsUploading] = useState(false);
+    const fileInputRef = useRef<HTMLInputElement>(null);
+
+    // Fetch current resume URL on mount
+    useEffect(() => {
+        fetch("/api/admin/resume")
+            .then(res => res.json())
+            .then(data => {
+                if (data.url) setResumeUrl(data.url);
+            })
+            .catch(console.error);
+    }, []);
+
+    // Handle file upload
+    const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        if (file.type !== "application/pdf") {
+            toast.error("Only PDF files are allowed");
+            return;
+        }
+
+        setIsUploading(true);
+        try {
+            const formData = new FormData();
+            formData.append("file", file);
+
+            const res = await fetch("/api/admin/resume", {
+                method: "POST",
+                body: formData,
+            });
+
+            const data = await res.json();
+            if (data.success && data.url) {
+                setResumeUrl(data.url);
+                toast.success("Resume uploaded successfully!");
+            } else {
+                toast.error(data.error || "Upload failed");
+            }
+        } catch (err) {
+            console.error("Upload error:", err);
+            toast.error("Upload failed");
+        } finally {
+            setIsUploading(false);
+            if (fileInputRef.current) fileInputRef.current.value = "";
+        }
+    };
 
     if (error) {
         return <div className="paper-mode min-h-screen flex items-center justify-center text-red-600">{error}</div>;
@@ -96,16 +151,42 @@ export function PaperPage({ data }: ModeProps) {
             <div className="paper-layout pt-16 md:pt-0">
                 {/* TOC Sidebar - Desktop only */}
                 <aside className="paper-sidebar">
-                    <a
-                        href="/Aman_Singh.pdf"
-                        download="Aman_Singh.pdf"
-                        className="paper-back-link"
-                    >
-                        <span className="flex items-center justify-center gap-2">
-                            <Download className="w-4 h-4" />
-                            Download PDF
-                        </span>
-                    </a>
+                    {/* Hidden file input for upload */}
+                    <input
+                        type="file"
+                        ref={fileInputRef}
+                        accept=".pdf,application/pdf"
+                        onChange={handleUpload}
+                        style={{ display: "none" }}
+                    />
+
+                    {isAdmin ? (
+                        <button
+                            onClick={() => fileInputRef.current?.click()}
+                            disabled={isUploading}
+                            className="paper-back-link"
+                        >
+                            <span className="flex items-center justify-center gap-2">
+                                {isUploading ? (
+                                    <Loader2 className="w-4 h-4 animate-spin" />
+                                ) : (
+                                    <Upload className="w-4 h-4" />
+                                )}
+                                {isUploading ? "Uploading..." : "Upload Resume"}
+                            </span>
+                        </button>
+                    ) : (
+                        <a
+                            href={resumeUrl}
+                            download="Aman_Singh.pdf"
+                            className="paper-back-link"
+                        >
+                            <span className="flex items-center justify-center gap-2">
+                                <Download className="w-4 h-4" />
+                                Download PDF
+                            </span>
+                        </a>
+                    )}
 
                     <nav className="paper-toc">
                         {sections.map((section) => (

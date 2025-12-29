@@ -4,6 +4,48 @@ All notable changes to the Tremors Portfolio project are documented in this file
 
 ---
 
+## [1.9.5] - 2025-12-29
+
+### Added
+- **Archive Modal** - New scalable archive browser for News page:
+  - Month navigation with arrow buttons (newest first)
+  - Scroll-based infinite loading (8 at a time)
+  - Day separators between different days
+  - Reset to Active button when viewing older edition
+  - Admin-only Fallbacks section at bottom
+- **Dynamic Location** - AI-generated creative locations for each edition:
+  - Gemini generates nerdy locations (`localhost:3000`, `/dev/null`, etc.)
+  - Fallback location: "VØID"
+  - Added `location` field to `NewspaperEdition` database model
+- **Skills Column Layout** - 5-column grid with:
+  - Centered text, dotted separators
+  - Headers with red accent underline
+  - Responsive: 3 cols on tablet, 2 on mobile
+- **Resume PDF Upload** - Admin can upload resume directly from website:
+  - Uses Vercel Blob storage
+  - Dual-mode button: "Upload Resume" for admin, "Download PDF" for users
+  - All resume links dynamically updated
+  - Fallback to local PDF if no upload
+
+### Changed
+- **Project Names** - `formatProjectTitle()` applied to projects table
+- **Activity Ticker** - Pause on hover
+- **Newspaper Skeleton** - Updated to match new layout with 5-column skills
+- **Archive API** - Now uses `createdAt` for ordering (newest first) and time display
+- **Fallbacks Hidden** - Non-admin users no longer see fallback editions in archive
+
+### Fixed
+- **Multiple Active Badges** - Archive now shows only ONE active edition
+- **Incorrect Times** - Archive now displays actual creation time, not midnight
+- **Edition Order** - Newest editions appear first within same day
+
+### Removed
+- **"Back to Main" Button** - Removed from News page header
+- **Load More Button** - Replaced with scroll-based loading
+- **Old Archive Dropdown** - Replaced with new modal design
+
+---
+
 ## [1.9.1] - 2025-12-29
 
 ### Added

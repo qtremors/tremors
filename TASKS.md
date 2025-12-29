@@ -1,21 +1,20 @@
 # TASKS.md - Tremors Portfolio
 
-> **Version**: 1.8.5 | **Status**: ✅ Stable
+> **Version**: 1.9.5 | **Status**: ✅ Stable
 
 ---
 
-## � Open Issues
+## ✅ All Clear
 
-| ID | File | Description | Priority |
-|----|------|-------------|----------|
-| **R-001** | `cron/refresh`, `newspaper/generate` | ~150 lines duplicated - extract to shared `lib/newspaper.ts` | Medium |
+No open issues or pending tasks.
 
 ---
 
-## 🔮 Future Improvements
+## � Recently Completed
 
-| ID | Description | Status |
-|----|-------------|--------|
-| **F-001** | Section reordering via drag-drop | Config ready |
-| **F-002** | Resume PDF upload via admin | Uses external URL |
-| **F-003** | Extract newspaper generation to shared lib | Reduces duplication (R-001) |
+| Feature | Version |
+|---------|---------|
+| Resume PDF Upload (Vercel Blob) | v1.9.5 |
+| Archive Modal with infinite scroll | v1.9.5 |
+| Dynamic AI-generated locations | v1.9.5 |
+| 5-column skills layout | v1.9.5 |
