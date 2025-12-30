@@ -59,22 +59,23 @@ tremors/                         # Repository root
     │   │   │   │   ├── check/   # Verify admin session
     │   │   │   │   ├── logout/  # Clear session
     │   │   │   │   └── route.ts # Login endpoint
-    │   │   │   ├── newspaper/   # AI newspaper content
-    │   │   │   │   ├── generate/# Generate/fetch editions
-    │   │   │   │   ├── editions/# List past editions
-    │   │   │   │   └── active/  # Set active edition
-    │   │   │   └── stats/       # Statistics endpoints
-    │   │   │       └── commits/ # Total commit count
-    │   │   ├── newspaper/       # Newspaper mode page
-    │   │   │   ├── components/  # Extracted sub-components
-    │   │   │   │   ├── NewspaperMasthead.tsx
-    │   │   │   │   ├── NewspaperTicker.tsx
-    │   │   │   │   └── NewspaperArchive.tsx
+    │   │   │   ├── news/         # News RSS feed
+    │   │   │   │   └── rss/      # RSS 2.0 endpoint
+    │   │   │   ├── newspaper/    # AI newspaper content
+    │   │   │   │   ├── generate/ # Generate/fetch editions
+    │   │   │   │   ├── editions/ # List past editions
+    │   │   │   │   └── active/   # Set active edition
+    │   │   │   └── stats/        # Statistics endpoints
+    │   │   │       └── commits/  # Total commit count
+    │   │   ├── news/             # News mode page (AI newspaper)
+    │   │   │   ├── components/   # NewspaperMasthead, Ticker, Archive
     │   │   │   ├── NewspaperPage.tsx
     │   │   │   ├── newspaper.css
     │   │   │   └── page.tsx
-    │   │   ├── news/             # News mode (alias for newspaper)
-    │   │   │   └── ...           # Same structure as newspaper
+    │   │   ├── resume/           # Resume mode page (paper layout)
+    │   │   │   ├── PaperPage.tsx
+    │   │   │   ├── resume.css
+    │   │   │   └── page.tsx
     │   │   ├── nexus/           # Nexus space mode
     │   │   │   ├── components/  # Space-themed components
     │   │   │   │   ├── Hero.tsx

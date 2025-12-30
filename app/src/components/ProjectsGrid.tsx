@@ -315,39 +315,20 @@ export function ProjectsGrid({ repos: initialRepos }: ProjectsGridProps) {
             {/* Featured Projects Section */}
             {spotlightRepos.length > 0 && (
                 viewMode === "grid" ? (
-                    // Grid: 2+3 Bento Layout
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {spotlightRepos.slice(0, 2).map((repo) => (
-                            <ProjectCard
-                                key={repo.id}
-                                repo={repo}
-                                size="large"
-                                editMode={editMode}
-                                isAdmin={isAdmin}
-                                isDragged={draggedId === repo.id}
-                                isDragOver={dragOverId === repo.id}
-                                onDragStart={handleDragStart}
-                                onDragOver={handleDragOver}
-                                onDragLeave={handleDragLeave}
-                                onDrop={handleDrop}
-                                onDragEnd={handleDragEnd}
-                                onToggleFeatured={toggleFeatured}
-                                onToggleVisibility={toggleVisibility}
-                                onEdit={handleEdit}
-                                showImages={showImages ?? false}
-                            />
-                        ))}
-                        {spotlightRepos.length > 2 && (
-                            <div className="md:col-span-2 grid grid-cols-1 sm:grid-cols-3 gap-4">
-                                {spotlightRepos.slice(2, 5).map((repo) => (
+                    // Grid: 2+3 Bento Layout with 2:1 aspect ratio
+                    <div className="space-y-4">
+                        {/* Top row: 2 featured cards with center placeholder */}
+                        <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+                            {/* First featured card - spans 2 columns */}
+                            {spotlightRepos[0] && (
+                                <div className="md:col-span-2 aspect-[2/1]">
                                     <ProjectCard
-                                        key={repo.id}
-                                        repo={repo}
-                                        size="medium"
+                                        repo={spotlightRepos[0]}
+                                        size="large"
                                         editMode={editMode}
                                         isAdmin={isAdmin}
-                                        isDragged={draggedId === repo.id}
-                                        isDragOver={dragOverId === repo.id}
+                                        isDragged={draggedId === spotlightRepos[0].id}
+                                        isDragOver={dragOverId === spotlightRepos[0].id}
                                         onDragStart={handleDragStart}
                                         onDragOver={handleDragOver}
                                         onDragLeave={handleDragLeave}
@@ -358,6 +339,108 @@ export function ProjectsGrid({ repos: initialRepos }: ProjectsGridProps) {
                                         onEdit={handleEdit}
                                         showImages={showImages ?? false}
                                     />
+                                </div>
+                            )}
+
+                            {/* Center placeholder - Logo + Last Updated Repo */}
+                            {spotlightRepos.length >= 2 && (
+                                <div className="hidden md:flex md:col-span-1 aspect-[1/1] items-center justify-center rounded-2xl border border-[var(--border)] bg-[var(--card-bg)]/50">
+                                    {(() => {
+                                        // Find the most recently pushed repo (use initialRepos for pushed_at data)
+                                        const lastUpdated = [...initialRepos]
+                                            .filter(r => r.pushed_at)
+                                            .sort((a, b) => new Date(b.pushed_at).getTime() - new Date(a.pushed_at).getTime())[0];
+
+                                        const timeAgo = lastUpdated?.pushed_at ? (() => {
+                                            const diff = Date.now() - new Date(lastUpdated.pushed_at).getTime();
+                                            const hours = Math.floor(diff / (1000 * 60 * 60));
+                                            const days = Math.floor(hours / 24);
+                                            if (days > 0) return `${days}d ago`;
+                                            if (hours > 0) return `${hours}h ago`;
+                                            return "just now";
+                                        })() : null;
+
+                                        return (
+                                            <div className="text-center group p-4">
+                                                <a
+                                                    href="https://github.com/qtremors"
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="inline-block mb-4"
+                                                >
+                                                    <span className="inline-block logo-glow-hover">
+                                                        <img
+                                                            src="/alien.svg"
+                                                            alt="Logo"
+                                                            className="w-16 h-16 opacity-70 hover:opacity-100 hover:scale-110 transition-all"
+                                                        />
+                                                    </span>
+                                                </a>
+                                                {lastUpdated && (
+                                                    <a
+                                                        href={lastUpdated.html_url}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        className="block hover:text-[var(--accent-cyan)] transition-colors"
+                                                    >
+                                                        <p className="text-xs text-[var(--text-muted)] uppercase tracking-widest mb-2">Last Active</p>
+                                                        <p className="text-sm font-semibold truncate max-w-[140px] mx-auto mb-1">{lastUpdated.name}</p>
+                                                        <p className="text-xs text-[var(--accent-cyan)] font-medium">{timeAgo}</p>
+                                                    </a>
+                                                )}
+                                            </div>
+                                        );
+                                    })()}
+                                </div>
+                            )}
+
+                            {/* Second featured card - spans 2 columns */}
+                            {spotlightRepos[1] && (
+                                <div className="md:col-span-2 aspect-[2/1]">
+                                    <ProjectCard
+                                        repo={spotlightRepos[1]}
+                                        size="large"
+                                        editMode={editMode}
+                                        isAdmin={isAdmin}
+                                        isDragged={draggedId === spotlightRepos[1].id}
+                                        isDragOver={dragOverId === spotlightRepos[1].id}
+                                        onDragStart={handleDragStart}
+                                        onDragOver={handleDragOver}
+                                        onDragLeave={handleDragLeave}
+                                        onDrop={handleDrop}
+                                        onDragEnd={handleDragEnd}
+                                        onToggleFeatured={toggleFeatured}
+                                        onToggleVisibility={toggleVisibility}
+                                        onEdit={handleEdit}
+                                        showImages={showImages ?? false}
+                                    />
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Bottom row: 3 smaller featured cards with 2:1 aspect ratio */}
+                        {spotlightRepos.length > 2 && (
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                {spotlightRepos.slice(2, 5).map((repo) => (
+                                    <div key={repo.id} className="aspect-[2/1]">
+                                        <ProjectCard
+                                            repo={repo}
+                                            size="medium"
+                                            editMode={editMode}
+                                            isAdmin={isAdmin}
+                                            isDragged={draggedId === repo.id}
+                                            isDragOver={dragOverId === repo.id}
+                                            onDragStart={handleDragStart}
+                                            onDragOver={handleDragOver}
+                                            onDragLeave={handleDragLeave}
+                                            onDrop={handleDrop}
+                                            onDragEnd={handleDragEnd}
+                                            onToggleFeatured={toggleFeatured}
+                                            onToggleVisibility={toggleVisibility}
+                                            onEdit={handleEdit}
+                                            showImages={showImages ?? false}
+                                        />
+                                    </div>
                                 ))}
                             </div>
                         )}
@@ -404,24 +487,25 @@ export function ProjectsGrid({ repos: initialRepos }: ProjectsGridProps) {
                     {viewMode === "grid" ? (
                         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
                             {(editMode ? otherRepos : otherRepos.slice(0, visibleOtherCount)).map((repo) => (
-                                <ProjectCard
-                                    key={repo.id}
-                                    repo={repo}
-                                    size="small"
-                                    editMode={editMode}
-                                    isAdmin={isAdmin}
-                                    isDragged={draggedId === repo.id}
-                                    isDragOver={dragOverId === repo.id}
-                                    onDragStart={handleDragStart}
-                                    onDragOver={handleDragOver}
-                                    onDragLeave={handleDragLeave}
-                                    onDrop={handleDrop}
-                                    onDragEnd={handleDragEnd}
-                                    onToggleFeatured={toggleFeatured}
-                                    onToggleVisibility={toggleVisibility}
-                                    onEdit={handleEdit}
-                                    showImages={showImages ?? false}
-                                />
+                                <div key={repo.id} className="aspect-[2/1]">
+                                    <ProjectCard
+                                        repo={repo}
+                                        size="small"
+                                        editMode={editMode}
+                                        isAdmin={isAdmin}
+                                        isDragged={draggedId === repo.id}
+                                        isDragOver={dragOverId === repo.id}
+                                        onDragStart={handleDragStart}
+                                        onDragOver={handleDragOver}
+                                        onDragLeave={handleDragLeave}
+                                        onDrop={handleDrop}
+                                        onDragEnd={handleDragEnd}
+                                        onToggleFeatured={toggleFeatured}
+                                        onToggleVisibility={toggleVisibility}
+                                        onEdit={handleEdit}
+                                        showImages={showImages ?? false}
+                                    />
+                                </div>
                             ))}
                         </div>
                     ) : (

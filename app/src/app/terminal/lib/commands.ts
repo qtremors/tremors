@@ -20,10 +20,10 @@ export interface CommandContext {
 
 export type CommandResult = {
     lines: TerminalLine[];
-    action?: "clear" | "exit" | "logout" | "openThemeSelector" | "openFontSelector" | "toggleCrt" | "toggleGlitch";
+    action?: "clear" | "exit" | "logout" | "openThemeSelector" | "openFontSelector" | "toggleCrt";
     repoToHide?: string;
     repoToShow?: string;
-    newFont?: "mono" | "sans" | "serif";
+    newFont?: "mono" | "firacode" | "jetbrains";
 };
 
 const addLine = (lines: TerminalLine[], type: TerminalLine["type"], content: string) => {
@@ -33,20 +33,28 @@ const addLine = (lines: TerminalLine[], type: TerminalLine["type"], content: str
 export const commands: Record<string, (args: string[], ctx: CommandContext) => CommandResult> = {
     help: (args, ctx) => {
         const lines: TerminalLine[] = [];
-        addLine(lines, "output", "/whoami      Display profile info");
-        addLine(lines, "output", "/projects    List all projects");
-        addLine(lines, "output", "/skills      Show technical skills");
-        addLine(lines, "output", "/contact     Contact information");
-        addLine(lines, "output", "/stats       GitHub statistics");
-        addLine(lines, "output", "/shortcuts   Keyboard shortcuts");
-        addLine(lines, "output", "/clear       Clear terminal");
-        addLine(lines, "output", "exit         Return to main page");
+        addLine(lines, "heading", "Navigation");
+        addLine(lines, "output", "/whoami       Display profile info");
+        addLine(lines, "output", "/projects     List all projects");
+        addLine(lines, "output", "/skills       Show technical skills");
+        addLine(lines, "output", "/contact      Contact information");
+        addLine(lines, "output", "/stats        GitHub statistics");
+        addLine(lines, "output", "/repo <name>  Open repo in browser");
+        addLine(lines, "heading", "Terminal");
+        addLine(lines, "output", "/theme        Change color theme");
+        addLine(lines, "output", "/font         Change terminal font");
+        addLine(lines, "output", "/crt          Toggle CRT effect");
+        addLine(lines, "output", "/history      Show command history");
+        addLine(lines, "output", "/shortcuts    Keyboard shortcuts");
+        addLine(lines, "output", "/clear        Clear terminal");
+        addLine(lines, "output", "/export       Copy session to clipboard");
+        addLine(lines, "output", "exit          Return to main page");
         if (ctx.isAdmin) {
-            addLine(lines, "heading", "Extended Commands");
-            addLine(lines, "output", "/list          Show all repos");
-            addLine(lines, "output", "/hide <repo>   Hide a repo");
-            addLine(lines, "output", "/show <repo>   Show a repo");
-            addLine(lines, "output", "/logout        Exit session");
+            addLine(lines, "heading", "Admin");
+            addLine(lines, "output", "/list         Show all repos (hidden)");
+            addLine(lines, "output", "/hide <repo>  Hide a repo");
+            addLine(lines, "output", "/show <repo>  Show a hidden repo");
+            addLine(lines, "output", "/logout       Exit admin session");
         }
         return { lines };
     },
@@ -205,43 +213,22 @@ export const commands: Record<string, (args: string[], ctx: CommandContext) => C
 
     font: (args, ctx) => {
         const lines: TerminalLine[] = [];
-        if (args[0] === "mono" || args[0] === "sans" || args[0] === "serif") {
-            addLine(lines, "success", `Font changed to: ${args[0]}`);
+        const fontNames: Record<string, string> = {
+            mono: "System Mono",
+            firacode: "Fira Code",
+            jetbrains: "JetBrains Mono"
+        };
+        if (args[0] === "mono" || args[0] === "firacode" || args[0] === "jetbrains") {
+            addLine(lines, "success", `Font changed to: ${fontNames[args[0]]}`);
             return { lines, newFont: args[0] };
         } else if (args[0]) {
             addLine(lines, "error", `Unknown font: ${args[0]}`);
-            addLine(lines, "output", "Available: mono, sans, serif");
+            addLine(lines, "output", "Available: mono, firacode, jetbrains");
         } else {
             // Open font selector TUI (same UX as theme)
             return { lines: [], action: "openFontSelector" };
         }
         return { lines };
-    },
-
-    neofetch: (args, ctx) => {
-        const lines: TerminalLine[] = [];
-        addLine(lines, "output", `  ████████╗  ${PERSONAL.name}@portfolio`);
-        addLine(lines, "output", `  ╚══██╔══╝  ─────────────────────`);
-        addLine(lines, "output", `     ██║     OS: Next.js 16`);
-        addLine(lines, "output", `     ██║     Host: Vercel`);
-        addLine(lines, "output", `     ██║     Shell: tremors-term v2.0`);
-        addLine(lines, "output", `     ╚═╝     Theme: ${ctx.termTheme}`);
-        addLine(lines, "output", ``);
-        addLine(lines, "output", `  Repos: ${ctx.repos.length} | Stars: ${ctx.repos.reduce((s, r) => s + r.stargazers_count, 0)} | Followers: ${ctx.user?.followers || 0}`);
-        return { lines };
-    },
-
-    date: () => {
-        const now = new Date();
-        return {
-            lines: [{
-                type: "output",
-                content: now.toLocaleString("en-US", {
-                    weekday: "long", year: "numeric", month: "long", day: "numeric",
-                    hour: "2-digit", minute: "2-digit", second: "2-digit"
-                })
-            }]
-        };
     },
 
     history: (args, ctx) => {
@@ -256,69 +243,10 @@ export const commands: Record<string, (args: string[], ctx: CommandContext) => C
         return { lines };
     },
 
-    fortune: () => {
-        const fortunes = [
-            "The best code is the code you don't have to write.",
-            "There are only two hard things: cache invalidation and naming things.",
-            "It works on my machine!",
-            "Have you tried turning it off and on again?",
-            "99 little bugs in the code, 99 bugs in the code. Take one down, patch it around... 127 bugs in the code.",
-        ];
-        return { lines: [{ type: "output", content: fortunes[Math.floor(Math.random() * fortunes.length)] }] };
-    },
-
-    cowsay: (args) => {
-        const lines: TerminalLine[] = [];
-        const text = args.join(" ") || "Moo!";
-        const border = "─".repeat(text.length + 2);
-        addLine(lines, "output", ` ┌${border}┐`);
-        addLine(lines, "output", ` │ ${text} │`);
-        addLine(lines, "output", ` └${border}┘`);
-        addLine(lines, "output", `        \\   ^__^`);
-        addLine(lines, "output", `         \\  (oo)\\_______`);
-        addLine(lines, "output", `            (__)\\       )\\/\\`);
-        addLine(lines, "output", `                ||----w |`);
-        addLine(lines, "output", `                ||     ||`);
-        return { lines };
-    },
-
     echo: (args) => ({ lines: [{ type: "output", content: args.join(" ") || "" }] }),
-
-    sl: () => {
-        const lines: TerminalLine[] = [];
-        addLine(lines, "output", "      ====        ________                ___________");
-        addLine(lines, "output", "  _D _|  |_______/        \\__I_I_____===__|_________|");
-        addLine(lines, "output", "   |(_)---  |   H\\________/ |   |        =|___ ___|");
-        addLine(lines, "output", "   /     |  |   H  |  |     |   |         ||_| |_||");
-        addLine(lines, "output", "  |      |  |   H  |__--------------------| [___] |");
-        return { lines };
-    },
-
-    figlet: (args) => {
-        const lines: TerminalLine[] = [];
-        const figText = args.join(" ") || "HELLO";
-        const letters: Record<string, string[]> = {
-            "H": ["█ █", "███", "█ █"], "E": ["███", "██ ", "███"],
-            "L": ["█  ", "█  ", "███"], "O": ["███", "█ █", "███"],
-            "!": [" █ ", " █ ", " ▪ "], " ": ["   ", "   ", "   "],
-        };
-        const rows = ["", "", ""];
-        for (const char of figText.toUpperCase()) {
-            const l = letters[char] || letters[" "];
-            rows[0] += l[0] + " ";
-            rows[1] += l[1] + " ";
-            rows[2] += l[2] + " ";
-        }
-        rows.forEach(r => addLine(lines, "output", r));
-        return { lines };
-    },
 
     crt: () => {
         return { lines: [{ type: "success", content: "CRT effect toggled" }], action: "toggleCrt" };
-    },
-
-    glitch: () => {
-        return { lines: [{ type: "success", content: "Glitch effect toggled" }], action: "toggleGlitch" };
     },
 
     export: (args, ctx) => {

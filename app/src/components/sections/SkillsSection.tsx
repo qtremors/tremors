@@ -87,7 +87,7 @@ const SkillIcon = ({ name }: { name: string }) => {
 
 export function SkillsSection() {
     return (
-        <section className="mb-24">
+        <section id="skills" className="mb-24">
             <div className="flex items-center gap-4 mb-10">
                 <h2 className="text-3xl font-bold">Skills</h2>
                 <span className="flex-1 h-px bg-[var(--border)]" />

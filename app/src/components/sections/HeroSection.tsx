@@ -8,7 +8,7 @@
 import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import { motion, LayoutGroup } from "framer-motion";
-import { PERSONAL, CONTACT_LINKS } from "@/config/site";
+import { PERSONAL, CONTACT_LINKS, HERO_TERMINAL } from "@/config/site";
 import { Github, Linkedin, Mail, Newspaper, FileText, FolderOpen } from "lucide-react";
 import { useAdmin } from "@/components/AdminContext";
 import { useToast } from "@/components/ToastProvider";
@@ -149,11 +149,23 @@ interface AnimatedCodeBlockProps {
 function AnimatedCodeBlock({ availableForWork, onToggle, isAdmin, editMode }: AnimatedCodeBlockProps) {
     const [activeIndex, setActiveIndex] = useState(0);
 
+    // Color mapping from config to CSS variables
+    const colorMap: Record<string, string> = {
+        "accent-cyan": "var(--accent-cyan)",
+        "text": "var(--text)",
+        "text-muted": "var(--text-muted)",
+        "success": "var(--success)",
+    };
+
+    // Build lines from config + dynamic availability line
+    const configLines = HERO_TERMINAL.lines.map(line => ({
+        text: line.text,
+        color: colorMap[line.color] || "var(--text)",
+        editable: false,
+    }));
+
     const lines = [
-        { text: "class Developer:", color: "var(--accent-cyan)", editable: false },
-        { text: `    name = "${PERSONAL.name}"`, color: "var(--text)", editable: false },
-        { text: `    role = "${PERSONAL.tagline}"`, color: "var(--text)", editable: false },
-        { text: '    focus = ["AI", "Backend", "DevTools"]', color: "var(--text)", editable: false },
+        ...configLines,
         {
             text: `    available = ${availableForWork ? "True" : "False"}`,
             color: availableForWork ? "var(--success)" : "var(--text-muted)",
@@ -164,7 +176,7 @@ function AnimatedCodeBlock({ availableForWork, onToggle, isAdmin, editMode }: An
     useEffect(() => {
         const timer = setInterval(() => {
             setActiveIndex((prev) => (prev + 1) % lines.length);
-        }, 2000);
+        }, HERO_TERMINAL.highlightInterval);
         return () => clearInterval(timer);
     }, [lines.length]);
 
@@ -182,7 +194,7 @@ function AnimatedCodeBlock({ availableForWork, onToggle, isAdmin, editMode }: An
                     <div className="w-3 h-3 rounded-full bg-red-500" />
                     <div className="w-3 h-3 rounded-full bg-yellow-500" />
                     <div className="w-3 h-3 rounded-full bg-green-500" />
-                    <span className="ml-4 text-xs text-[var(--text-muted)] font-mono">developer.py</span>
+                    <span className="ml-4 text-xs text-[var(--text-muted)] font-mono">{HERO_TERMINAL.filename}</span>
                 </div>
                 <pre className="font-mono text-sm md:text-base">
                     {lines.map((line, i) => (
@@ -350,7 +362,7 @@ export function HeroSection() {
                                 <motion.a
                                     href="#projects"
                                     layoutId="btn-projects"
-                                    className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full font-medium"
+                                    className="inline-flex items-center gap-2 px-4 py-2 rounded-full font-medium"
                                     style={{ backgroundColor: 'var(--btn-bg)', color: 'var(--btn-text)' }}
                                     transition={{ type: "spring", stiffness: 400, damping: 30 }}
                                 >
@@ -360,7 +372,7 @@ export function HeroSection() {
                                 <MotionLink
                                     href="/news"
                                     layoutId="btn-news"
-                                    className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full font-medium"
+                                    className="inline-flex items-center gap-2 px-4 py-2 rounded-full font-medium"
                                     style={{ backgroundColor: 'var(--btn-bg)', color: 'var(--btn-text)' }}
                                     transition={{ type: "spring", stiffness: 400, damping: 30 }}
                                 >
@@ -370,7 +382,7 @@ export function HeroSection() {
                                 <MotionLink
                                     href="/resume"
                                     layoutId="btn-resume"
-                                    className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full font-medium"
+                                    className="inline-flex items-center gap-2 px-4 py-2 rounded-full font-medium"
                                     style={{ backgroundColor: 'var(--btn-bg)', color: 'var(--btn-text)' }}
                                     transition={{ type: "spring", stiffness: 400, damping: 30 }}
                                 >

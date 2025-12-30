@@ -5,6 +5,7 @@
    Premium Black & White Theme
    ============================================ */
 :root {
+  scroll-behavior: smooth;
   /* Dark Theme - Pure Black & White */
   --bg: #000000;
   --bg-secondary: #0a0a0a;
@@ -81,6 +82,10 @@ body {
   background-color: var(--bg);
   color: var(--text);
   transition: background-color 0.2s ease, color 0.2s ease;
+
+  /* Theme-aware dotted background */
+  background-image: radial-gradient(circle, var(--border) 1px, transparent 1px);
+  background-size: 24px 24px;
 }
 
 a {
@@ -143,6 +148,33 @@ a:hover {
   /* Thin ring effect using mask */
   -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 2px), #000 calc(100% - 2px));
   mask: radial-gradient(farthest-side, transparent calc(100% - 2px), #000 calc(100% - 2px));
+}
+
+/* Logo glow on hover - for projects section */
+.logo-glow-hover {
+  position: relative;
+  isolation: isolate;
+}
+
+.logo-glow-hover::before {
+  content: "";
+  position: absolute;
+  top: -14px;
+  left: -14px;
+  width: calc(100% + 28px);
+  height: calc(100% + 28px);
+  border-radius: 50%;
+  background: conic-gradient(#ff79c6, #bd93f9, #8be9fd, #50fa7b, #ffb86c, #f1fa8c, #ff79c6);
+  z-index: -1;
+  opacity: 0;
+  animation: admin-gradient-rotate 2s linear infinite;
+  -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 3px), #000 calc(100% - 3px));
+  mask: radial-gradient(farthest-side, transparent calc(100% - 3px), #000 calc(100% - 3px));
+  transition: opacity 0.3s ease;
+}
+
+.logo-glow-hover:hover::before {
+  opacity: 1;
 }
 
 /* Nexus Portal Icon - Glow + Rotation */

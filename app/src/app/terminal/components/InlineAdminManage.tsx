@@ -1,12 +1,11 @@
 /**
- * Admin Management TUI
- * Management interface shown when admin types secret command while logged in
- * Options: Change Password, Logout, Cancel
+ * InlineAdminManage Component
+ * Inline TUI for admin management (change password, logout)
  */
 
 "use client";
 
-import { useState, useEffect, KeyboardEvent } from "react";
+import { useState, useRef, useEffect, useCallback, useMemo, KeyboardEvent } from "react";
 import type { ThemeColors } from "../lib/types";
 
 interface Props {
@@ -19,7 +18,7 @@ interface Props {
 type MenuOption = "changePassword" | "logout" | "cancel";
 type View = "menu" | "changePassword";
 
-export function AdminManageTUI({ theme, onLogout, onClose, sessionInfo }: Props) {
+export function InlineAdminManage({ theme, onLogout, onClose, sessionInfo }: Props) {
     const [view, setView] = useState<View>("menu");
     const [selectedOption, setSelectedOption] = useState<MenuOption>("changePassword");
 
@@ -32,58 +31,45 @@ export function AdminManageTUI({ theme, onLogout, onClose, sessionInfo }: Props)
     const [success, setSuccess] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
 
-    const menuOptions: { id: MenuOption; label: string }[] = [
+    const currentRef = useRef<HTMLInputElement>(null);
+    const newRef = useRef<HTMLInputElement>(null);
+    const confirmRef = useRef<HTMLInputElement>(null);
+
+    const menuOptions = useMemo((): { id: MenuOption; label: string }[] => [
         { id: "changePassword", label: "Change Password" },
         { id: "logout", label: "Logout" },
         { id: "cancel", label: "Cancel" },
-    ];
+    ], []);
 
     const formatExpiresIn = (seconds: number): string => {
         const hours = Math.floor(seconds / 3600);
         const minutes = Math.floor((seconds % 3600) / 60);
         if (hours > 0) {
-            return `in ${hours}h ${minutes}m`;
+            return `${hours}h ${minutes}m`;
         }
-        return `in ${minutes}m`;
+        return `${minutes}m`;
     };
 
-    const handleMenuKeyDown = (e: KeyboardEvent) => {
-        if (e.key === "Escape") {
-            onClose();
-        } else if (e.key === "ArrowUp") {
-            e.preventDefault();
-            const idx = menuOptions.findIndex((o) => o.id === selectedOption);
-            const newIdx = idx > 0 ? idx - 1 : menuOptions.length - 1;
-            setSelectedOption(menuOptions[newIdx].id);
-        } else if (e.key === "ArrowDown") {
-            e.preventDefault();
-            const idx = menuOptions.findIndex((o) => o.id === selectedOption);
-            const newIdx = idx < menuOptions.length - 1 ? idx + 1 : 0;
-            setSelectedOption(menuOptions[newIdx].id);
-        } else if (e.key === "Enter") {
-            handleMenuSelect(selectedOption);
-        }
-    };
-
-    const handleMenuSelect = (option: MenuOption) => {
-        if (option === "changePassword") {
-            setView("changePassword");
-            setActiveField(0);
-        } else if (option === "logout") {
-            handleLogout();
-        } else {
-            onClose();
-        }
-    };
-
-    const handleLogout = async () => {
+    const handleLogout = useCallback(async () => {
         try {
             await fetch("/api/auth/logout", { method: "POST" });
             onLogout();
         } catch {
             setError("Failed to logout");
         }
-    };
+    }, [onLogout]);
+
+    const handleMenuSelect = useCallback((option: MenuOption) => {
+        if (option === "changePassword") {
+            setView("changePassword");
+            setActiveField(0);
+            setTimeout(() => currentRef.current?.focus(), 0);
+        } else if (option === "logout") {
+            handleLogout();
+        } else {
+            onClose();
+        }
+    }, [handleLogout, onClose]);
 
     const handleChangePassword = async () => {
         setError(null);
@@ -116,25 +102,54 @@ export function AdminManageTUI({ theme, onLogout, onClose, sessionInfo }: Props)
 
             const data = await res.json();
             if (data.success) {
-                setSuccess("Password changed successfully!");
+                setSuccess("Password changed!");
                 setCurrentPassword("");
                 setNewPassword("");
                 setConfirmPassword("");
                 setTimeout(() => {
                     setView("menu");
                     setSuccess(null);
-                }, 1500);
+                }, 1000);
             } else {
                 setError(data.error || "Failed to change password");
             }
         } catch {
-            setError("Network error. Please try again.");
+            setError("Network error");
         }
         setLoading(false);
     };
 
+    // Keyboard handling
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent | globalThis.KeyboardEvent) => {
+            if (view === "menu") {
+                if (e.key === "Escape") {
+                    e.preventDefault();
+                    onClose();
+                } else if (e.key === "ArrowUp") {
+                    e.preventDefault();
+                    const idx = menuOptions.findIndex((o: { id: MenuOption }) => o.id === selectedOption);
+                    const newIdx = idx > 0 ? idx - 1 : menuOptions.length - 1;
+                    setSelectedOption(menuOptions[newIdx].id);
+                } else if (e.key === "ArrowDown") {
+                    e.preventDefault();
+                    const idx = menuOptions.findIndex((o: { id: MenuOption }) => o.id === selectedOption);
+                    const newIdx = idx < menuOptions.length - 1 ? idx + 1 : 0;
+                    setSelectedOption(menuOptions[newIdx].id);
+                } else if (e.key === "Enter") {
+                    e.preventDefault();
+                    handleMenuSelect(selectedOption);
+                }
+            }
+        };
+
+        window.addEventListener("keydown", handleKeyDown);
+        return () => window.removeEventListener("keydown", handleKeyDown);
+    }, [view, selectedOption, onClose, menuOptions, handleMenuSelect]);
+
     const handlePasswordKeyDown = (e: KeyboardEvent) => {
         if (e.key === "Escape") {
+            e.preventDefault();
             setView("menu");
             setCurrentPassword("");
             setNewPassword("");
@@ -142,116 +157,105 @@ export function AdminManageTUI({ theme, onLogout, onClose, sessionInfo }: Props)
             setError(null);
         } else if (e.key === "Tab") {
             e.preventDefault();
-            setActiveField((prev) => (prev + 1) % 3);
+            const next = (activeField + 1) % 3;
+            setActiveField(next);
+            [currentRef, newRef, confirmRef][next].current?.focus();
         } else if (e.key === "Enter") {
+            e.preventDefault();
             if (activeField < 2) {
-                setActiveField(activeField + 1);
+                const next = activeField + 1;
+                setActiveField(next);
+                [currentRef, newRef, confirmRef][next].current?.focus();
             } else {
                 handleChangePassword();
             }
         }
     };
 
-    // Focus handling for menu
-    useEffect(() => {
-        const handleGlobalKeyDown = (e: globalThis.KeyboardEvent) => {
-            if (view === "menu") {
-                handleMenuKeyDown(e as unknown as KeyboardEvent);
-            }
-        };
-
-        window.addEventListener("keydown", handleGlobalKeyDown);
-        return () => window.removeEventListener("keydown", handleGlobalKeyDown);
-    }, [view, selectedOption]);
-
     return (
         <div
-            className="fixed inset-0 z-50 flex items-center justify-center"
-            style={{ backgroundColor: "rgba(0,0,0,0.8)" }}
-            onClick={onClose}
+            className="rounded-lg overflow-hidden"
+            style={{ borderWidth: 1, borderColor: theme.border }}
         >
+            {/* Header */}
             <div
-                className="w-full max-w-md mx-4 rounded-lg border p-6"
+                className="px-4 py-2 flex items-center gap-2"
                 style={{
                     backgroundColor: theme.panel,
+                    borderBottomWidth: 1,
                     borderColor: theme.border,
-                    color: theme.text,
                 }}
-                onClick={(e) => e.stopPropagation()}
+            >
+                <span>{view === "menu" ? "⚙️" : "🔄"}</span>
+                <span style={{ color: theme.secondary }}>
+                    {view === "menu" ? "Admin Management" : "Change Password"}
+                </span>
+            </div>
+
+            {/* Body */}
+            <div
+                className="p-4"
+                style={{ backgroundColor: theme.panel + "80" }}
                 onKeyDown={view === "changePassword" ? handlePasswordKeyDown : undefined}
             >
                 {view === "menu" ? (
                     <>
-                        {/* Header */}
-                        <div className="flex items-center gap-2 mb-4">
-                            <span className="text-xl">⚙️</span>
-                            <h2 className="text-lg font-bold">Admin Management</h2>
-                        </div>
-
-                        <div className="h-px mb-4" style={{ backgroundColor: theme.border }} />
-
                         {/* Session info */}
-                        <div className="text-sm mb-4" style={{ color: theme.muted }}>
-                            <p>Logged in as: <span style={{ color: theme.success }}>admin</span></p>
+                        <div className="text-sm mb-3" style={{ color: theme.muted }}>
+                            <span>Logged in as: </span>
+                            <span style={{ color: theme.success }}>admin</span>
                             {sessionInfo && (
-                                <p>Session expires: {formatExpiresIn(sessionInfo.expiresIn)}</p>
+                                <span> • expires {formatExpiresIn(sessionInfo.expiresIn)}</span>
                             )}
                         </div>
 
                         {/* Menu options */}
-                        <div className="rounded border" style={{ borderColor: theme.border }}>
+                        <div
+                            className="rounded border"
+                            style={{ borderColor: theme.border }}
+                        >
                             {menuOptions.map((option) => (
-                                <button
+                                <div
                                     key={option.id}
                                     onClick={() => handleMenuSelect(option.id)}
-                                    className="w-full text-left px-4 py-3 flex items-center gap-2 transition-colors"
+                                    className="px-4 py-2 flex items-center gap-2 cursor-pointer transition-colors"
                                     style={{
                                         backgroundColor: selectedOption === option.id ? theme.bg : "transparent",
                                         color: selectedOption === option.id ? theme.primary : theme.text,
                                         borderBottom: option.id !== "cancel" ? `1px solid ${theme.border}` : "none",
                                     }}
                                 >
-                                    <span style={{ color: theme.primary }}>
+                                    <span style={{ color: theme.primary, width: "1rem" }}>
                                         {selectedOption === option.id ? "→" : " "}
                                     </span>
                                     {option.label}
-                                </button>
+                                </div>
                             ))}
                         </div>
 
-                        {/* Error */}
                         {error && (
-                            <p className="text-sm mt-4" style={{ color: theme.error }}>
+                            <p className="text-sm mt-3" style={{ color: theme.error }}>
                                 {error}
                             </p>
                         )}
-
-                        {/* Keyboard hints */}
-                        <p className="text-xs text-center mt-4" style={{ color: theme.muted }}>
-                            ↑↓ Navigate • Enter: Select • Esc: Close
-                        </p>
                     </>
                 ) : (
                     <>
-                        {/* Change Password View */}
-                        <div className="flex items-center gap-2 mb-4">
-                            <span className="text-xl">🔄</span>
-                            <h2 className="text-lg font-bold">Change Password</h2>
-                        </div>
-
-                        <div className="h-px mb-4" style={{ backgroundColor: theme.border }} />
-
                         {/* Current password */}
-                        <div className="mb-4">
-                            <label className="block text-xs uppercase tracking-wider mb-2" style={{ color: theme.muted }}>
+                        <div className="mb-3">
+                            <label
+                                className="block text-xs uppercase tracking-wider mb-1"
+                                style={{ color: theme.muted }}
+                            >
                                 Current Password
                             </label>
                             <input
+                                ref={currentRef}
                                 type="text"
                                 value={currentPassword}
                                 onChange={(e) => setCurrentPassword(e.target.value)}
                                 onFocus={() => setActiveField(0)}
-                                className="w-full px-4 py-2 rounded border bg-transparent text-sm"
+                                className="w-full px-3 py-1.5 rounded border bg-transparent text-sm"
                                 style={{
                                     borderColor: activeField === 0 ? theme.primary : theme.border,
                                     color: theme.text,
@@ -259,26 +263,25 @@ export function AdminManageTUI({ theme, onLogout, onClose, sessionInfo }: Props)
                                     WebkitTextSecurity: "disc",
                                 } as React.CSSProperties}
                                 autoComplete="off"
-                                autoCorrect="off"
-                                autoCapitalize="off"
-                                spellCheck={false}
-                                data-lpignore="true"
-                                data-form-type="other"
                                 autoFocus
                             />
                         </div>
 
                         {/* New password */}
-                        <div className="mb-4">
-                            <label className="block text-xs uppercase tracking-wider mb-2" style={{ color: theme.muted }}>
+                        <div className="mb-3">
+                            <label
+                                className="block text-xs uppercase tracking-wider mb-1"
+                                style={{ color: theme.muted }}
+                            >
                                 New Password
                             </label>
                             <input
+                                ref={newRef}
                                 type="text"
                                 value={newPassword}
                                 onChange={(e) => setNewPassword(e.target.value)}
                                 onFocus={() => setActiveField(1)}
-                                className="w-full px-4 py-2 rounded border bg-transparent text-sm"
+                                className="w-full px-3 py-1.5 rounded border bg-transparent text-sm"
                                 style={{
                                     borderColor: activeField === 1 ? theme.primary : theme.border,
                                     color: theme.text,
@@ -286,25 +289,24 @@ export function AdminManageTUI({ theme, onLogout, onClose, sessionInfo }: Props)
                                     WebkitTextSecurity: "disc",
                                 } as React.CSSProperties}
                                 autoComplete="off"
-                                autoCorrect="off"
-                                autoCapitalize="off"
-                                spellCheck={false}
-                                data-lpignore="true"
-                                data-form-type="other"
                             />
                         </div>
 
-                        {/* Confirm new password */}
-                        <div className="mb-4">
-                            <label className="block text-xs uppercase tracking-wider mb-2" style={{ color: theme.muted }}>
+                        {/* Confirm password */}
+                        <div className="mb-3">
+                            <label
+                                className="block text-xs uppercase tracking-wider mb-1"
+                                style={{ color: theme.muted }}
+                            >
                                 Confirm New Password
                             </label>
                             <input
+                                ref={confirmRef}
                                 type="text"
                                 value={confirmPassword}
                                 onChange={(e) => setConfirmPassword(e.target.value)}
                                 onFocus={() => setActiveField(2)}
-                                className="w-full px-4 py-2 rounded border bg-transparent text-sm"
+                                className="w-full px-3 py-1.5 rounded border bg-transparent text-sm"
                                 style={{
                                     borderColor: activeField === 2 ? theme.primary : theme.border,
                                     color: theme.text,
@@ -312,22 +314,17 @@ export function AdminManageTUI({ theme, onLogout, onClose, sessionInfo }: Props)
                                     WebkitTextSecurity: "disc",
                                 } as React.CSSProperties}
                                 autoComplete="off"
-                                autoCorrect="off"
-                                autoCapitalize="off"
-                                spellCheck={false}
-                                data-lpignore="true"
-                                data-form-type="other"
                             />
                         </div>
 
                         {/* Error / Success */}
                         {error && (
-                            <p className="text-sm mb-4" style={{ color: theme.error }}>
+                            <p className="text-sm mb-3" style={{ color: theme.error }}>
                                 {error}
                             </p>
                         )}
                         {success && (
-                            <p className="text-sm mb-4" style={{ color: theme.success }}>
+                            <p className="text-sm mb-3" style={{ color: theme.success }}>
                                 {success}
                             </p>
                         )}
@@ -337,13 +334,13 @@ export function AdminManageTUI({ theme, onLogout, onClose, sessionInfo }: Props)
                             <button
                                 onClick={handleChangePassword}
                                 disabled={loading}
-                                className="flex-1 px-4 py-2 rounded font-medium text-sm disabled:opacity-50"
+                                className="flex-1 px-3 py-1.5 rounded font-medium text-sm disabled:opacity-50"
                                 style={{
                                     backgroundColor: theme.primary,
                                     color: theme.bg,
                                 }}
                             >
-                                {loading ? "Updating..." : "Update Password"}
+                                {loading ? "Updating..." : "Update"}
                             </button>
                             <button
                                 onClick={() => {
@@ -353,7 +350,7 @@ export function AdminManageTUI({ theme, onLogout, onClose, sessionInfo }: Props)
                                     setConfirmPassword("");
                                     setError(null);
                                 }}
-                                className="px-4 py-2 rounded text-sm border"
+                                className="px-3 py-1.5 rounded text-sm border"
                                 style={{
                                     borderColor: theme.border,
                                     color: theme.muted,
@@ -362,13 +359,23 @@ export function AdminManageTUI({ theme, onLogout, onClose, sessionInfo }: Props)
                                 Back
                             </button>
                         </div>
-
-                        {/* Keyboard hints */}
-                        <p className="text-xs text-center mt-4" style={{ color: theme.muted }}>
-                            Tab: Switch field • Enter: Submit • Esc: Back
-                        </p>
                     </>
                 )}
+            </div>
+
+            {/* Footer */}
+            <div
+                className="px-4 py-2 text-xs text-center"
+                style={{
+                    backgroundColor: theme.panel,
+                    borderTopWidth: 1,
+                    borderColor: theme.border,
+                    color: theme.muted,
+                }}
+            >
+                {view === "menu"
+                    ? "↑↓ navigate • Enter select • Esc close"
+                    : "Tab: switch • Enter: submit • Esc: back"}
             </div>
         </div>
     );

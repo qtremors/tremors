@@ -13,10 +13,13 @@ interface Props {
     theme: ThemeColors;
     awaitingPassword: boolean;
     shaking: boolean;
+    hidden?: boolean;
 }
 
 export const TerminalInput = forwardRef<HTMLInputElement, Props>(
-    function TerminalInput({ value, onChange, onKeyDown, theme, awaitingPassword, shaking }, ref) {
+    function TerminalInput({ value, onChange, onKeyDown, theme, awaitingPassword, shaking, hidden }, ref) {
+        if (hidden) return null;
+
         return (
             <div className="p-4 max-w-3xl mx-auto w-full">
                 <div

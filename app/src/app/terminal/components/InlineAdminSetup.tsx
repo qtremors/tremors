@@ -1,7 +1,6 @@
 /**
- * Admin Setup TUI
- * First-time password setup interface for creating admin account
- * Uses CSS text-security instead of type="password" to avoid browser password managers
+ * InlineAdminSetup Component
+ * Inline TUI for first-time admin password setup
  */
 
 "use client";
@@ -15,7 +14,7 @@ interface Props {
     onCancel: () => void;
 }
 
-export function AdminSetupTUI({ theme, onSuccess, onCancel }: Props) {
+export function InlineAdminSetup({ theme, onSuccess, onCancel }: Props) {
     const [password, setPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
     const [activeField, setActiveField] = useState<"password" | "confirm">("password");
@@ -68,6 +67,7 @@ export function AdminSetupTUI({ theme, onSuccess, onCancel }: Props) {
 
     const handleKeyDown = (e: KeyboardEvent) => {
         if (e.key === "Escape") {
+            e.preventDefault();
             onCancel();
         } else if (e.key === "Tab") {
             e.preventDefault();
@@ -79,6 +79,7 @@ export function AdminSetupTUI({ theme, onSuccess, onCancel }: Props) {
                 passwordRef.current?.focus();
             }
         } else if (e.key === "Enter") {
+            e.preventDefault();
             if (activeField === "password" && password.length > 0) {
                 setActiveField("confirm");
                 confirmRef.current?.focus();
@@ -90,41 +91,33 @@ export function AdminSetupTUI({ theme, onSuccess, onCancel }: Props) {
 
     return (
         <div
-            className="fixed inset-0 z-50 flex items-center justify-center"
-            style={{ backgroundColor: "rgba(0,0,0,0.8)" }}
-            onClick={onCancel}
+            className="rounded-lg overflow-hidden"
+            style={{ borderWidth: 1, borderColor: theme.border }}
+            onKeyDown={handleKeyDown}
         >
+            {/* Header */}
             <div
-                className="w-full max-w-md mx-4 rounded-lg border p-6"
+                className="px-4 py-2 flex items-center gap-2"
                 style={{
                     backgroundColor: theme.panel,
+                    borderBottomWidth: 1,
                     borderColor: theme.border,
-                    color: theme.text,
                 }}
-                onClick={(e) => e.stopPropagation()}
-                onKeyDown={handleKeyDown}
             >
-                {/* Header */}
-                <div className="flex items-center gap-2 mb-4">
-                    <span className="text-xl">🔐</span>
-                    <h2 className="text-lg font-bold">Create Admin Account</h2>
-                </div>
+                <span>🔐</span>
+                <span style={{ color: theme.secondary }}>Create Admin Account</span>
+            </div>
 
-                <div
-                    className="h-px mb-4"
-                    style={{ backgroundColor: theme.border }}
-                />
-
-                {/* Description */}
-                <p className="text-sm mb-6" style={{ color: theme.muted }}>
-                    No admin account exists. Create one to manage your portfolio
-                    from the terminal.
+            {/* Body */}
+            <div className="p-4" style={{ backgroundColor: theme.panel + "80" }}>
+                <p className="text-sm mb-4" style={{ color: theme.muted }}>
+                    No admin account exists. Create one to manage your portfolio.
                 </p>
 
                 {/* Password field */}
-                <div className="mb-4">
+                <div className="mb-3">
                     <label
-                        className="block text-xs uppercase tracking-wider mb-2"
+                        className="block text-xs uppercase tracking-wider mb-1"
                         style={{ color: theme.muted }}
                     >
                         New Password
@@ -135,14 +128,13 @@ export function AdminSetupTUI({ theme, onSuccess, onCancel }: Props) {
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         onFocus={() => setActiveField("password")}
-                        className="w-full px-4 py-2 rounded border bg-transparent text-sm"
+                        className="w-full px-3 py-1.5 rounded border bg-transparent text-sm"
                         style={{
                             borderColor: activeField === "password" ? theme.primary : theme.border,
                             color: theme.text,
                             caretColor: theme.primary,
                             WebkitTextSecurity: "disc",
                         } as React.CSSProperties}
-                        placeholder="Enter password"
                         autoComplete="off"
                         autoCorrect="off"
                         autoCapitalize="off"
@@ -153,9 +145,9 @@ export function AdminSetupTUI({ theme, onSuccess, onCancel }: Props) {
                 </div>
 
                 {/* Confirm password field */}
-                <div className="mb-4">
+                <div className="mb-3">
                     <label
-                        className="block text-xs uppercase tracking-wider mb-2"
+                        className="block text-xs uppercase tracking-wider mb-1"
                         style={{ color: theme.muted }}
                     >
                         Confirm Password
@@ -166,14 +158,13 @@ export function AdminSetupTUI({ theme, onSuccess, onCancel }: Props) {
                         value={confirmPassword}
                         onChange={(e) => setConfirmPassword(e.target.value)}
                         onFocus={() => setActiveField("confirm")}
-                        className="w-full px-4 py-2 rounded border bg-transparent text-sm"
+                        className="w-full px-3 py-1.5 rounded border bg-transparent text-sm"
                         style={{
                             borderColor: activeField === "confirm" ? theme.primary : theme.border,
                             color: theme.text,
                             caretColor: theme.primary,
                             WebkitTextSecurity: "disc",
                         } as React.CSSProperties}
-                        placeholder="Confirm password"
                         autoComplete="off"
                         autoCorrect="off"
                         autoCapitalize="off"
@@ -185,7 +176,7 @@ export function AdminSetupTUI({ theme, onSuccess, onCancel }: Props) {
 
                 {/* Requirements */}
                 <div
-                    className="text-xs mb-4 p-3 rounded"
+                    className="text-xs mb-3 p-2 rounded"
                     style={{ backgroundColor: theme.bg }}
                 >
                     <p style={{ color: password.length >= 8 ? theme.success : theme.muted }}>
@@ -198,7 +189,7 @@ export function AdminSetupTUI({ theme, onSuccess, onCancel }: Props) {
 
                 {/* Error */}
                 {error && (
-                    <p className="text-sm mb-4" style={{ color: theme.error }}>
+                    <p className="text-sm mb-3" style={{ color: theme.error }}>
                         {error}
                     </p>
                 )}
@@ -208,7 +199,7 @@ export function AdminSetupTUI({ theme, onSuccess, onCancel }: Props) {
                     <button
                         onClick={handleSubmit}
                         disabled={loading || password.length < 8 || password !== confirmPassword}
-                        className="flex-1 px-4 py-2 rounded font-medium text-sm disabled:opacity-50 transition-opacity"
+                        className="flex-1 px-3 py-1.5 rounded font-medium text-sm disabled:opacity-50"
                         style={{
                             backgroundColor: theme.primary,
                             color: theme.bg,
@@ -218,7 +209,7 @@ export function AdminSetupTUI({ theme, onSuccess, onCancel }: Props) {
                     </button>
                     <button
                         onClick={onCancel}
-                        className="px-4 py-2 rounded text-sm border"
+                        className="px-3 py-1.5 rounded text-sm border"
                         style={{
                             borderColor: theme.border,
                             color: theme.muted,
@@ -227,14 +218,19 @@ export function AdminSetupTUI({ theme, onSuccess, onCancel }: Props) {
                         Cancel
                     </button>
                 </div>
+            </div>
 
-                {/* Keyboard hints */}
-                <p
-                    className="text-xs text-center mt-4"
-                    style={{ color: theme.muted }}
-                >
-                    Tab: Switch field • Enter: Submit • Esc: Cancel
-                </p>
+            {/* Footer */}
+            <div
+                className="px-4 py-2 text-xs text-center"
+                style={{
+                    backgroundColor: theme.panel,
+                    borderTopWidth: 1,
+                    borderColor: theme.border,
+                    color: theme.muted,
+                }}
+            >
+                Tab: switch field • Enter: submit • Esc: cancel
             </div>
         </div>
     );

@@ -53,7 +53,7 @@ export function ActivitySection({ activity }: ActivitySectionProps) {
 
     if (!activity || activity.length === 0) {
         return (
-            <section className="mb-24">
+            <section id="activity" className="mb-24">
                 <div className="flex items-center gap-4 mb-10">
                     <h2 className="text-3xl font-bold">Recent Activity</h2>
                     <span className="flex-1 h-px bg-[var(--border)]" />
@@ -72,7 +72,7 @@ export function ActivitySection({ activity }: ActivitySectionProps) {
     };
 
     return (
-        <section className="mb-24">
+        <section id="activity" className="mb-24">
             <div className="flex items-center gap-4 mb-10">
                 <h2 className="text-3xl font-bold">Recent Activity</h2>
                 <span className="flex-1 h-px bg-[var(--border)]" />

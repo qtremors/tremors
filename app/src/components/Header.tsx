@@ -16,7 +16,7 @@ import { PERSONAL } from "@/config/site";
 import { Terminal, Moon, Sun, Pencil, RefreshCw, Check, FolderOpen, Newspaper, FileText } from "lucide-react";
 
 interface HeaderProps {
-    currentMode: "default" | "paper" | "newspaper" | "terminal" | "nexus";
+    currentMode: "default" | "resume" | "news" | "terminal" | "nexus";
 }
 
 export function Header({ currentMode }: HeaderProps) {
@@ -60,10 +60,9 @@ export function Header({ currentMode }: HeaderProps) {
                     href="/"
                     className="flex items-center gap-2 text-lg font-bold hover:opacity-80 transition-opacity"
                 >
-                    <span className={`relative w-5 h-5 ${isAdmin ? "admin-logo-glow" : ""}`}>
-                        <img src="/alien.svg" alt="Tremors logo" className="w-full h-full relative z-10" />
+                    <span className={`relative w-6 h-6 ${isAdmin ? "admin-logo-glow" : ""}`}>
+                        <img src="/alien.svg" alt="Logo" className="w-full h-full relative z-10" />
                     </span>
-                    <span>{PERSONAL.handle.toLowerCase()}</span>
                 </Link>
 
                 {/* Center: Nav buttons that slide in from hero */}
@@ -124,6 +123,7 @@ export function Header({ currentMode }: HeaderProps) {
                                 className={`p-2 rounded-lg text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--border)]/50 transition-all ${refreshing ? "animate-spin" : ""
                                     }`}
                                 title="Refresh from GitHub"
+                                aria-label="Refresh data from GitHub"
                             >
                                 <RefreshCw className="w-5 h-5" />
                             </button>
@@ -135,6 +135,7 @@ export function Header({ currentMode }: HeaderProps) {
                                     : "text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--border)]/50"
                                     }`}
                                 title={editMode ? "Save and exit edit mode" : "Edit projects"}
+                                aria-label={editMode ? "Exit edit mode" : "Enter edit mode"}
                             >
                                 {editMode ? <Check className="w-5 h-5" /> : <Pencil className="w-5 h-5" />}
                             </button>
@@ -162,6 +163,7 @@ export function Header({ currentMode }: HeaderProps) {
                         onClick={toggleTheme}
                         className="p-2 rounded-lg text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[var(--border)]/50 transition-all"
                         title={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
+                        aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
                     >
                         {theme === "dark" ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
                     </button>
@@ -172,7 +174,7 @@ export function Header({ currentMode }: HeaderProps) {
             <div className="md:hidden fixed top-0 left-0 right-0 z-40 px-4 py-3 flex items-center justify-between bg-transparent">
                 <Link href="/" className="flex items-center gap-2 font-bold">
                     <img src="/alien.svg" alt="Tremors logo" className="w-5 h-5" />
-                    <span className={currentMode === "newspaper" ? (theme === "dark" ? "text-[#1a1a1a]" : "text-[#f5f0e8]") : ""}>{PERSONAL.handle.toLowerCase()}</span>
+                    <span className={currentMode === "news" ? (theme === "dark" ? "text-[#1a1a1a]" : "text-[#f5f0e8]") : ""}>{PERSONAL.handle.toLowerCase()}</span>
                 </Link>
 
                 <div className="flex items-center gap-1">

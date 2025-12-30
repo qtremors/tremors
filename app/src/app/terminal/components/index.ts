@@ -3,10 +3,13 @@
  */
 
 export { CommandBlock } from "./CommandBlock";
-export { TUISelector } from "./TUISelector";
 export { StatusBar } from "./StatusBar";
 export { AsciiLogo } from "./AsciiLogo";
 export { CommandItem } from "./CommandItem";
 export { TerminalInput } from "./TerminalInput";
-export { AdminSetupTUI } from "./AdminSetupTUI";
-export { AdminManageTUI } from "./AdminManageTUI";
+export { CommandAutocomplete } from "./CommandAutocomplete";
+
+// Inline TUI components (render within terminal flow)
+export { InlineSelector } from "./InlineSelector";
+export { InlineAdminSetup } from "./InlineAdminSetup";
+export { InlineAdminManage } from "./InlineAdminManage";

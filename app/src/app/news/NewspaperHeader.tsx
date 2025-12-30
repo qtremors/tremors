@@ -13,5 +13,5 @@ export function NewspaperHeader() {
 
     // Always show for mobile navigation, or show full for admin
     // CSS will handle showing/hiding based on breakpoint
-    return <Header currentMode="newspaper" />;
+    return <Header currentMode="news" />;
 }

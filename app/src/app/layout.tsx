@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter, JetBrains_Mono, Playfair_Display, Source_Serif_4 } from "next/font/google";
+import { Inter, JetBrains_Mono, Fira_Code, Playfair_Display, Source_Serif_4 } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { AdminProvider } from "@/components/AdminContext";
@@ -16,6 +16,11 @@ const inter = Inter({
 
 const jetbrainsMono = JetBrains_Mono({
   variable: "--font-mono",
+  subsets: ["latin"],
+});
+
+const firaCode = Fira_Code({
+  variable: "--font-firacode",
   subsets: ["latin"],
 });
 
@@ -50,7 +55,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${inter.variable} ${jetbrainsMono.variable} ${playfair.variable} ${sourceSerif.variable} antialiased`}
+        className={`${inter.variable} ${jetbrainsMono.variable} ${firaCode.variable} ${playfair.variable} ${sourceSerif.variable} antialiased`}
       >
         {/* Skip link for accessibility */}
         <a
