@@ -10,7 +10,7 @@ import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import type { ModeProps } from "@/types";
 import { PERSONAL, SKILLS, RESUME } from "@/config/site";
-import { Download, Upload, Check, Loader2 } from "lucide-react";
+import { Download, Upload, Check } from "lucide-react";
 import { ContactLinks } from "@/components/ContactLinks";
 import { useAdmin } from "@/components/AdminContext";
 import { useToast } from "@/components/ToastProvider";
@@ -44,7 +44,7 @@ const INITIAL_PROJECTS = 5;
 
 export function PaperPage({ data }: ModeProps) {
     const { repos, error } = data;
-    const { isAdmin } = useAdmin();
+    const { isAdmin, editMode } = useAdmin();
     const toast = useToast();
     const [activeSection, setActiveSection] = useState("intro");
     const [visibleProjects, setVisibleProjects] = useState(INITIAL_PROJECTS);
@@ -55,14 +55,27 @@ export function PaperPage({ data }: ModeProps) {
     const [isUploading, setIsUploading] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
-    // Fetch current resume URL on mount
+    // Editable resume content state
+    const [summary, setSummary] = useState<string>(RESUME.summary);
+    const [about, setAbout] = useState<string[]>([...RESUME.about]);
+
+    // Fetch current settings including resume content
     useEffect(() => {
-        fetch("/api/admin/resume")
-            .then(res => res.json())
-            .then(data => {
-                if (data.url) setResumeUrl(data.url);
-            })
-            .catch(console.error);
+        Promise.all([
+            fetch("/api/admin/resume").then(r => r.json()),
+            fetch("/api/admin/settings").then(r => r.json()),
+        ]).then(([resumeData, settingsData]) => {
+            if (resumeData.url) setResumeUrl(resumeData.url);
+            if (settingsData.settings?.resumeSummary) {
+                setSummary(settingsData.settings.resumeSummary);
+            }
+            if (settingsData.settings?.resumeAbout) {
+                try {
+                    const parsed = JSON.parse(settingsData.settings.resumeAbout);
+                    if (Array.isArray(parsed)) setAbout(parsed);
+                } catch { /* Use default */ }
+            }
+        }).catch(console.error);
     }, []);
 
     // Handle file upload
@@ -98,6 +111,31 @@ export function PaperPage({ data }: ModeProps) {
         } finally {
             setIsUploading(false);
             if (fileInputRef.current) fileInputRef.current.value = "";
+        }
+    };
+
+    // Save resume content to database
+    const saveResumeContent = async (newSummary?: string, newAbout?: string[]) => {
+        try {
+            const body: Record<string, string> = {};
+            if (newSummary !== undefined) body.resumeSummary = newSummary;
+            if (newAbout !== undefined) body.resumeAbout = JSON.stringify(newAbout);
+
+            const res = await fetch("/api/admin/settings", {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(body),
+            });
+
+            const data = await res.json();
+            if (data.success) {
+                toast.success("Saved!");
+            } else {
+                toast.error(data.error || "Save failed");
+            }
+        } catch (err) {
+            console.error("Save error:", err);
+            toast.error("Save failed");
         }
     };
 
@@ -168,7 +206,7 @@ export function PaperPage({ data }: ModeProps) {
                         >
                             <span className="flex items-center justify-center gap-2">
                                 {isUploading ? (
-                                    <Loader2 className="w-4 h-4 animate-spin" />
+                                    <Upload className="w-4 h-4 animate-spin" />
                                 ) : (
                                     <Upload className="w-4 h-4" />
                                 )}
@@ -208,14 +246,48 @@ export function PaperPage({ data }: ModeProps) {
                         <section id="intro" className="paper-section">
                             <h1>{PERSONAL.name}</h1>
                             <p><strong>{PERSONAL.tagline}</strong></p>
-                            <p>{RESUME.summary}</p>
+                            <p
+                                contentEditable={isAdmin && editMode}
+                                suppressContentEditableWarning
+                                onBlur={(e) => {
+                                    if (isAdmin && editMode) {
+                                        const newText = e.currentTarget.textContent || "";
+                                        if (newText !== summary) {
+                                            setSummary(newText);
+                                            saveResumeContent(newText, undefined);
+                                        }
+                                    }
+                                }}
+                                className={isAdmin && editMode ? "outline-none focus:ring-2 focus:ring-[#8b7355] focus:ring-offset-2 rounded cursor-text" : ""}
+                                style={isAdmin && editMode ? { minHeight: "1em" } : undefined}
+                            >
+                                {summary}
+                            </p>
                         </section>
 
                         {/* ABOUT */}
                         <section id="about" className="paper-section">
                             <h2>About Me</h2>
-                            {RESUME.about.map((paragraph, i) => (
-                                <p key={i}>{paragraph}</p>
+                            {about.map((paragraph, i) => (
+                                <p
+                                    key={i}
+                                    contentEditable={isAdmin && editMode}
+                                    suppressContentEditableWarning
+                                    onBlur={(e) => {
+                                        if (isAdmin && editMode) {
+                                            const newText = e.currentTarget.textContent || "";
+                                            if (newText !== about[i]) {
+                                                const newAbout = [...about];
+                                                newAbout[i] = newText;
+                                                setAbout(newAbout);
+                                                saveResumeContent(undefined, newAbout);
+                                            }
+                                        }
+                                    }}
+                                    className={isAdmin && editMode ? "outline-none focus:ring-2 focus:ring-[#8b7355] focus:ring-offset-2 rounded cursor-text" : ""}
+                                >
+                                    {paragraph}
+                                </p>
                             ))}
                         </section>
 

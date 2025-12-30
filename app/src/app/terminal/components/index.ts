@@ -9,12 +9,7 @@ export { CommandItem } from "./CommandItem";
 export { TerminalInput } from "./TerminalInput";
 export { CommandAutocomplete } from "./CommandAutocomplete";
 
-// Inline TUI components (new - render within terminal flow)
+// Inline TUI components (render within terminal flow)
 export { InlineSelector } from "./InlineSelector";
 export { InlineAdminSetup } from "./InlineAdminSetup";
 export { InlineAdminManage } from "./InlineAdminManage";
-
-// Legacy modal components (deprecated - kept for reference)
-export { TUISelector } from "./TUISelector";
-export { AdminSetupTUI } from "./AdminSetupTUI";
-export { AdminManageTUI } from "./AdminManageTUI";

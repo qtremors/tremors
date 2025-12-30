@@ -4,36 +4,46 @@ All notable changes to the Tremors Portfolio project are documented in this file
 
 ---
 
-## [1.9.6] - 2025-12-30
+## [2.0.0] - 2025-12-30
+
+### 🚀 Major Release
+
+This release marks a major milestone with significant terminal improvements, admin features, and code quality enhancements.
 
 ### Added
+- **Admin Resume Editing** - Edit intro and about sections directly on resume page:
+  - Click-to-edit with contentEditable
+  - Auto-save on blur
+  - Persists to database
 - **Terminal Autocomplete** - Visual command suggestions as you type:
   - Suggestions appear above input bar
-  - Tab to cycle through matches
-  - Enter autocompletes and executes selected suggestion
-- **Inline TUI Components** - Theme/font selectors now render inline:
-  - No more modal overlays - TUIs appear as command output
-  - Input bar stays visible during TUI interaction
-  - Smooth scroll behavior same as normal commands
-  - TUI feedback output ("Theme applied: Dracula")
-- **Draft Input Preservation** - Text in input box preserved during TUI interaction
+  - Tab to cycle, Enter to execute
+- **Inline TUI Components** - Theme/font selectors render within terminal flow:
+  - No modal overlays
+  - Input bar stays visible
+  - Feedback messages ("Theme applied: Dracula")
+- **Font Preloading** - Fira Code and JetBrains Mono loaded via `next/font/google`
+- **Accessibility** - Added aria-labels to all header buttons
 
 ### Changed
-- **Mono Fonts Only** - Terminal fonts now all monospace:
-  - System Mono (Consolas, Monaco, etc.)
-  - Fira Code (with ligatures)
-  - JetBrains Mono (developer-focused)
-- **Accurate Theme Colors** - Updated from official sources:
-  - Dracula: draculatheme.com
-  - Tokyo Night: github.com/enkia/tokyo-night-vscode-theme
-  - Rosé Pine: rosepinetheme.com/palette
-- **TUI Scroll Behavior** - Uses `scrollIntoView` like command outputs for seamless UX
+- **Terminal Commands** - Removed gimmick commands (fortune, cowsay, sl, figlet, glitch, date, neofetch)
+- **Mono Fonts Only** - All terminal fonts now monospace
+- **Help Command** - Reorganized with categories (Navigation, Terminal, Admin)
+- **Theme Colors** - Updated from official sources
 
 ### Fixed
-- **TUI Layout** - TUIs now push content up naturally instead of overlaying
-- **Font Type Errors** - Fixed all TypeScript errors for new font IDs
+- **TUI Layout** - Push content naturally instead of overlay
+- **Dead Code Cleanup** - Removed legacy TUI components, unused hooks/imports
+- **Type Safety** - Removed toggleGlitch from action types
+
+### Code Quality
+- Removed 3 legacy TUI component files
+- Cleaned unused imports from PaperPage
+- Removed debug console.logs from API routes
+- All categories green in code health audit
 
 ---
+
 
 ## [1.9.5] - 2025-12-29
 

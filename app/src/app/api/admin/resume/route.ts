@@ -68,9 +68,8 @@ export async function POST(request: Request) {
         if (currentSettings?.resumeUrl) {
             try {
                 await del(currentSettings.resumeUrl);
-            } catch (e) {
+            } catch {
                 // Ignore deletion errors (blob might not exist)
-                console.log("Could not delete old blob:", e);
             }
         }
 

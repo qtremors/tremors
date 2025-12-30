@@ -50,10 +50,10 @@ export const THEMES: Record<ThemeId, ThemeColors> = {
     },
 };
 
-// Top 3 monospace fonts for terminals
+// Top 3 monospace fonts for terminals (using CSS variables from layout.tsx)
 export const FONT_CLASSES: Record<"mono" | "firacode" | "jetbrains", string> = {
-    mono: "font-mono",                                           // System mono (Consolas, Monaco, etc)
-    firacode: "font-[Fira_Code,ui-monospace,monospace]",        // Fira Code
-    jetbrains: "font-[JetBrains_Mono,ui-monospace,monospace]",  // JetBrains Mono
+    mono: "font-mono",                           // System mono (var(--font-mono))
+    firacode: "font-[var(--font-firacode)]",    // Fira Code (preloaded)
+    jetbrains: "font-[var(--font-mono)]",       // JetBrains Mono (default mono)
 };
 

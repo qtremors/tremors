@@ -35,6 +35,8 @@ export async function GET() {
                 availableForWork: settings.availableForWork,
                 projectViewMode: settings.projectViewMode,
                 lastRefresh: settings.lastRefresh,
+                resumeSummary: settings.resumeSummary,
+                resumeAbout: settings.resumeAbout,
             },
         });
     } catch (error) {
@@ -68,7 +70,7 @@ export async function PATCH(request: NextRequest) {
 
     try {
         const body = await request.json();
-        const { showProjectImages, availableForWork, projectViewMode } = body;
+        const { showProjectImages, availableForWork, projectViewMode, resumeSummary, resumeAbout } = body;
 
         // Validate projectViewMode if provided
         if (projectViewMode !== undefined) {
@@ -85,6 +87,8 @@ export async function PATCH(request: NextRequest) {
         if (showProjectImages !== undefined) updateData.showProjectImages = showProjectImages;
         if (availableForWork !== undefined) updateData.availableForWork = availableForWork;
         if (projectViewMode !== undefined) updateData.projectViewMode = String(projectViewMode).toLowerCase();
+        if (resumeSummary !== undefined) updateData.resumeSummary = resumeSummary;
+        if (resumeAbout !== undefined) updateData.resumeAbout = resumeAbout;
 
         const settings = await prisma.settings.upsert({
             where: { id: "main" },
@@ -102,6 +106,8 @@ export async function PATCH(request: NextRequest) {
                 showProjectImages: settings.showProjectImages,
                 availableForWork: settings.availableForWork,
                 projectViewMode: settings.projectViewMode,
+                resumeSummary: settings.resumeSummary,
+                resumeAbout: settings.resumeAbout,
             },
         });
     } catch (error) {

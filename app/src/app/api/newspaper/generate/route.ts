@@ -180,8 +180,7 @@ async function buildContext() {
 async function generateWithGemini(context: Awaited<ReturnType<typeof buildContext>>): Promise<typeof FALLBACK_CONTENT | null> {
     const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) {
-        console.log("No GEMINI_API_KEY found, using fallback content");
-        return null;
+        return null; // Use fallback content
     }
 
     const prompt = `Generate tabloid newspaper content as JSON.

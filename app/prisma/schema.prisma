@@ -47,6 +47,8 @@ model Settings {
   showProjectImages  Boolean  @default(true)
   projectViewMode    String   @default("grid")  // "grid" | "list"
   resumeUrl          String?  // Vercel Blob URL for resume PDF
+  resumeSummary      String?  // Editable intro paragraph (falls back to config)
+  resumeAbout        String?  // Editable about me paragraphs (JSON array, falls back to config)
   updatedAt          DateTime @updatedAt
 }
 

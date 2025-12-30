@@ -259,7 +259,7 @@ tremors/
 
 ## 🖥️ Terminal Commands
 
-### Portfolio
+### Navigation
 | Command | Description |
 |---------|-------------|
 | `/whoami` | Display profile information |
@@ -269,37 +269,24 @@ tremors/
 | `/stats` | GitHub statistics |
 | `/repo <name>` | Open repository in browser |
 
-### Customization
+### Terminal
 | Command | Description |
 |---------|-------------|
 | `/theme` | Open theme selector |
-| `/font <mono\|sans\|serif>` | Change terminal font |
-| `/screensaver` | Toggle matrix rain effect |
+| `/font` | Open font selector |
 | `/crt` | Toggle CRT scanline effect |
-| `/glitch` | Toggle ASCII art glitch |
-
-### Fun
-| Command | Description |
-|---------|-------------|
-| `/neofetch` | System info display |
-| `/fortune` | Random developer fortune |
-| `/cowsay <text>` | ASCII cow with message |
-| `/figlet <text>` | ASCII art text |
-| `/sl` | Steam locomotive |
-
-### Navigation
-| Command | Description |
-|---------|-------------|
-| `exit` | Return to main page |
-| `/clear` | Clear terminal output |
 | `/history` | Show command history |
+| `/shortcuts` | Keyboard shortcuts |
+| `/clear` | Clear terminal output |
+| `/export` | Copy session to clipboard |
+| `exit` | Return to main page |
 
 ### Admin (After Login)
 | Command | Description |
 |---------|-------------|
-| `/list` | Show all repos with visibility status |
+| `/list` | Show all repos (including hidden) |
 | `/hide <repo>` | Hide a repository |
-| `/show <repo>` | Unhide a repository |
+| `/show <repo>` | Show a hidden repository |
 | `/logout` | End admin session |
 
 ---
@@ -491,7 +478,7 @@ npm run test:coverage
 
 | File | Description |
 |------|-------------|
-| [CHANGELOG.md](CHANGELOG.md) | Complete version history (v0.0.0 - v1.9.5) |
+| [CHANGELOG.md](CHANGELOG.md) | Complete version history (v0.0.0 - v2.0.0) |
 | [AGENTS.md](AGENTS.md) | Technical documentation for AI assistants |
 | [TASKS.md](TASKS.md) | Bug tracking and improvement backlog |
 | [app/.env.example](app/.env.example) | Environment variable template |
