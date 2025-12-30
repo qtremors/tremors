@@ -54,7 +54,6 @@ export function TerminalPage({ data }: ModeProps) {
     const [termTheme, setTermTheme] = useState<ThemeId>("rosepine");
     const [termFont, setTermFont] = useState<FontId>("mono");
     const [crtEffect, setCrtEffect] = useState(false);
-    const [glitchEffect, setGlitchEffect] = useState(false);
     const [commandHistory, setCommandHistory] = useState<string[]>([]);
     const [historyIndex, setHistoryIndex] = useState(-1);
     const [tuiSelector, setTuiSelector] = useState<TuiSelector | null>(null);
@@ -255,9 +254,7 @@ export function TerminalPage({ data }: ModeProps) {
             } else if (result.action === "toggleCrt") {
                 setCrtEffect(c => !c);
                 addCommandBlock(cmd, result.lines);
-            } else if (result.action === "toggleGlitch") {
-                setGlitchEffect(g => !g);
-                addCommandBlock(cmd, result.lines);
+
             } else if (result.action === "logout") {
                 // Call logout API to clear server-side cookie
                 fetch("/api/auth/logout", { method: "POST" }).catch(() => { });
@@ -425,7 +422,7 @@ export function TerminalPage({ data }: ModeProps) {
         >
             <div ref={scrollRef} className="flex-1 overflow-y-auto flex flex-col">
                 <div className={`flex flex-col items-center justify-center ${commandBlocks.length === 0 ? 'flex-1' : 'pt-8 pb-4'}`}>
-                    <AsciiLogo ref={asciiRef} theme={theme} shaking={shakeAscii} glitchEffect={glitchEffect} />
+                    <AsciiLogo ref={asciiRef} theme={theme} shaking={shakeAscii} />
                     <p className="text-xs mb-6" style={{ color: theme.muted }}>{PERSONAL.tagline} • v2.0</p>
 
                     {commandBlocks.length === 0 && (

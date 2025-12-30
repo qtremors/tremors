@@ -39,12 +39,19 @@ export function ContactLinks({ variant = "default", className = "" }: ContactLin
     const [resumeUrl, setResumeUrl] = useState("/Aman_Singh.pdf");
 
     useEffect(() => {
-        fetch("/api/admin/resume")
-            .then(res => res.json())
-            .then(data => {
-                if (data.url) setResumeUrl(data.url);
-            })
-            .catch(() => {/* Use fallback */ });
+        const fetchResume = async () => {
+            try {
+                const res = await fetch("/api/admin/resume");
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.url) setResumeUrl(data.url);
+                }
+            } catch (error) {
+                console.error("Failed to fetch dynamic resume URL:", error);
+            }
+        };
+
+        fetchResume();
     }, []);
 
     // Helper to get URL with dynamic resume

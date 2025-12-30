@@ -5,7 +5,7 @@
 
 "use client";
 
-import { useState, useRef, useEffect, KeyboardEvent } from "react";
+import { useState, useRef, useEffect, useCallback, useMemo, KeyboardEvent } from "react";
 import type { ThemeColors } from "../lib/types";
 
 interface Props {
@@ -35,11 +35,11 @@ export function InlineAdminManage({ theme, onLogout, onClose, sessionInfo }: Pro
     const newRef = useRef<HTMLInputElement>(null);
     const confirmRef = useRef<HTMLInputElement>(null);
 
-    const menuOptions: { id: MenuOption; label: string }[] = [
+    const menuOptions = useMemo((): { id: MenuOption; label: string }[] => [
         { id: "changePassword", label: "Change Password" },
         { id: "logout", label: "Logout" },
         { id: "cancel", label: "Cancel" },
-    ];
+    ], []);
 
     const formatExpiresIn = (seconds: number): string => {
         const hours = Math.floor(seconds / 3600);
@@ -50,7 +50,16 @@ export function InlineAdminManage({ theme, onLogout, onClose, sessionInfo }: Pro
         return `${minutes}m`;
     };
 
-    const handleMenuSelect = (option: MenuOption) => {
+    const handleLogout = useCallback(async () => {
+        try {
+            await fetch("/api/auth/logout", { method: "POST" });
+            onLogout();
+        } catch {
+            setError("Failed to logout");
+        }
+    }, [onLogout]);
+
+    const handleMenuSelect = useCallback((option: MenuOption) => {
         if (option === "changePassword") {
             setView("changePassword");
             setActiveField(0);
@@ -60,16 +69,7 @@ export function InlineAdminManage({ theme, onLogout, onClose, sessionInfo }: Pro
         } else {
             onClose();
         }
-    };
-
-    const handleLogout = async () => {
-        try {
-            await fetch("/api/auth/logout", { method: "POST" });
-            onLogout();
-        } catch {
-            setError("Failed to logout");
-        }
-    };
+    }, [handleLogout, onClose]);
 
     const handleChangePassword = async () => {
         setError(null);
@@ -128,12 +128,12 @@ export function InlineAdminManage({ theme, onLogout, onClose, sessionInfo }: Pro
                     onClose();
                 } else if (e.key === "ArrowUp") {
                     e.preventDefault();
-                    const idx = menuOptions.findIndex((o) => o.id === selectedOption);
+                    const idx = menuOptions.findIndex((o: { id: MenuOption }) => o.id === selectedOption);
                     const newIdx = idx > 0 ? idx - 1 : menuOptions.length - 1;
                     setSelectedOption(menuOptions[newIdx].id);
                 } else if (e.key === "ArrowDown") {
                     e.preventDefault();
-                    const idx = menuOptions.findIndex((o) => o.id === selectedOption);
+                    const idx = menuOptions.findIndex((o: { id: MenuOption }) => o.id === selectedOption);
                     const newIdx = idx < menuOptions.length - 1 ? idx + 1 : 0;
                     setSelectedOption(menuOptions[newIdx].id);
                 } else if (e.key === "Enter") {
@@ -145,7 +145,7 @@ export function InlineAdminManage({ theme, onLogout, onClose, sessionInfo }: Pro
 
         window.addEventListener("keydown", handleKeyDown);
         return () => window.removeEventListener("keydown", handleKeyDown);
-    }, [view, selectedOption, onClose]);
+    }, [view, selectedOption, onClose, menuOptions, handleMenuSelect]);
 
     const handlePasswordKeyDown = (e: KeyboardEvent) => {
         if (e.key === "Escape") {

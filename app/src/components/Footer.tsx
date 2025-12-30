@@ -25,6 +25,12 @@ const socialIcons: Record<string, React.ElementType> = {
     email: Mail,
 };
 
+const quickLinks = [
+    { label: "Projects", href: "/#projects" },
+    { label: "Skills", href: "/#skills" },
+    { label: "Activity", href: "/#activity" },
+];
+
 export function Footer() {
     const year = new Date().getFullYear();
     const [contactOpen, setContactOpen] = useState(false);
@@ -70,26 +76,16 @@ export function Footer() {
                                 Quick Links
                             </h4>
                             <ul className="space-y-1.5">
-                                <li>
-                                    <a href="#projects" className="text-sm text-[var(--text-muted)] hover:text-[var(--accent-cyan)] hover:translate-x-1 transition-all inline-block">
-                                        Projects
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="#skills" className="text-sm text-[var(--text-muted)] hover:text-[var(--accent-cyan)] hover:translate-x-1 transition-all inline-block">
-                                        Skills
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="#activity" className="text-sm text-[var(--text-muted)] hover:text-[var(--accent-cyan)] hover:translate-x-1 transition-all inline-block">
-                                        Activity
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="#contact" className="text-sm text-[var(--text-muted)] hover:text-[var(--accent-cyan)] hover:translate-x-1 transition-all inline-block">
-                                        Contact
-                                    </a>
-                                </li>
+                                {quickLinks.map((link) => (
+                                    <li key={link.label}>
+                                        <Link
+                                            href={link.href}
+                                            className="text-sm text-[var(--text-muted)] hover:text-[var(--accent-cyan)] hover:translate-x-1 transition-all inline-block"
+                                        >
+                                            {link.label}
+                                        </Link>
+                                    </li>
+                                ))}
                             </ul>
                         </div>
 

@@ -150,17 +150,27 @@ export function NewspaperArchiveModal({
     }, [canGoNext]);
 
     const handleEditionClick = async (id: string) => {
-        setLoadingId(id);
-        await onLoadEdition(id);
-        setLoadingId(null);
-        onClose();
+        try {
+            setLoadingId(id);
+            await onLoadEdition(id);
+            onClose();
+        } catch (error) {
+            console.error("Failed to load edition:", error);
+        } finally {
+            setLoadingId(null);
+        }
     };
 
     const handleSetActive = async (id: string, e: React.MouseEvent) => {
         e.stopPropagation();
-        setLoadingId(id);
-        await onSetActive(id);
-        setLoadingId(null);
+        try {
+            setLoadingId(id);
+            await onSetActive(id);
+        } catch (error) {
+            console.error("Failed to set active edition:", error);
+        } finally {
+            setLoadingId(null);
+        }
     };
 
     const handleReset = () => {

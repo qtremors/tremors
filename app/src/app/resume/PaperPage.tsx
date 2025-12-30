@@ -61,21 +61,34 @@ export function PaperPage({ data }: ModeProps) {
 
     // Fetch current settings including resume content
     useEffect(() => {
-        Promise.all([
+        Promise.allSettled([
             fetch("/api/admin/resume").then(r => r.json()),
             fetch("/api/admin/settings").then(r => r.json()),
-        ]).then(([resumeData, settingsData]) => {
-            if (resumeData.url) setResumeUrl(resumeData.url);
-            if (settingsData.settings?.resumeSummary) {
-                setSummary(settingsData.settings.resumeSummary);
+        ]).then((results) => {
+            // Handle Resume Result
+            if (results[0].status === 'fulfilled') {
+                const resumeData = results[0].value;
+                if (resumeData.url) setResumeUrl(resumeData.url);
+            } else {
+                console.error("Failed to fetch resume URL:", results[0].reason);
             }
-            if (settingsData.settings?.resumeAbout) {
-                try {
-                    const parsed = JSON.parse(settingsData.settings.resumeAbout);
-                    if (Array.isArray(parsed)) setAbout(parsed);
-                } catch { /* Use default */ }
+
+            // Handle Settings Result
+            if (results[1].status === 'fulfilled') {
+                const settingsData = results[1].value;
+                if (settingsData.settings?.resumeSummary) {
+                    setSummary(settingsData.settings.resumeSummary);
+                }
+                if (settingsData.settings?.resumeAbout) {
+                    try {
+                        const parsed = JSON.parse(settingsData.settings.resumeAbout);
+                        if (Array.isArray(parsed)) setAbout(parsed);
+                    } catch { /* Use default */ }
+                }
+            } else {
+                console.error("Failed to fetch settings:", results[1].reason);
             }
-        }).catch(console.error);
+        });
     }, []);
 
     // Handle file upload
