@@ -122,7 +122,7 @@ export interface TuiSelector {
 }
 
 export type ThemeId = "dracula" | "tokyonight" | "rosepine";
-export type FontId = "mono" | "sans" | "serif";
+export type FontId = "mono" | "firacode" | "jetbrains";
 
 export interface ThemeColors {
     name: string;

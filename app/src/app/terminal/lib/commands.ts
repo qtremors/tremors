@@ -23,7 +23,7 @@ export type CommandResult = {
     action?: "clear" | "exit" | "logout" | "openThemeSelector" | "openFontSelector" | "toggleCrt" | "toggleGlitch";
     repoToHide?: string;
     repoToShow?: string;
-    newFont?: "mono" | "sans" | "serif";
+    newFont?: "mono" | "firacode" | "jetbrains";
 };
 
 const addLine = (lines: TerminalLine[], type: TerminalLine["type"], content: string) => {
@@ -205,12 +205,17 @@ export const commands: Record<string, (args: string[], ctx: CommandContext) => C
 
     font: (args, ctx) => {
         const lines: TerminalLine[] = [];
-        if (args[0] === "mono" || args[0] === "sans" || args[0] === "serif") {
-            addLine(lines, "success", `Font changed to: ${args[0]}`);
+        const fontNames: Record<string, string> = {
+            mono: "System Mono",
+            firacode: "Fira Code",
+            jetbrains: "JetBrains Mono"
+        };
+        if (args[0] === "mono" || args[0] === "firacode" || args[0] === "jetbrains") {
+            addLine(lines, "success", `Font changed to: ${fontNames[args[0]]}`);
             return { lines, newFont: args[0] };
         } else if (args[0]) {
             addLine(lines, "error", `Unknown font: ${args[0]}`);
-            addLine(lines, "output", "Available: mono, sans, serif");
+            addLine(lines, "output", "Available: mono, firacode, jetbrains");
         } else {
             // Open font selector TUI (same UX as theme)
             return { lines: [], action: "openFontSelector" };
