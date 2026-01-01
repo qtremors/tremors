@@ -20,6 +20,11 @@ function getSigningSecret(): string {
     if (secret && secret.length >= 32) {
         return secret;
     }
+
+    if (process.env.NODE_ENV === "production" && !secret) {
+        console.warn("WARNING: AUTH_SECRET is missing in production! Using insecure fallback. Please set AUTH_SECRET.");
+    }
+
     // Fallback: derive from multiple env vars for better entropy
     const derived = [
         process.env.ADMIN_SECRET || "",

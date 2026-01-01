@@ -93,43 +93,55 @@ export async function getRecentCommits(repos: GitHubRepo[], limit = 10): Promise
   const allCommits: GitHubCommit[] = [];
 
   // Fetch 10 commits from each recent repo
-  const commitPromises = recentRepos.map(async (repo) => {
-    try {
-      const res = await fetch(
-        `${GITHUB_API}/repos/${repo.full_name}/commits?per_page=10`,
-        {
-          headers: getHeaders(),
-          cache: "no-store", // No ISR - data only updates when admin refreshes
-        }
-      );
+  // Chunking to avoid rate limits (concurrent requests batch size)
+  const BATCH_SIZE = 3;
+  const chunks = [];
+  for (let i = 0; i < recentRepos.length; i += BATCH_SIZE) {
+    chunks.push(recentRepos.slice(i, i + BATCH_SIZE));
+  }
 
-      if (!res.ok) return [];
+  // Process batches sequentially
+  for (const batch of chunks) {
+    const batchPromises = batch.map(async (repo) => {
+      try {
+        const res = await fetch(
+          `${GITHUB_API}/repos/${repo.full_name}/commits?per_page=10`,
+          {
+            headers: getHeaders(),
+            cache: "no-store", // No ISR - data only updates when admin refreshes
+          }
+        );
 
-      const commits = await res.json();
+        if (!res.ok) return [];
 
-      if (!Array.isArray(commits)) return [];
+        const commits = await res.json();
 
-      return commits.map((c: {
-        sha: string;
-        commit: {
-          message: string;
-          author: { name: string; date: string };
-        };
-      }) => ({
-        sha: c.sha,
-        message: c.commit.message,
-        date: c.commit.author.date,
-        repoName: repo.name,
-        repoUrl: repo.html_url,
-        author: c.commit.author.name,
-      }));
-    } catch {
-      return [];
-    }
-  });
+        if (!Array.isArray(commits)) return [];
 
-  const results = await Promise.all(commitPromises);
-  results.forEach(commits => allCommits.push(...commits));
+        return commits.map((c: {
+          sha: string;
+          commit: {
+            message: string;
+            author: { name: string; date: string };
+          };
+        }) => ({
+          sha: c.sha,
+          message: c.commit.message,
+          date: c.commit.author.date,
+          repoName: repo.name,
+          repoUrl: repo.html_url,
+          author: c.commit.author.name,
+        }));
+      } catch {
+        return [];
+      }
+    });
+
+    const results = await Promise.all(batchPromises);
+    results.forEach(commits => allCommits.push(...commits));
+
+    if (chunks.length > 1) await new Promise(r => setTimeout(r, 200));
+  }
 
   // Sort all commits by date and return top 10
   return allCommits

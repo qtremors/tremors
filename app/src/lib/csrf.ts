@@ -14,6 +14,9 @@ const ALLOWED_ORIGINS = [
 if (process.env.NEXT_PUBLIC_URL) {
     ALLOWED_ORIGINS.push(process.env.NEXT_PUBLIC_URL);
 }
+if (process.env.NEXT_PUBLIC_SITE_URL) {
+    ALLOWED_ORIGINS.push(process.env.NEXT_PUBLIC_SITE_URL);
+}
 // Vercel deployment URL (auto-set by Vercel)
 if (process.env.VERCEL_URL) {
     ALLOWED_ORIGINS.push(`https://${process.env.VERCEL_URL}`);
