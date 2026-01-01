@@ -1,6 +1,6 @@
 # TASKS.md - Tremors Portfolio
 
-> **Version**: 2.0.1 | **Status**: ✅ Stable
+> **Version**: 2.0.2 | **Status**: 🟡 Review Complete
 
 ---
 
@@ -14,8 +14,16 @@ No open issues or pending tasks.
 
 | Category | Status |
 |----------|--------|
-| Security | ✅ CSRF, rate limiting, PBKDF2/HMAC |
+| Security | ✅ CSRF (Dynamic), Auth Secret Check |
 | Architecture | ✅ Modular, clean separation |
-| Performance | ✅ DB caching, font preloading |
+| Performance | ✅ DB caching, API batching |
 | Accessibility | ✅ Aria labels, skip links |
-| Tests | ✅ 13 test files |
+| Tests | ✅ 14 test files (Added API tests) |
+
+---
+
+## ✅ Completed Checks
+
+- **Security**: Auth flow (PBKDF2/HMAC) is secure. CSRF protection in place.
+- **Architecture**: Clean modular separation (Lib, API, Components).
+- **Performance**: Robust caching strategy in `data.ts`.
