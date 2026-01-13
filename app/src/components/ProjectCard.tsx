@@ -181,7 +181,7 @@ export function ProjectCard({
                             target="_blank"
                             rel="noopener noreferrer"
                             onClick={(e) => editMode && e.preventDefault()}
-                            className={`${titleSize} font-bold group-hover:!text-cyan-400 transition-colors truncate`}
+                            className={`${titleSize} font-bold group-hover:text-[var(--accent-cyan)] transition-colors truncate`}
                         >
                             {formatProjectTitle(repo.name)}
                         </a>
@@ -243,7 +243,7 @@ export function ProjectCard({
             {(() => {
                 const imageUrl = showImages ? getProjectImageUrl(repo) : null;
                 return imageUrl && (
-                    <div className="relative w-full aspect-[2/1] bg-[var(--bg-secondary)]">
+                    <div className="relative w-full aspect-video md:aspect-[2/1] bg-[var(--bg-secondary)]">
                         <img
                             src={imageUrl}
                             alt={`${repo.name} preview`}
@@ -295,7 +295,7 @@ export function ProjectCard({
                     target="_blank"
                     rel="noopener noreferrer"
                     onClick={(e) => editMode && e.preventDefault()}
-                    className={`${titleSize} font-bold mb-2 block group-hover:!text-cyan-400 transition-colors ${size === "small" ? "truncate" : ""}`}
+                    className={`${titleSize} font-bold mb-2 block group-hover:text-[var(--accent-cyan)] transition-colors ${size === "small" ? "truncate" : ""}`}
                 >
                     {formatProjectTitle(repo.name)}
                 </a>

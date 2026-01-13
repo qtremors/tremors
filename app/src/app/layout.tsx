@@ -55,7 +55,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${inter.variable} ${jetbrainsMono.variable} ${firaCode.variable} ${playfair.variable} ${sourceSerif.variable} antialiased`}
+        className={`${inter.variable} ${jetbrainsMono.variable} ${firaCode.variable} ${playfair.variable} ${sourceSerif.variable} antialiased overflow-x-hidden`}
       >
         {/* Skip link for accessibility */}
         <a

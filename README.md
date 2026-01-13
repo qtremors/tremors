@@ -35,6 +35,7 @@
 | 💻 **Interactive Terminal** | Fully functional CLI with 30+ commands (`/terminal`), autocomplete, and file system navigation. |
 | 🔐 **Secret Admin Mode** | CMS-style controls to manage project visibility, feature flags, and content editing. |
 | 🎨 **Theming & Effects** | Multiple color schemes (Dracula, Tokyo Night), CRT scanlines, and glitch effects. |
+| 📱 **Mobile-First UX** | Premium staggered navigation, touch-friendly terminal helpers, and adaptive layouts. |
 
 ---
 

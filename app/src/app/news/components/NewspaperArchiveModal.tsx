@@ -183,39 +183,39 @@ export function NewspaperArchiveModal({
     if (!isOpen) return null;
 
     return (
-        <div className="np-archive-modal-overlay" onClick={onClose}>
-            <div className="np-archive-modal" onClick={e => e.stopPropagation()}>
+        <div className="fixed inset-0 bg-black/85 flex items-center justify-center z-[1000] p-5" onClick={onClose}>
+            <div className="bg-[var(--np-paper)] max-w-[700px] w-full max-h-[85vh] overflow-y-auto p-0 border-[3px] border-solid border-[var(--np-ink)]" onClick={e => e.stopPropagation()}>
                 {/* Header with month navigation */}
-                <div className="np-archive-modal-header">
+                <div className="flex items-center justify-center gap-4 p-5 border-b-[3px] border-double border-[var(--np-ink)] sticky top-0 bg-[var(--np-paper)] z-[1]">
                     <button
-                        className="np-archive-nav-btn"
+                        className="bg-none border border-[var(--np-ink)] w-9 h-9 flex items-center justify-center cursor-pointer transition-all duration-200 text-[var(--np-ink)] hover:bg-[var(--np-ink)] hover:text-[var(--np-paper)] disabled:opacity-30 disabled:cursor-not-allowed"
                         onClick={handlePrev}
                         disabled={!canGoPrev}
                         title="Newer"
                     >
                         <ChevronLeft className="w-5 h-5" />
                     </button>
-                    <h2 className="np-archive-modal-title">{currentMonth.label}</h2>
+                    <h2 className="font-display text-[1.5rem] font-bold uppercase tracking-[2px] min-w-[200px] text-center">{currentMonth.label}</h2>
                     <button
-                        className="np-archive-nav-btn"
+                        className="bg-none border border-[var(--np-ink)] w-9 h-9 flex items-center justify-center cursor-pointer transition-all duration-200 text-[var(--np-ink)] hover:bg-[var(--np-ink)] hover:text-[var(--np-paper)] disabled:opacity-30 disabled:cursor-not-allowed"
                         onClick={handleNext}
                         disabled={!canGoNext}
                         title="Older"
                     >
                         <ChevronRight className="w-5 h-5" />
                     </button>
-                    <button className="np-archive-close-btn" onClick={onClose}>
+                    <button className="absolute right-4 top-1/2 -translate-y-1/2 bg-none border-none cursor-pointer text-[var(--np-ink)] p-2 transition-colors duration-200 hover:text-[var(--np-accent)]" onClick={onClose}>
                         <X className="w-5 h-5" />
                     </button>
                 </div>
 
                 {/* Edition count + Reset button */}
-                <div className="np-archive-subheader">
-                    <p className="np-archive-count">
+                <div className="flex items-center justify-between p-3 px-4 border-b border-[var(--np-rule)]">
+                    <p className="text-[0.85rem] text-[var(--np-ink-light)] m-0">
                         {monthEditions.length} edition{monthEditions.length !== 1 ? "s" : ""} this month
                     </p>
                     {isViewingDifferent && onResetToActive && (
-                        <button className="np-archive-reset-btn" onClick={handleReset}>
+                        <button className="flex items-center gap-1.5 bg-[var(--np-accent)] text-[var(--np-paper)] border-none p-1.5 px-3 text-[0.75rem] font-inherit cursor-pointer transition-opacity duration-200 hover:opacity-85" onClick={handleReset}>
                             <RotateCcw className="w-3 h-3" />
                             Reset to Active
                         </button>
@@ -223,9 +223,9 @@ export function NewspaperArchiveModal({
                 </div>
 
                 {/* Scrollable editions grid */}
-                <div className="np-archive-scroll" ref={scrollRef}>
+                <div className="max-h-[60vh] md:max-h-[60vh] overflow-y-auto" ref={scrollRef}>
                     {displayEditions.length > 0 ? (
-                        <div className="np-archive-grid">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-[1px] bg-[var(--np-rule)]">
                             {displayEditions.map((edition, idx) => {
                                 // Use createdAt for accurate time
                                 const dateObj = new Date(edition.createdAt || edition.date);
@@ -255,19 +255,19 @@ export function NewspaperArchiveModal({
                                 return (
                                     <React.Fragment key={edition.id}>
                                         {isNewDay && idx > 0 && (
-                                            <div className="np-archive-day-separator">
+                                            <div className="col-span-full bg-[var(--np-bg)] p-2 px-4 text-[0.75rem] font-bold uppercase tracking-widest text-[var(--np-paper)] border-t border-[var(--np-ink)] border-b border-[var(--np-rule)]">
                                                 {dayKey}
                                             </div>
                                         )}
                                         <div
-                                            className={`np-archive-item ${isRealActive ? "np-archive-item-active" : ""} ${edition.isFallback ? "np-archive-item-fallback" : ""}`}
+                                            className={`bg-[var(--np-paper)] p-4 cursor-pointer transition-all duration-200 relative hover:bg-[var(--np-bg)] hover:text-[var(--np-paper)] group ${isRealActive ? "bg-[color-mix(in_srgb,var(--np-accent)_12%,transparent)] border-l-[3px] border-solid border-[var(--np-accent)]" : ""} ${edition.isFallback ? "opacity-70" : ""}`}
                                             onClick={() => handleEditionClick(edition.id)}
                                         >
-                                            <div className="np-archive-item-date">
+                                            <div className="text-[0.7rem] uppercase tracking-widest text-[var(--np-ink-light)] mb-1.5 flex items-center gap-2 group-hover:text-[var(--np-paper)]">
                                                 {dayStr} • {timeStr}
-                                                {edition.isFallback && <span className="np-archive-fallback-badge">Fallback</span>}
+                                                {edition.isFallback && <span className="bg-[var(--np-accent)] text-[var(--np-paper)] p-0.5 px-1.5 text-[0.6rem] uppercase">Fallback</span>}
                                             </div>
-                                            <div className="np-archive-item-headline">
+                                            <div className="text-[0.95rem] font-semibold leading-[1.4] line-clamp-2 overflow-hidden text-[var(--np-accent)]">
                                                 {loadingId === edition.id ? (
                                                     <Loader2 className="w-4 h-4 animate-spin inline mr-2" />
                                                 ) : null}
@@ -275,7 +275,7 @@ export function NewspaperArchiveModal({
                                             </div>
                                             {isAdmin && (
                                                 <button
-                                                    className={`np-archive-use-btn ${isRealActive ? "np-archive-use-btn-active" : ""}`}
+                                                    className={`absolute top-3 right-3 bg-[var(--np-ink)] text-[var(--np-paper)] border-none p-1 px-2.5 text-[0.7rem] font-inherit cursor-pointer transition-colors duration-200 hover:bg-[var(--np-accent)] ${isRealActive ? "bg-[var(--np-accent)]" : ""}`}
                                                     onClick={(e) => handleSetActive(edition.id, e)}
                                                 >
                                                     {isRealActive ? <Check className="w-3 h-3" /> : "Use"}
@@ -287,7 +287,7 @@ export function NewspaperArchiveModal({
                             })}
                         </div>
                     ) : (
-                        <div className="np-archive-empty">
+                        <div className="p-[60px] px-5 text-center text-[var(--np-ink-light)] italic">
                             No editions for this month.
                         </div>
                     )}
@@ -299,11 +299,11 @@ export function NewspaperArchiveModal({
                     if (fallbackEditions.length === 0) return null;
 
                     return (
-                        <div className="np-archive-fallbacks">
-                            <div className="np-archive-fallbacks-header">
+                        <div className="border-t-[3px] border-double border-[var(--np-ink)] bg-[color-mix(in_srgb,var(--np-accent)_5%,transparent)]">
+                            <div className="p-2.5 px-4 text-[0.75rem] font-bold uppercase tracking-widest text-[var(--np-accent)] border-b border-[var(--np-rule)]">
                                 Fallback Editions ({fallbackEditions.length})
                             </div>
-                            <div className="np-archive-fallbacks-grid">
+                            <div className="flex flex-col">
                                 {fallbackEditions.map(edition => {
                                     const dateObj = new Date(edition.createdAt || edition.date);
                                     const dateStr = dateObj.toLocaleDateString("en-US", {
@@ -315,13 +315,13 @@ export function NewspaperArchiveModal({
                                     return (
                                         <div
                                             key={edition.id}
-                                            className={`np-archive-fallback-item ${isRealActive ? "np-archive-item-active" : ""}`}
+                                            className={`flex items-center gap-3 p-2.5 px-4 border-b border-[var(--np-rule)] cursor-pointer transition-all duration-200 hover:bg-[color-mix(in_srgb,var(--np-accent)_15%,transparent)] ${isRealActive ? "bg-[color-mix(in_srgb,var(--np-accent)_12%,transparent)]" : ""}`}
                                             onClick={() => handleEditionClick(edition.id)}
                                         >
-                                            <span className="np-archive-fallback-date">{dateStr}</span>
-                                            <span className="np-archive-fallback-headline">{edition.headline}</span>
+                                            <span className="text-[0.7rem] text-[var(--np-ink-light)] min-w-[50px]">{dateStr}</span>
+                                            <span className="flex-1 text-[0.85rem] whitespace-nowrap overflow-hidden text-ellipsis">{edition.headline}</span>
                                             <button
-                                                className={`np-archive-use-btn ${isRealActive ? "np-archive-use-btn-active" : ""}`}
+                                                className={`bg-[var(--np-ink)] text-[var(--np-paper)] border-none p-1 px-2.5 text-[0.7rem] font-inherit cursor-pointer transition-colors duration-200 hover:bg-[var(--np-accent)] ${isRealActive ? "bg-[var(--np-accent)]" : ""}`}
                                                 onClick={(e) => handleSetActive(edition.id, e)}
                                             >
                                                 {isRealActive ? <Check className="w-3 h-3" /> : "Use"}

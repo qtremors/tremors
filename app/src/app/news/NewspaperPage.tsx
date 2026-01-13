@@ -14,7 +14,7 @@ import { useTheme } from "@/components/ThemeProvider";
 import { useAdmin } from "@/components/AdminContext";
 import { Sun, Moon, GitCommit, Star, GitBranch, GitPullRequest, Rocket, ChevronDown, Loader2, RefreshCw, Calendar, Rss } from "lucide-react";
 import { NewspaperArchiveModal } from "./components/NewspaperArchiveModal";
-import "./newspaper.css";
+// newspaper.css migrated to tailwind
 
 /**
  * Format project title - converts kebab-case to Title Case
@@ -188,7 +188,7 @@ export function NewspaperPage({ data }: ModeProps) {
     };
 
     if (error) {
-        return <div className="newspaper-mode min-h-screen flex items-center justify-center text-red-600">{error}</div>;
+        return <div className="font-serif bg-[var(--np-bg)] text-[var(--np-ink)] min-h-screen flex items-center justify-center text-red-600">{error}</div>;
     }
 
     // Get visible repos (filter hidden ones)
@@ -210,16 +210,16 @@ export function NewspaperPage({ data }: ModeProps) {
     const totalForks = repos.reduce((sum, r) => sum + (r.forks_count || 0), 0);
 
     return (
-        <div className="newspaper-mode">
-            <div className="newspaper-container">
+        <div className="font-serif bg-[var(--np-bg)] bg-none text-[var(--np-ink)] leading-[1.7] text-[18px] min-h-screen selection:bg-[var(--np-accent)] selection:text-[var(--np-paper)]">
+            <div className="max-w-[1100px] mx-auto bg-[var(--np-paper)] min-h-screen px-6 md:px-[60px] py-10 pt-16 md:pt-10">
                 {/* Masthead */}
-                <header className="np-masthead">
-                    <p className="np-masthead-date">{dateStr} • Online Edition</p>
-                    <h1>TREMORS</h1>
-                    <p className="np-masthead-tagline">"All the Code That's Fit to Ship"</p>
-                    <div className="np-masthead-controls">
+                <header className="text-center border-b-[3px] border-double border-[var(--np-ink)] pb-6 mb-8">
+                    <p className="text-[0.75rem] uppercase tracking-[3px] mb-2">{dateStr} • Online Edition</p>
+                    <h1 className="font-display text-[clamp(3rem,10vw,6rem)] font-[900] tracking-[-2px] leading-none mb-2">TREMORS</h1>
+                    <p className="italic text-[var(--np-ink-light)]">"All the Code That's Fit to Ship"</p>
+                    <div className="mt-4 flex justify-center gap-4 flex-wrap">
                         {/* Archive button */}
-                        <button onClick={() => setShowArchive(true)} className="np-control-btn">
+                        <button onClick={() => setShowArchive(true)} className="inline-flex items-center gap-2 bg-none border border-[var(--np-ink)] px-4 py-2 font-inherit text-[0.85rem] cursor-pointer text-[var(--np-ink)] no-underline transition-all duration-200 hover:bg-[var(--np-ink)] hover:text-[var(--np-paper)]">
                             <Calendar className="w-4 h-4" />
                             Archive
                         </button>
@@ -228,17 +228,17 @@ export function NewspaperPage({ data }: ModeProps) {
                             <button
                                 onClick={regenerateContent}
                                 disabled={isRegenerating}
-                                className="np-control-btn"
+                                className="inline-flex items-center gap-2 bg-none border border-[var(--np-ink)] px-4 py-2 font-inherit text-[0.85rem] cursor-pointer text-[var(--np-ink)] no-underline transition-all duration-200 hover:bg-[var(--np-ink)] hover:text-[var(--np-paper)]"
                             >
                                 <RefreshCw className={`w-4 h-4 ${isRegenerating ? "animate-spin" : ""}`} />
                                 {isRegenerating ? "Generating..." : "Regenerate"}
                             </button>
                         )}
-                        <a href="/api/news/rss" target="_blank" rel="noopener noreferrer" className="np-control-btn">
+                        <a href="/api/news/rss" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 bg-none border border-[var(--np-ink)] px-4 py-2 font-inherit text-[0.85rem] cursor-pointer text-[var(--np-ink)] no-underline transition-all duration-200 hover:bg-[var(--np-ink)] hover:text-[var(--np-paper)]">
                             <Rss className="w-4 h-4" />
                             RSS
                         </a>
-                        <button onClick={toggleTheme} className="np-control-btn">
+                        <button onClick={toggleTheme} className="inline-flex items-center gap-2 bg-none border border-[var(--np-ink)] px-4 py-2 font-inherit text-[0.85rem] cursor-pointer text-[var(--np-ink)] no-underline transition-all duration-200 hover:bg-[var(--np-ink)] hover:text-[var(--np-paper)]">
                             {theme === "dark" ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
                             {theme === "dark" ? "Light Edition" : "Dark Edition"}
                         </button>
@@ -247,8 +247,8 @@ export function NewspaperPage({ data }: ModeProps) {
 
                 {/* Activity Ticker */}
                 {data.recentActivity.length > 0 && (
-                    <div className="np-ticker">
-                        <div className="np-ticker-content">
+                    <div className="bg-[var(--np-ink)] text-[var(--np-paper)] py-3 mx-[-24px] md:mx-[-60px] my-8 overflow-hidden font-mono text-[0.8rem]">
+                        <div className="flex whitespace-nowrap animate-np-ticker w-max hover:[animation-play-state:paused]">
                             {/* Duplicate for seamless loop - show 10 items */}
                             {[...data.recentActivity.slice(0, 10), ...data.recentActivity.slice(0, 10)].map((item, i) => {
                                 const IconMap: Record<string, typeof GitCommit> = {
@@ -261,9 +261,9 @@ export function NewspaperPage({ data }: ModeProps) {
                                 };
                                 const Icon = IconMap[item.type] || GitCommit;
                                 return (
-                                    <span key={i} className="np-ticker-item">
+                                    <span key={i} className="px-12 shrink-0">
                                         <Icon className="w-3 h-3 inline" />{" "}
-                                        <span className="np-ticker-highlight">{item.repoName}</span>: {item.title}
+                                        <span className="text-[var(--np-accent)]">{item.repoName}</span>: {item.title}
                                     </span>
                                 );
                             })}
@@ -272,14 +272,14 @@ export function NewspaperPage({ data }: ModeProps) {
                 )}
 
                 {/* Main Headline - AI Generated */}
-                <h2 className="np-headline">
+                <h2 className="font-display text-[clamp(2rem,5vw,3.5rem)] font-bold leading-[1.1] mt-12 mb-6 border-b-2 border-[var(--np-ink)] pb-3">
                     {isLoadingContent ? (
                         <span className="inline-block w-3/4 h-10 bg-current opacity-10 animate-pulse rounded" />
                     ) : (
                         edition?.headline || "Local Developer Builds AI-Powered Platforms, Refuses to Stop Pushing Commits"
                     )}
                 </h2>
-                <p className="np-subheadline">
+                <p className="font-display text-[1.5rem] font-normal italic mb-8 text-[var(--np-ink-light)]">
                     {isLoadingContent ? (
                         <span className="inline-block w-2/3 h-6 bg-current opacity-10 animate-pulse rounded" />
                     ) : (
@@ -287,21 +287,21 @@ export function NewspaperPage({ data }: ModeProps) {
                     )}
                 </p>
 
-                <div className="np-byline">
+                <div className="text-[0.85rem] uppercase tracking-[2px] mb-6 flex justify-between flex-wrap gap-2">
                     <span>
-                        <span className="np-byline-author">{PERSONAL.name.toUpperCase()}</span> • {PERSONAL.tagline}
+                        <span className="text-[var(--np-accent)] font-semibold">{PERSONAL.name.toUpperCase()}</span> • {PERSONAL.tagline}
                     </span>
                     <span>📍 {edition?.location || "VØID"}</span>
                 </div>
 
                 {/* Main Content - AI Generated */}
-                <div className="np-columns">
+                <div className="columns-1 md:columns-2 gap-10 [column-rule:1px_solid_var(--np-rule)] [&_p]:mb-[1.5em] [&_p]:text-justify [&_p]:[hyphens:auto] [&_p:first-of-type::first-letter]:font-display [&_p:first-of-type::first-letter]:text-[4rem] [&_p:first-of-type::first-letter]:float-left [&_p:first-of-type::first-letter]:leading-[0.8] [&_p:first-of-type::first-letter]:pr-3 [&_p:first-of-type::first-letter]:text-[var(--np-accent)]">
                     {edition?.bodyContent ? (
                         <>
                             {edition.bodyContent.map((para, i) => (
                                 <p key={i}>{para}</p>
                             ))}
-                            <div className="np-pull-quote">
+                            <div className="[break-inside:avoid] border-l-4 border-[var(--np-accent)] px-6 py-4 my-6 text-[1.3rem] italic font-display">
                                 {edition.pullQuote}
                             </div>
                         </>
@@ -337,63 +337,63 @@ export function NewspaperPage({ data }: ModeProps) {
                 </div>
 
                 {/* Statistics */}
-                <div className="np-stats-block">
-                    <div className="np-stat">
-                        <div className="np-stat-number">{user?.public_repos || repos.length}</div>
-                        <div className="np-stat-label">Public Repos</div>
+                <div className="flex justify-center gap-[40px] md:gap-[80px] my-10 py-8 border-y-2 border-[var(--np-ink)] flex-wrap md:flex-nowrap">
+                    <div className="text-center">
+                        <div className="font-display text-[2.5rem] font-bold text-[var(--np-accent)]">{user?.public_repos || repos.length}</div>
+                        <div className="text-[0.75rem] uppercase tracking-[2px] text-[var(--np-ink-light)]">Public Repos</div>
                     </div>
-                    <div className="np-stat">
-                        <div className="np-stat-number">
+                    <div className="text-center">
+                        <div className="font-display text-[2.5rem] font-bold text-[var(--np-accent)]">
                             {isLoadingCommits ? (
                                 <Loader2 className="w-8 h-8 animate-spin mx-auto" />
                             ) : (
                                 totalCommits ?? "—"
                             )}
                         </div>
-                        <div className="np-stat-label">Total Commits</div>
+                        <div className="text-[0.75rem] uppercase tracking-[2px] text-[var(--np-ink-light)]">Total Commits</div>
                     </div>
                 </div>
 
                 {/* Projects as Data Table */}
-                <table className="np-data-table">
-                    <caption>Featured Projects</caption>
+                <table className="w-full border-collapse my-8 text-[0.95rem] block md:table overflow-x-auto md:overflow-x-visible whitespace-nowrap md:whitespace-normal">
+                    <caption className="font-display text-[1.25rem] font-bold text-left mb-3 uppercase tracking-[2px]">Featured Projects</caption>
                     <thead>
                         <tr>
-                            <th>Project</th>
-                            <th>Language</th>
-                            <th>Topics</th>
-                            <th>Status</th>
+                            <th className="p-3 md:p-4 text-left border-b border-[var(--np-rule)] font-semibold uppercase text-[0.75rem] tracking-widest bg-black/5">Project</th>
+                            <th className="p-3 md:p-4 text-left border-b border-[var(--np-rule)] font-semibold uppercase text-[0.75rem] tracking-widest bg-black/5">Language</th>
+                            <th className="p-3 md:p-4 text-left border-b border-[var(--np-rule)] font-semibold uppercase text-[0.75rem] tracking-widest bg-black/5">Topics</th>
+                            <th className="p-3 md:p-4 text-left border-b border-[var(--np-rule)] font-semibold uppercase text-[0.75rem] tracking-widest bg-black/5">Status</th>
                         </tr>
                     </thead>
                     <tbody>
                         {displayRepos.map((repo) => (
-                            <tr key={repo.id}>
-                                <td>
-                                    <a href={repo.html_url} target="_blank" rel="noopener noreferrer">
+                            <tr key={repo.id} className="hover:bg-black/2">
+                                <td className="p-3 md:p-4 text-left border-b border-[var(--np-rule)]">
+                                    <a href={repo.html_url} target="_blank" rel="noopener noreferrer" className="text-[var(--np-accent)] no-underline hover:underline">
                                         {formatProjectTitle(repo.name)}
                                     </a>
                                 </td>
-                                <td>{repo.language || "—"}</td>
-                                <td>{repo.topics?.slice(0, 3).join(", ") || "—"}</td>
-                                <td>
+                                <td className="p-3 md:p-4 text-left border-b border-[var(--np-rule)]">{repo.language || "—"}</td>
+                                <td className="p-3 md:p-4 text-left border-b border-[var(--np-rule)]">{repo.topics?.slice(0, 3).join(", ") || "—"}</td>
+                                <td className="p-3 md:p-4 text-left border-b border-[var(--np-rule)]">
                                     {repo.homepage ? (
-                                        <a href={repo.homepage} target="_blank" rel="noopener noreferrer">Live</a>
+                                        <a href={repo.homepage} target="_blank" rel="noopener noreferrer" className="text-[var(--np-accent)] no-underline hover:underline">Live</a>
                                     ) : "Source"}
                                 </td>
                             </tr>
                         ))}
                         {showMoreProjects && otherRepos.slice(0, 10).map((repo) => (
-                            <tr key={repo.id} className="np-more-project">
-                                <td>
-                                    <a href={repo.html_url} target="_blank" rel="noopener noreferrer">
+                            <tr key={repo.id} className="hover:bg-black/2">
+                                <td className="p-3 md:p-4 text-left border-b border-[var(--np-rule)]">
+                                    <a href={repo.html_url} target="_blank" rel="noopener noreferrer" className="text-[var(--np-accent)] no-underline hover:underline">
                                         {formatProjectTitle(repo.name)}
                                     </a>
                                 </td>
-                                <td>{repo.language || "—"}</td>
-                                <td>{repo.topics?.slice(0, 3).join(", ") || "—"}</td>
-                                <td>
+                                <td className="p-3 md:p-4 text-left border-b border-[var(--np-rule)]">{repo.language || "—"}</td>
+                                <td className="p-3 md:p-4 text-left border-b border-[var(--np-rule)]">{repo.topics?.slice(0, 3).join(", ") || "—"}</td>
+                                <td className="p-3 md:p-4 text-left border-b border-[var(--np-rule)]">
                                     {repo.homepage ? (
-                                        <a href={repo.homepage} target="_blank" rel="noopener noreferrer">Live</a>
+                                        <a href={repo.homepage} target="_blank" rel="noopener noreferrer" className="text-[var(--np-accent)] no-underline hover:underline">Live</a>
                                     ) : "Source"}
                                 </td>
                             </tr>
@@ -405,7 +405,7 @@ export function NewspaperPage({ data }: ModeProps) {
                 {otherRepos.length > 0 && (
                     <button
                         onClick={() => setShowMoreProjects(!showMoreProjects)}
-                        className="np-control-btn np-show-more"
+                        className="inline-flex items-center gap-2 bg-none border border-[var(--np-ink)] px-4 py-2 font-inherit text-[0.85rem] cursor-pointer text-[var(--np-ink)] no-underline transition-all duration-200 hover:bg-[var(--np-ink)] hover:text-[var(--np-paper)] flex mx-auto my-6"
                     >
                         <ChevronDown className={`w-4 h-4 transition-transform ${showMoreProjects ? "rotate-180" : ""}`} />
                         {showMoreProjects ? "Show Less" : `Show ${Math.min(10, otherRepos.length)} More Projects`}
@@ -413,14 +413,14 @@ export function NewspaperPage({ data }: ModeProps) {
                 )}
 
                 {/* Skills */}
-                <h3 className="np-section-header">Technical Proficiencies</h3>
-                <div className="np-skills-columns">
+                <h3 className="font-display text-[1.25rem] uppercase tracking-[2px] mt-12 border-b border-[var(--np-ink)] pb-2">Technical Proficiencies</h3>
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-0 my-6 py-4 bg-[color-mix(in_srgb,var(--np-ink)_3%,transparent)] border border-[var(--np-rule)]">
                     {SKILLS.map((category) => (
-                        <div key={category.id} className="np-skill-column">
-                            <h4 className="np-skill-column-header">{category.label}</h4>
-                            <ul className="np-skill-column-list">
+                        <div key={category.id} className="px-4 text-center relative border-r border-dotted border-[var(--np-rule)] lg:border-r md:[&:nth-child(3n)]:border-r-0 lg:[&:nth-child(5n)]:border-r-0 [&:nth-child(2n)]:border-r-0 md:[&:nth-child(2n)]:border-r">
+                            <h4 className="font-display text-[0.85rem] font-bold uppercase tracking-widest mb-3 pb-2 border-b-2 border-[var(--np-accent)] text-[var(--np-ink)]">{category.label}</h4>
+                            <ul className="list-none m-0 p-0">
                                 {category.skills.map((skill, idx) => (
-                                    <li key={idx}>{skill}</li>
+                                    <li key={idx} className="py-1.5 text-[0.85rem] text-[var(--np-ink)]">{skill}</li>
                                 ))}
                             </ul>
                         </div>
@@ -428,14 +428,14 @@ export function NewspaperPage({ data }: ModeProps) {
                 </div>
 
                 {/* Contact */}
-                <div className="np-contact-block">
-                    <h2>Correspondence</h2>
+                <div className="mt-12 pt-8 border-t-[3px] border-double border-[var(--np-ink)] text-center">
+                    <h2 className="font-display text-[1.5rem] mb-4">Correspondence</h2>
                     <p>For inquiries regarding positions, collaborations, or just to say hello:</p>
-                    <ContactLinks variant="icons-only" className="np-contact-links" />
+                    <ContactLinks variant="icons-only" className="flex justify-center gap-6 flex-wrap mt-4" />
                 </div>
 
                 {/* Footer */}
-                <footer className="np-footer">
+                <footer className="mt-12 pt-6 border-t border-[var(--np-rule)] text-center text-[0.8rem] text-[var(--np-ink-light)]">
                     <p>© {new Date().getFullYear()} The Tremors Chronicle. All Rights Reserved.</p>
                 </footer>
             </div>

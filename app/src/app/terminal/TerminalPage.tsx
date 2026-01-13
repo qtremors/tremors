@@ -325,6 +325,40 @@ export function TerminalPage({ data }: ModeProps) {
         }
     };
 
+    const handleUp = () => {
+        if (commandHistory.length > 0) {
+            const newIndex = historyIndex < commandHistory.length - 1 ? historyIndex + 1 : historyIndex;
+            setHistoryIndex(newIndex);
+            setInput(commandHistory[commandHistory.length - 1 - newIndex] || "");
+        }
+    };
+
+    const handleDown = () => {
+        if (historyIndex > 0) {
+            const newIndex = historyIndex - 1;
+            setHistoryIndex(newIndex);
+            setInput(commandHistory[commandHistory.length - 1 - newIndex] || "");
+        } else if (historyIndex === 0) {
+            setHistoryIndex(-1);
+            setInput("");
+        }
+    };
+
+    const handleTab = () => {
+        const cmds = Object.keys(commands).filter(c => !c.startsWith("/") && !c.startsWith(":"));
+        const searchTerm = input.trim().toLowerCase().startsWith("/")
+            ? input.trim().toLowerCase().slice(1)
+            : input.trim().toLowerCase();
+        const matches = cmds.filter(c => c.startsWith(searchTerm));
+
+        if (matches.length > 0) {
+            // Complete with current selection
+            setInput(`/${matches[autocompleteIndex % matches.length]}`);
+            // Cycle to next match for next Tab press
+            setAutocompleteIndex(prev => (prev + 1) % matches.length);
+        }
+    };
+
     const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
         // Close TUIs on escape
         if (e.key === "Escape") {
@@ -366,35 +400,13 @@ export function TerminalPage({ data }: ModeProps) {
             setAutocompleteIndex(0);
         } else if (e.key === "ArrowUp") {
             e.preventDefault();
-            if (commandHistory.length > 0) {
-                const newIndex = historyIndex < commandHistory.length - 1 ? historyIndex + 1 : historyIndex;
-                setHistoryIndex(newIndex);
-                setInput(commandHistory[commandHistory.length - 1 - newIndex] || "");
-            }
+            handleUp();
         } else if (e.key === "ArrowDown") {
             e.preventDefault();
-            if (historyIndex > 0) {
-                const newIndex = historyIndex - 1;
-                setHistoryIndex(newIndex);
-                setInput(commandHistory[commandHistory.length - 1 - newIndex] || "");
-            } else if (historyIndex === 0) {
-                setHistoryIndex(-1);
-                setInput("");
-            }
+            handleDown();
         } else if (e.key === "Tab") {
             e.preventDefault();
-            const cmds = Object.keys(commands).filter(c => !c.startsWith("/") && !c.startsWith(":"));
-            const searchTerm = input.trim().toLowerCase().startsWith("/")
-                ? input.trim().toLowerCase().slice(1)
-                : input.trim().toLowerCase();
-            const matches = cmds.filter(c => c.startsWith(searchTerm));
-
-            if (matches.length > 0) {
-                // Complete with current selection
-                setInput(`/${matches[autocompleteIndex % matches.length]}`);
-                // Cycle to next match for next Tab press
-                setAutocompleteIndex(prev => (prev + 1) % matches.length);
-            }
+            handleTab();
         }
     };
 
@@ -412,11 +424,11 @@ export function TerminalPage({ data }: ModeProps) {
         addCommandBlock("logout", [{ type: "success", content: "Logged out successfully." }]);
     };
 
-    if (error) return <div className="h-screen bg-[#191724] text-[#eb6f92] p-8 font-mono">{error}</div>;
+    if (error) return <div className="h-[100dvh] bg-[#191724] text-[#eb6f92] p-8 font-mono">{error}</div>;
 
     return (
         <div
-            className={`h-screen ${FONT_CLASSES[termFont]} flex flex-col overflow-hidden ${crtEffect ? 'crt-effect' : ''}`}
+            className={`h-[100dvh] ${FONT_CLASSES[termFont]} flex flex-col overflow-hidden ${crtEffect ? 'crt-effect' : ''}`}
             style={{ backgroundColor: theme.bg, color: theme.text }}
             onClick={focusInput}
         >
@@ -511,6 +523,38 @@ export function TerminalPage({ data }: ModeProps) {
                     selectedIndex={autocompleteIndex}
                 />
             )}
+
+            {/* Mobile Keyboard Helpers */}
+            <div className="md:hidden flex items-center justify-center gap-2 px-4 py-2 border-t" style={{ borderColor: theme.border, backgroundColor: theme.bg }}>
+                <button
+                    onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleUp(); }}
+                    className="flex-1 py-2 text-xs rounded border transition-colors"
+                    style={{ borderColor: theme.border, color: theme.muted, backgroundColor: theme.panel }}
+                >
+                    UP
+                </button>
+                <button
+                    onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleDown(); }}
+                    className="flex-1 py-2 text-xs rounded border transition-colors"
+                    style={{ borderColor: theme.border, color: theme.muted, backgroundColor: theme.panel }}
+                >
+                    DOWN
+                </button>
+                <button
+                    onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleTab(); }}
+                    className="flex-1 py-2 text-xs rounded border transition-colors"
+                    style={{ borderColor: theme.border, color: theme.muted, backgroundColor: theme.panel }}
+                >
+                    TAB
+                </button>
+                <button
+                    onClick={(e) => { e.preventDefault(); e.stopPropagation(); processCommand("clear"); }}
+                    className="flex-1 py-2 text-xs rounded border transition-colors"
+                    style={{ borderColor: theme.border, color: theme.muted, backgroundColor: theme.panel }}
+                >
+                    CLS
+                </button>
+            </div>
 
             <TerminalInput
                 ref={inputRef}

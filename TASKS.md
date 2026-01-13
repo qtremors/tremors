@@ -1,28 +1,29 @@
 # Tremors Portfolio - Tasks
 
 > **Project:** Tremors Portfolio  
-> **Version:** 2.0.2  
+> **Version:** 2.1.0  
 > **Last Updated:** 2026-01-13
 
 ---
 
-## ✅ Completed (v2.0)
-
-<!-- Archived to CHANGELOG -->
+## ✅ Completed (v2.1)
+- [x] **Mobile UX**: Implement premium hamburger menu with staggered animations.
+- [x] **Theme Sync**: Page-aware mobile navigation (Paper/News/Default).
+- [x] **Terminal**: Add virtual touch-friendly controls for mobile.
+- [x] **Layout**: Restore desktop resume button and fix hover inversion.
 
 ---
 
 ## 🚧 In Progress
 
-<!-- Currently being worked on -->
+- [ ] **Database Optimization**: Migrating `Repo.topics` to `JSONB`.
 
 ---
 
 ## 📋 To Do
 
 ### High Priority
-- [ ] **Consistency**: Align `CHANGELOG.md` version (2.0.1) with `TASKS.md` (2.0.2).
-- [ ] **Database**: Migrate `Repo.topics` and `NewspaperEdition.bodyContent` to native `JSONB` type in Postgres schema for better query performance.
+- [ ] **SEO**: Enhance meta tags for specific viewer modes.
 
 ### Medium Priority
 - [ ] None currently.
