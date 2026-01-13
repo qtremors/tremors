@@ -6,7 +6,8 @@
 
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { PERSONAL, SKILLS } from "@/config/site";
+import { PERSONAL, SKILLS, NEWS_AGENT } from "@/config/site";
+import { verifyAdminCookie } from "@/lib/auth";
 
 const GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models";
 const MODEL = "gemini-flash-lite-latest"; // Latest flash lite model
@@ -33,23 +34,48 @@ interface GeminiResponse {
 }
 
 /**
- * Build rich context for Gemini about the developer
+ * Build rich context for Skye about the developer's last 24 hours AND global history
+ * Timezone: Asia/Kolkata (GMT+5:30)
  */
 async function buildContext() {
+    // Current time in IST
     const now = new Date();
+    const timeZone = "Asia/Kolkata";
 
-    // Fetch all repos and commits
+    // Helper to format date in IST
+    const getISTDate = (date: Date) => new Intl.DateTimeFormat("en-US", {
+        timeZone,
+        year: "numeric", month: "numeric", day: "numeric",
+        hour: "numeric", minute: "numeric", hour12: false
+    }).format(date);
+
+    const twentyFourHoursAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+
+    // Fetch all repos (Global Context)
     const allRepos = await prisma.repo.findMany({
         where: { hidden: false },
         orderBy: { pushedAt: "desc" },
     });
 
+    // Fetch all commits (Historical Context)
     const allCommits = await prisma.commit.findMany({
         orderBy: { date: "desc" },
-        take: 30,
+        take: 50, // Enough for recent history + distinct streak check
     });
 
-    // === REPO STATS ===
+    // Fetch strictly today's/24h data (Daily Context)
+    const [recentCommits24h, recentActivity24h] = await Promise.all([
+        prisma.commit.findMany({
+            where: { date: { gte: twentyFourHoursAgo } },
+            orderBy: { date: "desc" },
+        }),
+        prisma.activity.findMany({
+            where: { date: { gte: twentyFourHoursAgo } },
+            orderBy: { date: "desc" },
+        })
+    ]);
+
+    // === GLOBAL REPO STATS (History) ===
     const repoCount = allRepos.length;
     const totalStars = allRepos.reduce((sum, r) => sum + r.stars, 0);
     const featuredRepos = allRepos.filter(r => r.featured).map(r => r.name);
@@ -64,156 +90,151 @@ async function buildContext() {
         .slice(0, 3)
         .map(([lang, count]) => `${lang} (${count})`);
 
-    // Most active repo (most commits in last 30)
-    const commitsByRepo: Record<string, number> = {};
-    allCommits.forEach(c => {
-        commitsByRepo[c.repoName] = (commitsByRepo[c.repoName] || 0) + 1;
-    });
-    const mostActiveRepo = Object.entries(commitsByRepo)
-        .sort((a, b) => b[1] - a[1])[0];
-
-    // Least active repos (no commits in 30+ days)
+    // Least active repos (Dormant - no commits in 30+ days)
     const recentRepoNames = new Set(allCommits.map(c => c.repoName));
     const dormantRepos = allRepos
         .filter(r => !recentRepoNames.has(r.name))
         .slice(0, 3)
         .map(r => {
-            const daysDormant = Math.floor((now.getTime() - new Date(r.pushedAt).getTime()) / (1000 * 60 * 60 * 24));
-            return `${r.name} (${daysDormant} days)`;
+            const lastPush = new Date(r.pushedAt);
+            const daysDormant = Math.floor((now.getTime() - lastPush.getTime()) / (1000 * 60 * 60 * 24));
+            return `${r.name} (${daysDormant} days dormant)`;
         });
 
-    // Repo age vs activity (oldest repo still active)
+    // Oldest active repo (Legacy check)
     const oldestActiveRepo = allRepos
-        .filter(r => recentRepoNames.has(r.name))
         .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())[0];
 
-    // === COMMIT PATTERNS ===
-    const recentActivity = allCommits.slice(0, 10)
-        .map(c => `${c.repoName}: ${c.message}`)
-        .join("\n");
+    // === DAILY ACTIVITY (Last 24h) ===
+    // Most active repo in last 24h
+    const commitsByRepo24h: Record<string, number> = {};
+    recentCommits24h.forEach(c => {
+        commitsByRepo24h[c.repoName] = (commitsByRepo24h[c.repoName] || 0) + 1;
+    });
+    const mostActiveToday = Object.entries(commitsByRepo24h)
+        .sort((a, b) => b[1] - a[1])[0];
 
-    // Time of last commit
-    const lastCommit = allCommits[0];
-    const lastCommitDate = lastCommit ? new Date(lastCommit.date) : null;
-    const daysSinceLastCommit = lastCommitDate
-        ? Math.floor((now.getTime() - lastCommitDate.getTime()) / (1000 * 60 * 60 * 24))
-        : null;
-    const lastCommitHour = lastCommitDate?.getHours();
-    const lastCommitTimeOfDay = lastCommitHour !== undefined
-        ? (lastCommitHour >= 0 && lastCommitHour < 6 ? "late night (midnight-6am)"
-            : lastCommitHour < 12 ? "morning"
-                : lastCommitHour < 18 ? "afternoon"
-                    : "evening")
-        : null;
+    const commitSummary24h = recentCommits24h.length > 0
+        ? recentCommits24h.slice(0, 15).map(c => `- ${c.repoName}: ${c.message} (${getISTDate(new Date(c.date))})`).join("\n")
+        : "No commits pushed in the last 24 hours.";
 
-    // Commit streak (consecutive days with commits)
-    const commitDates = new Set(allCommits.map(c =>
-        new Date(c.date).toISOString().split('T')[0]
-    ));
+    const eventSummary24h = recentActivity24h.length > 0
+        ? recentActivity24h.slice(0, 15).map(a => `- ${a.repoName}: ${a.title} (${getISTDate(new Date(a.date))})`).join("\n")
+        : "No major repository events tracked in the last 24 hours.";
+
+    // Streak Check
+    const commitDates = new Set(allCommits.map(c => new Date(c.date).toISOString().split('T')[0]));
     let streak = 0;
-    const today = now.toISOString().split('T')[0];
-    let checkDate = new Date(now);
-    while (commitDates.has(checkDate.toISOString().split('T')[0]) ||
-        (streak === 0 && checkDate.toISOString().split('T')[0] === today)) {
-        if (commitDates.has(checkDate.toISOString().split('T')[0])) streak++;
-        checkDate.setDate(checkDate.getDate() - 1);
-        if (streak > 30) break; // Cap at 30
+    // We need to check streak based on "Today" in IST
+    const todayIST = new Intl.DateTimeFormat("en-CA", { timeZone }).format(now); // YYYY-MM-DD
+    let checkDateObj = new Date(now);
+
+    // Simple loop check (approximate due to timezone shift on date objects, good enough for rough streak)
+    while (true) {
+        const dateStr = checkDateObj.toISOString().split('T')[0];
+        if (commitDates.has(dateStr)) {
+            streak++;
+            checkDateObj.setDate(checkDateObj.getDate() - 1);
+        } else {
+            // If today has no commits yet, allowing streak to continue from yesterday
+            if (streak === 0 && dateStr === todayIST) {
+                checkDateObj.setDate(checkDateObj.getDate() - 1);
+                continue;
+            }
+            break;
+        }
     }
 
-    // === CALENDAR AWARENESS ===
-    const dayOfWeek = now.toLocaleDateString('en-US', { weekday: 'long' });
-    const isWeekend = now.getDay() === 0 || now.getDay() === 6;
+    // === CALENDAR ===
+    const todayDateStr = new Intl.DateTimeFormat("en-US", {
+        timeZone,
+        weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
+        hour: '2-digit', minute: '2-digit'
+    }).format(now);
 
-    // Holiday detection (major holidays)
-    const month = now.getMonth() + 1;
-    const day = now.getDate();
+    const nowIST = new Date(new Date().toLocaleString("en-US", { timeZone }));
+    const month = nowIST.getMonth() + 1;
+    const day = nowIST.getDate();
+
     const holidays: string[] = [];
     if (month === 1 && day === 1) holidays.push("New Year's Day");
-    if (month === 2 && day === 14) holidays.push("Valentine's Day");
     if (month === 10 && day === 31) holidays.push("Halloween");
-    if (month === 12 && day === 24) holidays.push("Christmas Eve");
-    if (month === 12 && day === 25) holidays.push("Christmas Day");
-    if (month === 12 && day === 31) holidays.push("New Year's Eve");
-    // Diwali (approximate - late Oct/Nov)
-    if (month === 10 || month === 11) {
-        if (day >= 20 && day <= 31) holidays.push("Diwali season");
-    }
-
-    const skills = SKILLS.map(s => `${s.id}: ${s.skills.join(", ")}`).join("\n");
+    if (month === 12 && day === 25) holidays.push("Christmas");
+    if (month === 10 || month === 11) if (day >= 20 && day <= 31) holidays.push("Diwali/Festive Season");
 
     return {
-        // Developer info
         name: PERSONAL.name,
-        title: PERSONAL.tagline,
-
-        // Calendar
-        todayDate: now.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }),
-        dayOfWeek,
-        isWeekend,
+        todayDate: todayDateStr + " (IST)",
         holidays: holidays.length > 0 ? holidays.join(", ") : null,
 
-        // Repo stats
+        // Global Context (History)
         repoCount,
         totalStars,
-        featuredRepos: featuredRepos.length > 0 ? featuredRepos.join(", ") : null,
         topLanguages: topLanguages.join(", "),
-        mostActiveRepo: mostActiveRepo ? `${mostActiveRepo[0]} (${mostActiveRepo[1]} recent commits)` : null,
-        dormantRepos: dormantRepos.length > 0 ? dormantRepos.join(", ") : null,
-        oldestActiveRepo: oldestActiveRepo
-            ? `${oldestActiveRepo.name} (created ${Math.floor((now.getTime() - new Date(oldestActiveRepo.createdAt).getTime()) / (1000 * 60 * 60 * 24))} days ago, still active!)`
-            : null,
+        featuredRepos: featuredRepos.join(", "),
+        dormantRepos: dormantRepos.join(", "),
+        oldestActiveRepo: oldestActiveRepo ? `${oldestActiveRepo.name} (since ${new Date(oldestActiveRepo.createdAt).getFullYear()})` : "None",
 
-        // Commit patterns
-        recentCommits: recentActivity,
-        daysSinceLastCommit,
-        lastCommitTimeOfDay,
-        commitStreak: streak > 1 ? `${streak} days` : null,
-
-        // Skills
-        skills,
+        // Daily Context (24h)
+        activityInLast24h: {
+            commitCount: recentCommits24h.length,
+            eventCount: recentActivity24h.length,
+            mostActiveRepo: mostActiveToday ? mostActiveToday[0] : null,
+            commits: commitSummary24h,
+            events: eventSummary24h,
+        },
+        streak: streak > 1 ? `${streak} days` : null,
+        skills: SKILLS.map(s => s.skills.slice(0, 3).join(", ")).join(" | "),
     };
 }
 
 /**
  * Generate content using Gemini API
  */
-async function generateWithGemini(context: Awaited<ReturnType<typeof buildContext>>): Promise<typeof FALLBACK_CONTENT | null> {
+async function generateWithGemini(
+    context: Awaited<ReturnType<typeof buildContext>>,
+    personalityId: string = "tabloid"
+): Promise<typeof FALLBACK_CONTENT | null> {
     const apiKey = process.env.GEMINI_API_KEY;
-    if (!apiKey) {
-        return null; // Use fallback content
-    }
+    if (!apiKey) return null;
 
-    const prompt = `Generate tabloid newspaper content as JSON.
+    const personality = NEWS_AGENT.personalities.find(p => p.id === personalityId) || NEWS_AGENT.personalities[0];
 
-=== CALENDAR ===
-TODAY: ${context.todayDate}
-DAY: ${context.dayOfWeek}${context.isWeekend ? " (WEEKEND!)" : ""}
-${context.holidays ? `HOLIDAY: ${context.holidays}` : ""}
+    // UPDATED PROMPT: Combining History + Daily Context
+    const prompt = `You are ${NEWS_AGENT.name}, an AI news agent.
+Current Time: ${context.todayDate}
+Style/Personality: ${personality.prompt}
 
-=== DEVELOPER ===
-NAME: ${context.name} - ${context.title}
-SKILLS: ${context.skills}
+=== DAILY UPDATE (LAST 24 HOURS in IST) ===
+Commits Today: ${context.activityInLast24h.commitCount}
+Events Today: ${context.activityInLast24h.eventCount}
+Active Repo Today: ${context.activityInLast24h.mostActiveRepo || "None"}
 
-=== REPO STATS ===
-TOTAL REPOS: ${context.repoCount}
-TOTAL STARS: ${context.totalStars}
-TOP LANGUAGES: ${context.topLanguages}
-${context.featuredRepos ? `FEATURED: ${context.featuredRepos}` : ""}
-${context.mostActiveRepo ? `MOST ACTIVE: ${context.mostActiveRepo}` : ""}
-${context.dormantRepos ? `DORMANT REPOS: ${context.dormantRepos}` : ""}
-${context.oldestActiveRepo ? `OLDEST ACTIVE: ${context.oldestActiveRepo}` : ""}
+RECENT ACTIVITY LOG:
+${context.activityInLast24h.commits}
+${context.activityInLast24h.events}
 
-=== ACTIVITY ===
-DAYS SINCE LAST COMMIT: ${context.daysSinceLastCommit ?? "unknown"}
-${context.lastCommitTimeOfDay ? `LAST COMMIT TIME: ${context.lastCommitTimeOfDay}` : ""}
-${context.commitStreak ? `COMMIT STREAK: ${context.commitStreak}` : ""}
-RECENT COMMITS:
-${context.recentCommits || "None"}
+=== HISTORICAL PROFILE (THE BIG PICTURE) ===
+Total Repos: ${context.repoCount} (Stars: ${context.totalStars})
+Top Languages: ${context.topLanguages}
+Featured Projects: ${context.featuredRepos}
+Oldest Project: ${context.oldestActiveRepo}
+Dormant/Abandoned Projects: ${context.dormantRepos || "None (Everything is fresh!)"}
+Current Streak: ${context.streak || "No active streak"}
 
-STYLE: 1920s tabloid + The Onion. Absurdly dramatic about coding. Developer humor. Use ALL the context creatively - holidays, streaks, dormant repos, late night commits, etc.
+=== GLOBAL CONTEXT ===
+Developer: ${context.name}
+${context.holidays ? `Special Occasion: ${context.holidays}` : ""}
+Skills: ${context.skills}
 
-RESPOND WITH ONLY THIS JSON (no markdown, no code blocks):
-{"headline":"ALL CAPS HEADLINE","subheadline":"Witty secondary headline","bodyContent":["Dramatic paragraph 1","Paragraph 2","Paragraph 3"],"pullQuote":"Funny quote from developer","location":"Creative nerdy location like 'localhost:3000', '127.0.0.1', '/dev/null', 'The Stack', 'Buffer Zone', etc."}`;
+INSTRUCTIONS:
+Generate a newspaper edition in JSON.
+1. Use the provided context data (Daily Update + Historical Profile) to generate the content.
+2. Fully adopt the persona of ${personality.name}.
+3. Reference specific repo names, commit messages, and timestamps from the data where relevant.
+
+RESPOND ONLY WITH VALID JSON:
+{"headline":"...","subheadline":"...","bodyContent":["...","...","..."],"pullQuote":"...","location":"..."}`;
 
     try {
         const response = await fetch(`${GEMINI_API_URL}/${MODEL}:generateContent?key=${apiKey}`, {
@@ -346,6 +367,8 @@ export async function GET(request: Request) {
             bodyContent: JSON.parse(FALLBACK_CONTENT.bodyContent),
             date: new Date().toISOString(),
             isFallback: true,
+            agentName: NEWS_AGENT.name,
+            personality: "tabloid"
         });
     }
 }
@@ -356,26 +379,30 @@ export async function GET(request: Request) {
  */
 export async function POST(request: Request) {
     try {
-        // Check for admin cookie (simple auth check)
-        const authCookie = request.headers.get("cookie")?.includes("admin_session");
-        if (!authCookie) {
+        // Verify admin session
+        const isAdmin = await verifyAdminCookie();
+        if (!isAdmin) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
 
-        const context = await buildContext();
-        const generated = await generateWithGemini(context);
+        const body = await request.json().catch(() => ({}));
+        const personalityId = body.personalityId || "tabloid";
 
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        const todayEnd = new Date(today);
-        todayEnd.setHours(23, 59, 59, 999);
+        const context = await buildContext();
+        const generated = await generateWithGemini(context, personalityId);
+
+        const now = new Date();
+        const startOfToday = new Date(now);
+        startOfToday.setHours(0, 0, 0, 0);
+        const endOfToday = new Date(now);
+        endOfToday.setHours(23, 59, 59, 999);
 
         const content = generated || FALLBACK_CONTENT;
 
         // Deactivate all editions for today
         await prisma.newspaperEdition.updateMany({
             where: {
-                date: { gte: today, lte: todayEnd },
+                date: { gte: startOfToday, lte: endOfToday },
             },
             data: { isActive: false },
         });
@@ -383,7 +410,7 @@ export async function POST(request: Request) {
         // Create new edition (variant) and set as active
         const edition = await prisma.newspaperEdition.create({
             data: {
-                date: today,
+                date: now, // Store the exact generation time
                 headline: content.headline,
                 subheadline: content.subheadline,
                 bodyContent: typeof content.bodyContent === "string"
@@ -392,8 +419,10 @@ export async function POST(request: Request) {
                 pullQuote: content.pullQuote,
                 location: content.location || "VØID",
                 isActive: true, // Auto-activate new edition
-                isFallback: false, // Never fallback - this is admin-generated for today
+                isFallback: false,
                 generatedBy: generated ? MODEL : "fallback-content",
+                agentName: NEWS_AGENT.name,
+                personality: personalityId,
             },
         });
 
