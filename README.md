@@ -31,7 +31,7 @@
 |---------|-------------|
 | 🎭 **Multiple Viewing Modes** | Choose between Modern Cards, Terminal CLI, AI Newspaper, Professional Resume, or Nexus Space Landing. |
 | 🔗 **GitHub Integration** | Automatically syncs repositories, stars, forks, and activity history. |
-| 📰 **AI Integration** | Generates satirical developer news and creative content via Google Gemini. |
+| 📰 **AI Integration** | "Skye" News Agent with 4 personalities (`Tabloid`, `Senior`, `Scholar`, `Hacker`) generates daily content based on real activity. |
 | 💻 **Interactive Terminal** | Fully functional CLI with 30+ commands (`/terminal`), autocomplete, and file system navigation. |
 | 🔐 **Secret Admin Mode** | CMS-style controls to manage project visibility, feature flags, and content editing. |
 | 🎨 **Theming & Effects** | Multiple color schemes (Dracula, Tokyo Night), CRT scanlines, and glitch effects. |

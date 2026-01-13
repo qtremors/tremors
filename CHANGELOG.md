@@ -1,10 +1,27 @@
 # Tremors Portfolio Changelog
 
 > **Project:** Tremors Portfolio  
-> **Version:** 2.1.0  
+> **Version:** 2.1.5  
 > **Last Updated:** 2026-01-13
 
 ---
+
+## [2.1.5] - 2026-01-13
+ 
+### Added
+- **AI Personalities**: Introduced "Skye", the AI News Agent with 4 distinct personas (Tabloid, Senior Dev, Scholar, Hacker).
+- **Personality Manager**: New UI modal to switch between AI personalities dynamically.
+- **Context Engine V2**: 
+    - **Hybrid Memory**: Combines historical portfolio data (Dormant, Featured, Oldest) with real-time daily activity.
+    - **Time Awareness**: Enforced GMT+5:30 (IST) for accurate "Daily Update" tracking and "Vibe" checks.
+- **Admin Refresh**: Improved GitHub sync logic to transactionally update Repos, Commits, and Activity events.
+
+### Changed
+- **Newspaper UI**: Added dynamic "Personality" button to the masthead (Admin only).
+- **Prompt Logic**: Removed opinionated "forced" narratives; the AI now relies purely on raw data and the selected persona.
+
+### Fixed
+- **Timezone Sync**: Fixed discrepancy where "Today's Commits" often missed late-night activity due to UTC drift.
 
 ## [2.1.0] - 2026-01-13
 

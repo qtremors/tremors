@@ -88,8 +88,17 @@ export function NewspaperArchiveModal({
     // Current month index (0 = most recent)
     const [monthIndex, setMonthIndex] = useState(0);
 
-    // Number of editions to show (scroll-based lazy loading)
-    const [visibleCount, setVisibleCount] = useState(8);
+    // Lock body scroll when modal is open
+    useEffect(() => {
+        if (isOpen) {
+            document.body.style.overflow = "hidden";
+        } else {
+            document.body.style.overflow = "";
+        }
+        return () => {
+            document.body.style.overflow = "";
+        };
+    }, [isOpen]);
 
     // Loading state for individual editions
     const [loadingId, setLoadingId] = useState<string | null>(null);
@@ -111,42 +120,21 @@ export function NewspaperArchiveModal({
     };
 
     const monthEditions = getEditionsForMonth(visibleEditions, currentMonth.month, currentMonth.year, isAdmin);
-    const displayEditions = monthEditions.slice(0, visibleCount);
-    const hasMore = monthEditions.length > visibleCount;
 
+    // Show ALL editions for the month (no limit)
+    const displayEditions = monthEditions;
+
+    // Reset pagination logic removed since we show all
     const canGoPrev = monthIndex > 0;
     const canGoNext = monthIndex < availableMonths.length - 1;
 
-    // Scroll-based lazy loading
-    useEffect(() => {
-        const scrollEl = scrollRef.current;
-        if (!scrollEl) return;
-
-        const handleScroll = () => {
-            const { scrollTop, scrollHeight, clientHeight } = scrollEl;
-            // Load more when scrolled within 100px of bottom
-            if (scrollHeight - scrollTop - clientHeight < 100 && hasMore) {
-                setVisibleCount(c => c + 8);
-            }
-        };
-
-        scrollEl.addEventListener("scroll", handleScroll);
-        return () => scrollEl.removeEventListener("scroll", handleScroll);
-    }, [hasMore]);
-
-    // Reset visible count when changing month
+    // Handle month change
     const handlePrev = useCallback(() => {
-        if (canGoPrev) {
-            setMonthIndex(i => i - 1);
-            setVisibleCount(8);
-        }
+        if (canGoPrev) setMonthIndex(i => i - 1);
     }, [canGoPrev]);
 
     const handleNext = useCallback(() => {
-        if (canGoNext) {
-            setMonthIndex(i => i + 1);
-            setVisibleCount(8);
-        }
+        if (canGoNext) setMonthIndex(i => i + 1);
     }, [canGoNext]);
 
     const handleEditionClick = async (id: string) => {

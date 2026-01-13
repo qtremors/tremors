@@ -8,12 +8,13 @@
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import type { ModeProps } from "@/types";
-import { PERSONAL, SKILLS } from "@/config/site";
+import { PERSONAL, SKILLS, NEWS_AGENT } from "@/config/site";
 import { ContactLinks } from "@/components/ContactLinks";
 import { useTheme } from "@/components/ThemeProvider";
 import { useAdmin } from "@/components/AdminContext";
-import { Sun, Moon, GitCommit, Star, GitBranch, GitPullRequest, Rocket, ChevronDown, Loader2, RefreshCw, Calendar, Rss } from "lucide-react";
+import { Sun, Moon, GitCommit, Star, GitBranch, GitPullRequest, Rocket, ChevronDown, Loader2, RefreshCw, Calendar, Rss, Settings2 } from "lucide-react";
 import { NewspaperArchiveModal } from "./components/NewspaperArchiveModal";
+import { PersonalitySettingsModal } from "./components/PersonalitySettingsModal";
 // newspaper.css migrated to tailwind
 
 /**
@@ -38,6 +39,8 @@ interface NewspaperEdition {
     location: string;
     isFallback: boolean;
     generatedBy: string | null;
+    agentName?: string;
+    personality?: string;
 }
 
 interface EditionSummary {
@@ -65,19 +68,24 @@ export function NewspaperPage({ data }: ModeProps) {
     const [isRegenerating, setIsRegenerating] = useState(false);
     const [showArchive, setShowArchive] = useState(false);
 
+    // AI Personality State
+    const [showSettings, setShowSettings] = useState(false);
+    const [selectedPersonality, setSelectedPersonality] = useState("tabloid");
+
     // State for show more projects
     const [showMoreProjects, setShowMoreProjects] = useState(false);
 
-    // Close archive on escape key
+    // Close archive/settings on escape key
     useEffect(() => {
         function handleEscape(event: KeyboardEvent) {
-            if (event.key === "Escape" && showArchive) {
-                setShowArchive(false);
+            if (event.key === "Escape") {
+                if (showArchive) setShowArchive(false);
+                if (showSettings) setShowSettings(false);
             }
         }
         document.addEventListener("keydown", handleEscape);
         return () => document.removeEventListener("keydown", handleEscape);
-    }, [showArchive]);
+    }, [showArchive, showSettings]);
 
 
     // Fetch total commits from API on mount
@@ -109,6 +117,10 @@ export function NewspaperPage({ data }: ModeProps) {
                 if (contentRes.ok) {
                     const data = await contentRes.json();
                     setEdition(data);
+                    // Sync local personality state if available
+                    if (data.personality) {
+                        setSelectedPersonality(data.personality);
+                    }
                 }
                 if (editionsRes.ok) {
                     const data = await editionsRes.json();
@@ -130,6 +142,7 @@ export function NewspaperPage({ data }: ModeProps) {
             if (res.ok) {
                 const data = await res.json();
                 setEdition(data);
+                if (data.personality) setSelectedPersonality(data.personality);
             }
         } catch (err) {
             console.error("Failed to load edition:", err);
@@ -141,7 +154,11 @@ export function NewspaperPage({ data }: ModeProps) {
     const regenerateContent = async () => {
         setIsRegenerating(true);
         try {
-            const res = await fetch("/api/newspaper/generate", { method: "POST" });
+            const res = await fetch("/api/newspaper/generate", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ personalityId: selectedPersonality })
+            });
             if (res.ok) {
                 const data = await res.json();
                 setEdition(data);
@@ -225,14 +242,23 @@ export function NewspaperPage({ data }: ModeProps) {
                         </button>
                         {/* Admin regenerate button */}
                         {isAdmin && (
-                            <button
-                                onClick={regenerateContent}
-                                disabled={isRegenerating}
-                                className="inline-flex items-center gap-2 bg-none border border-[var(--np-ink)] px-4 py-2 font-inherit text-[0.85rem] cursor-pointer text-[var(--np-ink)] no-underline transition-all duration-200 hover:bg-[var(--np-ink)] hover:text-[var(--np-paper)]"
-                            >
-                                <RefreshCw className={`w-4 h-4 ${isRegenerating ? "animate-spin" : ""}`} />
-                                {isRegenerating ? "Generating..." : "Regenerate"}
-                            </button>
+                            <>
+                                <button
+                                    onClick={regenerateContent}
+                                    disabled={isRegenerating}
+                                    className="inline-flex items-center gap-2 bg-none border border-[var(--np-ink)] px-4 py-2 font-inherit text-[0.85rem] cursor-pointer text-[var(--np-ink)] no-underline transition-all duration-200 hover:bg-[var(--np-ink)] hover:text-[var(--np-paper)]"
+                                >
+                                    <RefreshCw className={`w-4 h-4 ${isRegenerating ? "animate-spin" : ""}`} />
+                                    {isRegenerating ? "Generating..." : "Regenerate"}
+                                </button>
+                                <button
+                                    onClick={() => setShowSettings(true)}
+                                    className="inline-flex items-center gap-2 bg-none border border-[var(--np-ink)] px-4 py-2 font-inherit text-[0.85rem] cursor-pointer text-[var(--np-ink)] no-underline transition-all duration-200 hover:bg-[var(--np-ink)] hover:text-[var(--np-paper)]"
+                                >
+                                    <Settings2 className="w-4 h-4" />
+                                    {NEWS_AGENT.personalities.find(p => p.id === selectedPersonality)?.name || "Skye"}
+                                </button>
+                            </>
                         )}
                         <a href="/api/news/rss" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 bg-none border border-[var(--np-ink)] px-4 py-2 font-inherit text-[0.85rem] cursor-pointer text-[var(--np-ink)] no-underline transition-all duration-200 hover:bg-[var(--np-ink)] hover:text-[var(--np-paper)]">
                             <Rss className="w-4 h-4" />
@@ -461,6 +487,14 @@ export function NewspaperPage({ data }: ModeProps) {
                         console.error("Failed to reset:", err);
                     }
                 }}
+            />
+
+            {/* Personality Settings Modal */}
+            <PersonalitySettingsModal
+                isOpen={showSettings}
+                onClose={() => setShowSettings(false)}
+                selectedPersonalityId={selectedPersonality}
+                onSelectPersonality={setSelectedPersonality}
             />
         </div>
     );
