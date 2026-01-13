@@ -1,29 +1,51 @@
-# TASKS.md - Tremors Portfolio
+# Tremors Portfolio - Tasks
 
-> **Version**: 2.0.2 | **Status**: 🟡 Review Complete
-
----
-
-## ✅ All Clear
-
-No open issues or pending tasks.
+> **Project:** Tremors Portfolio  
+> **Version:** 2.0.2  
+> **Last Updated:** 2026-01-13
 
 ---
 
-## 📊 Code Health
+## ✅ Completed (v2.0)
 
-| Category | Status |
-|----------|--------|
-| Security | ✅ CSRF (Dynamic), Auth Secret Check |
-| Architecture | ✅ Modular, clean separation |
-| Performance | ✅ DB caching, API batching |
-| Accessibility | ✅ Aria labels, skip links |
-| Tests | ✅ 14 test files (Added API tests) |
+<!-- Archived to CHANGELOG -->
 
 ---
 
-## ✅ Completed Checks
+## 🚧 In Progress
 
-- **Security**: Auth flow (PBKDF2/HMAC) is secure. CSRF protection in place.
-- **Architecture**: Clean modular separation (Lib, API, Components).
-- **Performance**: Robust caching strategy in `data.ts`.
+<!-- Currently being worked on -->
+
+---
+
+## 📋 To Do
+
+### High Priority
+- [ ] **Consistency**: Align `CHANGELOG.md` version (2.0.1) with `TASKS.md` (2.0.2).
+- [ ] **Database**: Migrate `Repo.topics` and `NewspaperEdition.bodyContent` to native `JSONB` type in Postgres schema for better query performance.
+
+### Medium Priority
+- [ ] None currently.
+
+---
+
+## 🐛 Bug Fixes
+
+<!-- Known bugs to fix -->
+
+- [ ] None currently.
+
+---
+
+## 💡 Ideas / Future
+
+- [ ] **Enhance Newspaper**: Add more AI personalities for generating news.
+- [ ] **Terminal Games**: Add simple TUI games like Snake or Tetris.
+
+---
+
+## 🏗️ Architecture Notes
+
+- **Auth**: Custom PBKDF2 implementation with HMAC-signed session tokens.
+- **Database**: Prisma with NeonDB (Serverless Postgres).
+- **Rendering**: Next.js App Router with React Server Components by default.
