@@ -31,10 +31,11 @@ export async function GET() {
             ],
         });
 
-        // Parse topics JSON for each repo using centralized utility
+        // Parse topics JSON and add html_url for each repo
         const reposWithTopics = repos.map((repo) => ({
             ...repo,
             topics: parseTopics(repo.topics),
+            html_url: repo.htmlUrl, // Frontend expects snake_case
         }));
 
         return NextResponse.json({

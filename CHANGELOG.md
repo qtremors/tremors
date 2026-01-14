@@ -1,8 +1,19 @@
 # Tremors Portfolio Changelog
 
 > **Project:** Tremors Portfolio  
-> **Version:** 2.2.0  
+> **Version:** 2.2.1  
 > **Last Updated:** 2026-01-14
+
+---
+
+## [2.2.1] - 2026-01-14 (Hotfix)
+
+### Fixed
+- **Admin GitHub Link**: Fixed `html_url` not being returned by `/api/admin/repos`, causing project title links to be non-clickable for admin users.
+- **SpotlightSection**: Restored center logo placeholder with "Last Active" repo display from old version.
+- **MoreProjectsSection**: Restored "Show More/Less" buttons with "X of Y" counter display.
+- **ProjectCard Title**: Removed `onClick` handler that was blocking GitHub link navigation in edit mode.
+- **Topic Badge Overflow**: Added `max-w-[120px] truncate` to prevent long topic names from overflowing card boundaries.
 
 ---
 

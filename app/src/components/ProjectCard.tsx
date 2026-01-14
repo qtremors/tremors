@@ -170,8 +170,7 @@ export function ProjectCard({
                             href={repo.html_url}
                             target="_blank"
                             rel="noopener noreferrer"
-                            onClick={(e) => editMode && e.preventDefault()}
-                            className={`${titleSize} font-bold group-hover:text-[var(--accent-cyan)] transition-colors truncate`}
+                            className={`${titleSize} font-bold group-hover:!text-cyan-400 transition-colors truncate`}
                         >
                             {formatProjectTitle(repo.name)}
                         </a>
@@ -233,7 +232,7 @@ export function ProjectCard({
             {(() => {
                 const imageUrl = showImages ? getProjectImageUrl(repo) : null;
                 return imageUrl && (
-                    <div className="relative w-full aspect-video md:aspect-[2/1] bg-[var(--bg-secondary)]">
+                    <div className="relative w-full aspect-[2/1] bg-[var(--bg-secondary)]">
                         <img
                             src={imageUrl}
                             alt={`${repo.name} preview`}
@@ -284,8 +283,7 @@ export function ProjectCard({
                     href={repo.html_url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    onClick={(e) => editMode && e.preventDefault()}
-                    className={`${titleSize} font-bold mb-2 block group-hover:text-[var(--accent-cyan)] transition-colors ${size === "small" ? "truncate" : ""}`}
+                    className={`${titleSize} font-bold mb-2 block group-hover:!text-cyan-400 transition-colors ${size === "small" ? "truncate" : ""}`}
                 >
                     {formatProjectTitle(repo.name)}
                 </a>
@@ -296,11 +294,11 @@ export function ProjectCard({
 
                 {/* Topics */}
                 {repo.topics.length > 0 && (
-                    <div className="flex flex-wrap gap-2">
+                    <div className="flex flex-wrap gap-2 overflow-hidden">
                         {repo.topics.slice(0, 3).map((topic: string) => (
                             <span
                                 key={topic}
-                                className="px-2 py-0.5 text-xs rounded-full bg-[var(--accent-cyan)]/10 text-[var(--accent-cyan)]"
+                                className="px-2 py-0.5 text-xs rounded-full bg-[var(--accent-cyan)]/10 text-[var(--accent-cyan)] max-w-[120px] truncate"
                             >
                                 {topic}
                             </span>
