@@ -214,6 +214,7 @@ export function ProjectsGrid({ repos: initialRepos }: ProjectsGridProps) {
             {/* Featured Projects Section */}
             <SpotlightSection
                 spotlightRepos={spotlightRepos}
+                initialRepos={initialRepos}
                 viewMode={viewMode}
                 editMode={editMode}
                 isAdmin={isAdmin}
@@ -227,7 +228,6 @@ export function ProjectsGrid({ repos: initialRepos }: ProjectsGridProps) {
             <MoreProjectsSection
                 otherRepos={otherRepos}
                 visibleOtherCount={visibleOtherCount}
-                showMoreProjects={false} // visibleOtherCount handles visibility in this version
                 viewMode={viewMode}
                 editMode={editMode}
                 isAdmin={isAdmin}
@@ -235,6 +235,7 @@ export function ProjectsGrid({ repos: initialRepos }: ProjectsGridProps) {
                 dragOverId={dragOverId}
                 showImages={showImages ?? false}
                 onShowMore={() => setVisibleOtherCount(prev => Math.min(prev + 6, otherRepos.length))}
+                onShowLess={() => setVisibleOtherCount(prev => Math.max(prev - 6, 6))}
                 handlers={handlers}
             />
 
