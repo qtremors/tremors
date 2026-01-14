@@ -3,18 +3,30 @@
  * Set which edition is active for a given day (admin only)
  */
 
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
+import { verifyAdminCookie } from "@/lib/auth";
+import { validateCsrf } from "@/lib/csrf";
+import { getStartOfDayIST, getEndOfDayIST } from "@/lib/date";
 
 /**
  * POST: Set an edition as active (deactivates others for same day)
  * Body: { editionId: string }
  */
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
     try {
-        // Check for admin cookie
-        const authCookie = request.headers.get("cookie")?.includes("admin_session");
-        if (!authCookie) {
+        // Validate CSRF
+        const csrf = validateCsrf(request);
+        if (!csrf.valid) {
+            return NextResponse.json(
+                { success: false, error: csrf.error },
+                { status: 403 }
+            );
+        }
+
+        // Verify admin session
+        const isAdmin = await verifyAdminCookie();
+        if (!isAdmin) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
 
@@ -29,14 +41,12 @@ export async function POST(request: Request) {
         });
 
         if (!edition) {
-            return NextResponse.json({ error: "Edition not found" }, { status: 404 });
+            return NextResponse.json({ success: false, error: "Edition not found" }, { status: 404 });
         }
 
-        // Get start and end of that day
-        const dayStart = new Date(edition.date);
-        dayStart.setHours(0, 0, 0, 0);
-        const dayEnd = new Date(edition.date);
-        dayEnd.setHours(23, 59, 59, 999);
+        // Get start and end of that day in IST
+        const dayStart = getStartOfDayIST(new Date(edition.date));
+        const dayEnd = getEndOfDayIST(new Date(edition.date));
 
         // Deactivate all editions for that day
         await prisma.newspaperEdition.updateMany({
@@ -60,9 +70,9 @@ export async function POST(request: Request) {
             },
         });
     } catch (error) {
-        console.error("Failed to set active edition:", error);
+        console.error("Set active edition error:", error);
         return NextResponse.json(
-            { error: "Failed to set active edition" },
+            { success: false, error: "Failed to set active edition" },
             { status: 500 }
         );
     }

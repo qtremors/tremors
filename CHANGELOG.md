@@ -1,8 +1,45 @@
 # Tremors Portfolio Changelog
 
 > **Project:** Tremors Portfolio  
-> **Version:** 2.1.5  
-> **Last Updated:** 2026-01-13
+> **Version:** 2.2.0  
+> **Last Updated:** 2026-01-14
+
+---
+
+## [2.2.0] - 2026-01-14
+
+### Added
+- **Batch Reordering API**: Implemented `/api/admin/repos/reorder` endpoint to replace N+1 PATCH calls with a single batch operation.
+- **Settings Context**: Created `SettingsProvider` to manage global site preferences (`showProjectImages`, `projectViewMode`).
+- **useFetch Hook**: Standardized data fetching across components, replacing manual `useEffect` fetch logic.
+- **IST Date Utilities**: Centralized timezone handling in `lib/date.ts` with `formatIST` helper.
+- **ProviderComposer**: New utility component to flatten nested provider trees in `layout.tsx`.
+- **Database Indexes**: Added indexes on `Repo.featured` and `Repo.hidden` for optimized filtering.
+- **Rate Limiting Middleware**: Centralized rate limiting in `middleware.ts` with configurable limits per route pattern.
+
+### Changed
+- **Component Decomposition**: Split monolithic components for better maintainability:
+  - `ProjectsGrid.tsx` → `GridControls`, `SpotlightSection`, `MoreProjectsSection`
+  - `TerminalPage.tsx` → `TerminalWelcome`, `TerminalHistory`, `MobileKeyboardHelpers`
+  - `NewspaperPage.tsx` → `NewspaperHeader`, `ActivityTicker`, `EditionArticle`, `NewspaperStats`, `ProjectsTable`
+- **Terminal Admin**: Consolidated redundant state logic into `useTerminalAdmin` hook.
+- **Masthead Styling**: Standardized font sizes and spacing in `NewspaperPage` header.
+- **Provider Nesting**: Refactored `layout.tsx` to use `ProviderComposer` pattern instead of 7-level deep nesting.
+- **Code Centralization**: Moved `formatProjectTitle` utility from 3 files to shared `lib/utils.ts`.
+
+### Fixed
+- **Session Validation**: Strengthened `/api/newspaper/active` to properly validate session tokens, not just cookie existence.
+- **CSRF Protection**: Added `validateCsrf` helper to sensitive POST/PATCH endpoints.
+- **Rate Limit Memory Leak**: Fixed potential memory leak in `auth.ts` where expired entries weren't purged before limit check.
+- **Timezone Inconsistency**: Fixed newspaper generation and display dates that previously used system time, causing streak calculation bugs.
+- **Project Card Mapping**: Added missing fields (`imageSource`, `customDescription`) in repository mapping logic.
+- **Personality Modal**: Renamed confusing "Confirm Assignment" button to "Back to Desk".
+- **Dead Code Cleanup**: Removed obsolete manual `localStorage` and unused variable comments.
+- **Stale Tests**: Removed 5 test cases for deleted commands (`fortune`, `cowsay`, `sl`, `date`, `neofetch`). All 106 tests now pass.
+- **State Sync Bug**: Fixed `ProjectsGrid.tsx` effect that could overwrite local edits when `adminData` refreshed during editing.
+
+### Security
+- **AUTH_SECRET**: Re-configured to require defined value in production environments.
 
 ---
 

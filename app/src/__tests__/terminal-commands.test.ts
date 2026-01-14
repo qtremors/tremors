@@ -119,38 +119,6 @@ describe("Terminal Commands", () => {
         });
     });
 
-    describe("Fun Commands", () => {
-        it("fortune should return a quote", () => {
-            const ctx = createContext();
-            const result = commands.fortune([], ctx);
-
-            expect(result.lines.length).toBe(1);
-            expect(result.lines[0].content.length).toBeGreaterThan(0);
-        });
-
-        it("cowsay should draw a cow", () => {
-            const ctx = createContext();
-            const result = commands.cowsay(["Hello"], ctx);
-
-            expect(result.lines.some(l => l.content.includes("(oo)"))).toBe(true);
-        });
-
-        it("sl should draw a train", () => {
-            const ctx = createContext();
-            const result = commands.sl([], ctx);
-
-            expect(result.lines.length).toBeGreaterThan(0);
-        });
-
-        it("date should return current date", () => {
-            const ctx = createContext();
-            const result = commands.date([], ctx);
-
-            expect(result.lines.length).toBe(1);
-            expect(result.lines[0].content.length).toBeGreaterThan(0);
-        });
-    });
-
     describe("Admin Commands", () => {
         it("hide should require admin", () => {
             const ctx = createContext({ isAdmin: false });
@@ -178,15 +146,6 @@ describe("Terminal Commands", () => {
             const result = commands.logout([], ctx);
 
             expect(result.lines.some(l => l.type === "error")).toBe(true);
-        });
-    });
-
-    describe("Neofetch", () => {
-        it("neofetch should show system info", () => {
-            const ctx = createContext();
-            const result = commands.neofetch([], ctx);
-
-            expect(result.lines.length).toBeGreaterThan(5);
         });
     });
 

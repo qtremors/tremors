@@ -39,7 +39,7 @@ function dbRepoToGitHubFormat(dbRepo: {
         stargazers_count: dbRepo.stars,
         forks_count: dbRepo.forks,
         language: dbRepo.language,
-        topics: parseTopics(dbRepo.topics, dbRepo.name),
+        topics: parseTopics(dbRepo.topics),
         pushed_at: dbRepo.pushedAt.toISOString(),
         created_at: dbRepo.createdAt.toISOString(),
         fork: false,
@@ -143,8 +143,6 @@ export async function getGitHubData(): Promise<PortfolioData> {
 
         // If database has repos, use them
         if (allDbRepos.length > 0) {
-            const allRepos = allDbRepos.map(dbRepoToGitHubFormat);
-
             // Filter to non-hidden repos for display
             const visibleRepos = allDbRepos
                 .filter(r => !r.hidden)

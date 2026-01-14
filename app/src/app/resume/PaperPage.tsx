@@ -15,18 +15,8 @@ import { Download, Upload, Check, List } from "lucide-react";
 import { ContactLinks } from "@/components/ContactLinks";
 import { useAdmin } from "@/components/AdminContext";
 import { useToast } from "@/components/ToastProvider";
+import { formatProjectTitle } from "@/lib/utils";
 // resume.css migrated to tailwind
-
-/**
- * Format project title - converts kebab-case to Title Case
- * "my-cool-project" -> "My Cool Project"
- */
-function formatProjectTitle(name: string): string {
-    return name
-        .split(/[-_]/)
-        .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-        .join(" ");
-}
 
 // Table of contents sections
 const sections = [

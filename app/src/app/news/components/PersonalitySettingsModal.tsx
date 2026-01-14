@@ -73,7 +73,7 @@ export function PersonalitySettingsModal({
                         onClick={onClose}
                         className="bg-[var(--np-ink)] text-[var(--np-paper)] px-6 py-2 font-display font-bold uppercase tracking-widest hover:bg-[var(--np-accent)] transition-colors"
                     >
-                        Confirm Assignment
+                        Back to Desk
                     </button>
                 </div>
             </div>

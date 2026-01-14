@@ -1,52 +1,48 @@
-# Tremors Portfolio - Tasks
+# Tremors Implementation Tasks & Codebase Review
 
-> **Project:** Tremors Portfolio  
-> **Version:** 2.1.0  
-> **Last Updated:** 2026-01-13
-
----
-
-## ✅ Completed (v2.1)
-- [x] **Mobile UX**: Implement premium hamburger menu with staggered animations.
-- [x] **Theme Sync**: Page-aware mobile navigation (Paper/News/Default).
-- [x] **Terminal**: Add virtual touch-friendly controls for mobile.
-- [x] **Layout**: Restore desktop resume button and fix hover inversion.
+> **Project:** Tremors  
+> **Version:** 2.2.0
+> **Last Updated:** 2026-01-14
 
 ---
 
-## 🚧 In Progress
+## 🔍 Current Findings
 
-- [ ] **Database Optimization**: Migrating `Repo.topics` to `JSONB`.
+### 🛡️ Security
+- [x] **API Rate Limiting Middleware**: Created centralized middleware at `middleware.ts`.
+- [ ] **CSP Hardening**: Review `unsafe-inline`/`unsafe-eval` in `next.config.ts` (required by Next.js).
+
+### 🏗️ Architecture
+- [ ] **Database Typing**: Migrate `Repo.topics` from JSON string to `JSONB`.
+
+### 🧪 Logic & Bugs
+- [ ] **Relative Time Sync**: Audit `ProjectCard` relative time for hydration mismatches.
+
+### 🎨 UI/UX
+- [ ] **Loading States**: Add skeleton loaders to `ProjectsGrid`.
+- [ ] **Accessibility**: Terminal output needs `aria-live` blocks.
+- [ ] **Keyboard Navigation**: Audit modals for focus trapping.
 
 ---
 
-## 📋 To Do
+## 📋 Backlog
 
 ### High Priority
-- [ ] **SEO**: Enhance meta tags for specific viewer modes.
+- [ ] JSONB migration for `topics`
 
 ### Medium Priority
-- [ ] None currently.
+- [ ] SEO: Dynamic meta tags for editions/projects
+- [ ] Unit tests for `useFetch`, `SettingsContext`, `useTerminalAdmin`
+
+### Low Priority
+- [ ] Terminal games (Snake/Tetris)
+- [ ] RSS feed metadata extensions
 
 ---
 
-## 🐛 Bug Fixes
+## 🏗️ Technical Notes
 
-<!-- Known bugs to fix -->
-
-- [ ] None currently.
-
----
-
-## 💡 Ideas / Future
-
-- [ ] **Enhance Newspaper**: Add more AI personalities for generating news.
-- [ ] **Terminal Games**: Add simple TUI games like Snake or Tetris.
-
----
-
-## 🏗️ Architecture Notes
-
-- **Auth**: Custom PBKDF2 implementation with HMAC-signed session tokens.
-- **Database**: Prisma with NeonDB (Serverless Postgres).
-- **Rendering**: Next.js App Router with React Server Components by default.
+- **Dates**: Use `formatIST` from `lib/date` for server/client consistency.
+- **Auth**: `verifyAdminCookie()` for APIs, `AdminContext` for client components.
+- **Fetching**: `useFetch<T>(url)` for reads, `fetch`/`useApiMutation` for mutations.
+- **Providers**: Use `ProviderComposer` for nested providers.

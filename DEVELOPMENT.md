@@ -2,7 +2,7 @@
 
 > Comprehensive documentation for developers working on Tremors Portfolio.
 
-**Version:** 2.1.0 | **Last Updated:** 2026-01-13
+**Version:** 2.2.0 | **Last Updated:** 2026-01-14
 
 ---
 
@@ -90,7 +90,7 @@ tremors/
 | **Repo** | Caches GitHub repository data | `id`, `name`, `stars`, `topics`, `hidden` |
 | **Settings** | Global site configuration | `availableForWork`, `resumeSummary` |
 | **Admin** | Single-user admin authentication | `passwordHash` |
-| **NewspaperEdition** | AI-generated news content | `headline`, `bodyContent`, `generatedBy` |
+| **NewspaperEdition** | AI-generated news content | `headline`, `bodyContent`, `generatedBy`, `agentName`, `personality` |
 | **Activity/Commit** | Caches GitHub history | `sha`, `message`, `date` |
 
 ---

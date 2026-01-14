@@ -7,6 +7,8 @@ import { ToastProvider } from "@/components/ToastProvider";
 import { NavButtonsProvider } from "@/components/NavButtonsContext";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { KeyboardShortcuts } from "@/components/KeyboardShortcuts";
+import { SettingsProvider } from "@/components/SettingsContext";
+import { ProviderComposer } from "@/components/ProviderComposer";
 
 // Fonts
 const inter = Inter({
@@ -64,21 +66,20 @@ export default function RootLayout({
         >
           Skip to content
         </a>
-        <ThemeProvider>
-          <AdminProvider>
-            <ToastProvider>
-              <NavButtonsProvider>
-                <ErrorBoundary>
-                  <KeyboardShortcuts />
-                  <main id="main-content">{children}</main>
-                </ErrorBoundary>
-              </NavButtonsProvider>
-            </ToastProvider>
-          </AdminProvider>
-        </ThemeProvider>
+        <ProviderComposer
+          providers={[
+            ThemeProvider,
+            AdminProvider,
+            ToastProvider,
+            SettingsProvider,
+            NavButtonsProvider,
+            ErrorBoundary,
+          ]}
+        >
+          <KeyboardShortcuts />
+          <main id="main-content">{children}</main>
+        </ProviderComposer>
       </body>
     </html>
   );
 }
-
-

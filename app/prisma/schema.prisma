@@ -37,6 +37,10 @@ model Repo {
   customImageUrl    String?  // URL when imageSource = "custom"
 
   updatedAt   DateTime @updatedAt
+
+  // Indexes for optimized filtering
+  @@index([featured])
+  @@index([hidden])
 }
 
 // Site settings

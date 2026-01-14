@@ -13,3 +13,6 @@ export { CommandAutocomplete } from "./CommandAutocomplete";
 export { InlineSelector } from "./InlineSelector";
 export { InlineAdminSetup } from "./InlineAdminSetup";
 export { InlineAdminManage } from "./InlineAdminManage";
+export { MobileKeyboardHelpers } from "./MobileKeyboardHelpers";
+export { TerminalWelcome } from "./TerminalWelcome";
+export { TerminalHistory } from "./TerminalHistory";

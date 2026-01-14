@@ -5,10 +5,9 @@
 /**
  * Safely parse topics JSON string with error handling
  * @param topicsJson - JSON string representing an array of topics
- * @param context - Context for debugging (unused in production)
  * @returns Parsed array of topics, or empty array on failure
  */
-export function parseTopics(topicsJson: string, _context?: string): string[] {
+export function parseTopics(topicsJson: string): string[] {
     try {
         const parsed = JSON.parse(topicsJson);
         if (Array.isArray(parsed)) {
@@ -20,3 +19,13 @@ export function parseTopics(topicsJson: string, _context?: string): string[] {
     }
 }
 
+/**
+ * Format project title - converts kebab-case to Title Case
+ * "my-cool-project" -> "My Cool Project"
+ */
+export function formatProjectTitle(name: string): string {
+    return name
+        .split(/[-_]/)
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+        .join(" ");
+}

@@ -22,10 +22,10 @@ function getSigningSecret(): string {
     }
 
     if (process.env.NODE_ENV === "production" && !secret) {
-        console.warn("WARNING: AUTH_SECRET is missing in production! Using insecure fallback. Please set AUTH_SECRET.");
+        throw new Error("CRITICAL SECURITY ERROR: AUTH_SECRET is missing in production! System cannot start without a secure secret. Please set AUTH_SECRET in your environment.");
     }
 
-    // Fallback: derive from multiple env vars for better entropy
+    // Fallback for development/preview: derive from multiple env vars for better entropy
     const derived = [
         process.env.ADMIN_SECRET || "",
         process.env.DATABASE_URL || "",

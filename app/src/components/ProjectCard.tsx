@@ -7,18 +7,8 @@
 
 import { Star, EyeOff, Eye, StarOff, GripVertical, ExternalLink, Pencil } from "lucide-react";
 import { LANGUAGE_COLORS } from "@/lib/github";
+import { formatProjectTitle } from "@/lib/utils";
 import type { GitHubRepo } from "@/types";
-
-/**
- * Format project title - converts kebab-case to Title Case
- * "my-cool-project" -> "My Cool Project"
- */
-function formatProjectTitle(name: string): string {
-    return name
-        .split(/[-_]/)
-        .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-        .join(" ");
-}
 
 /**
  * Get project image URL based on imageSource setting

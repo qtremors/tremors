@@ -8,6 +8,13 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { PERSONAL, SKILLS, NEWS_AGENT } from "@/config/site";
 import { verifyAdminCookie } from "@/lib/auth";
+import {
+    getISTDateString,
+    getISTParts,
+    getStartOfDayIST,
+    getEndOfDayIST,
+    formatIST
+} from "@/lib/date";
 
 const GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models";
 const MODEL = "gemini-flash-lite-latest"; // Latest flash lite model
@@ -43,11 +50,10 @@ async function buildContext() {
     const timeZone = "Asia/Kolkata";
 
     // Helper to format date in IST
-    const getISTDate = (date: Date) => new Intl.DateTimeFormat("en-US", {
-        timeZone,
+    const getISTDate = (date: Date) => formatIST(date, {
         year: "numeric", month: "numeric", day: "numeric",
         hour: "numeric", minute: "numeric", hour12: false
-    }).format(date);
+    });
 
     const twentyFourHoursAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
 
@@ -123,15 +129,15 @@ async function buildContext() {
         : "No major repository events tracked in the last 24 hours.";
 
     // Streak Check
-    const commitDates = new Set(allCommits.map(c => new Date(c.date).toISOString().split('T')[0]));
+    const commitDates = new Set(allCommits.map(c => getISTDateString(new Date(c.date))));
     let streak = 0;
     // We need to check streak based on "Today" in IST
-    const todayIST = new Intl.DateTimeFormat("en-CA", { timeZone }).format(now); // YYYY-MM-DD
+    const todayIST = getISTDateString(now);
     let checkDateObj = new Date(now);
 
-    // Simple loop check (approximate due to timezone shift on date objects, good enough for rough streak)
+    // Simple loop check using IST date strings
     while (true) {
-        const dateStr = checkDateObj.toISOString().split('T')[0];
+        const dateStr = getISTDateString(checkDateObj);
         if (commitDates.has(dateStr)) {
             streak++;
             checkDateObj.setDate(checkDateObj.getDate() - 1);
@@ -146,15 +152,12 @@ async function buildContext() {
     }
 
     // === CALENDAR ===
-    const todayDateStr = new Intl.DateTimeFormat("en-US", {
-        timeZone,
+    const todayDateStr = formatIST(now, {
         weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
         hour: '2-digit', minute: '2-digit'
-    }).format(now);
+    });
 
-    const nowIST = new Date(new Date().toLocaleString("en-US", { timeZone }));
-    const month = nowIST.getMonth() + 1;
-    const day = nowIST.getDate();
+    const { month, day } = getISTParts(now);
 
     const holidays: string[] = [];
     if (month === 1 && day === 1) holidays.push("New Year's Day");
@@ -317,15 +320,13 @@ export async function GET(request: Request) {
             }
         }
 
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        const todayEnd = new Date(today);
-        todayEnd.setHours(23, 59, 59, 999);
+        const todayStart = getStartOfDayIST();
+        const todayEnd = getEndOfDayIST();
 
         // 1. Try to get active edition for today
         let edition = await prisma.newspaperEdition.findFirst({
             where: {
-                date: { gte: today, lte: todayEnd },
+                date: { gte: todayStart, lte: todayEnd },
                 isActive: true,
             },
         });
@@ -349,9 +350,8 @@ export async function GET(request: Request) {
         if (!edition) {
             // Return hardcoded fallback
             return NextResponse.json({
-                ...FALLBACK_CONTENT,
                 bodyContent: JSON.parse(FALLBACK_CONTENT.bodyContent),
-                date: today.toISOString(),
+                date: todayStart.toISOString(),
                 isFallback: true,
             });
         }
@@ -392,10 +392,8 @@ export async function POST(request: Request) {
         const generated = await generateWithGemini(context, personalityId);
 
         const now = new Date();
-        const startOfToday = new Date(now);
-        startOfToday.setHours(0, 0, 0, 0);
-        const endOfToday = new Date(now);
-        endOfToday.setHours(23, 59, 59, 999);
+        const startOfToday = getStartOfDayIST(now);
+        const endOfToday = getEndOfDayIST(now);
 
         const content = generated || FALLBACK_CONTENT;
 
@@ -434,7 +432,7 @@ export async function POST(request: Request) {
     } catch (error) {
         console.error("Failed to generate newspaper edition:", error);
         return NextResponse.json(
-            { error: "Failed to generate edition" },
+            { success: false, error: "Failed to generate edition" },
             { status: 500 }
         );
     }
