@@ -8,24 +8,23 @@
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import type { ModeProps } from "@/types";
-import { PERSONAL, SKILLS } from "@/config/site";
+import { PERSONAL, SKILLS, NEWS_AGENT } from "@/config/site";
 import { ContactLinks } from "@/components/ContactLinks";
 import { useTheme } from "@/components/ThemeProvider";
 import { useAdmin } from "@/components/AdminContext";
-import { Sun, Moon, GitCommit, Star, GitBranch, GitPullRequest, Rocket, ChevronDown, Loader2, RefreshCw, Calendar, Rss } from "lucide-react";
+import { useFetch } from "@/hooks/useFetch";
+import { Sun, Moon, GitCommit, Star, GitBranch, GitPullRequest, Rocket, ChevronDown, Loader2, RefreshCw, Calendar, Rss, Settings2 } from "lucide-react";
 import { NewspaperArchiveModal } from "./components/NewspaperArchiveModal";
-import "./newspaper.css";
-
-/**
- * Format project title - converts kebab-case to Title Case
- * "my-cool-project" -> "My Cool Project"
- */
-function formatProjectTitle(name: string): string {
-    return name
-        .split(/[-_]/)
-        .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-        .join(" ");
-}
+import { PersonalitySettingsModal } from "./components/PersonalitySettingsModal";
+import { NewspaperHeader } from "./components/NewspaperHeader";
+import { ActivityTicker } from "./components/ActivityTicker";
+import { EditionArticle } from "./components/EditionArticle";
+import { NewspaperStats } from "./components/NewspaperStats";
+import { ProjectsTable } from "./components/ProjectsTable";
+import { TechnicalProficiencies } from "./components/TechnicalProficiencies";
+import { formatIST } from "@/lib/date";
+import { formatProjectTitle } from "@/lib/utils";
+// newspaper.css migrated to tailwind
 
 // Types for AI-generated content
 interface NewspaperEdition {
@@ -38,6 +37,8 @@ interface NewspaperEdition {
     location: string;
     isFallback: boolean;
     generatedBy: string | null;
+    agentName?: string;
+    personality?: string;
 }
 
 interface EditionSummary {
@@ -56,72 +57,60 @@ export function NewspaperPage({ data }: ModeProps) {
 
     // State for live commit count
     const [totalCommits, setTotalCommits] = useState<number | null>(null);
-    const [isLoadingCommits, setIsLoadingCommits] = useState(true);
 
     // State for AI-generated content
     const [edition, setEdition] = useState<NewspaperEdition | null>(null);
     const [editions, setEditions] = useState<EditionSummary[]>([]);
-    const [isLoadingContent, setIsLoadingContent] = useState(true);
     const [isRegenerating, setIsRegenerating] = useState(false);
     const [showArchive, setShowArchive] = useState(false);
+
+    // AI Personality State
+    const [showSettings, setShowSettings] = useState(false);
+    const [selectedPersonality, setSelectedPersonality] = useState("tabloid");
 
     // State for show more projects
     const [showMoreProjects, setShowMoreProjects] = useState(false);
 
-    // Close archive on escape key
+    // API Data Fetching with Hooks
+    const { data: statsData, loading: isLoadingCommits } = useFetch<{ totalCommits: number }>("/api/stats/commits");
+    const {
+        data: activeEdition,
+        loading: isLoadingContent,
+        refetch: refetchContent
+    } = useFetch<NewspaperEdition>("/api/newspaper/generate");
+    const { data: editionsData } = useFetch<{ editions: EditionSummary[] }>("/api/newspaper/editions");
+
+    // Sync stats data
+    useEffect(() => {
+        if (statsData) setTotalCommits(statsData.totalCommits);
+    }, [statsData]);
+
+    // Sync active edition and personality
+    useEffect(() => {
+        if (activeEdition) {
+            setEdition(activeEdition);
+            if (activeEdition.personality) {
+                setSelectedPersonality(activeEdition.personality);
+            }
+        }
+    }, [activeEdition]);
+
+    // Sync editions list
+    useEffect(() => {
+        if (editionsData) setEditions(editionsData.editions);
+    }, [editionsData]);
+
+    // Close archive/settings on escape key
     useEffect(() => {
         function handleEscape(event: KeyboardEvent) {
-            if (event.key === "Escape" && showArchive) {
-                setShowArchive(false);
+            if (event.key === "Escape") {
+                if (showArchive) setShowArchive(false);
+                if (showSettings) setShowSettings(false);
             }
         }
         document.addEventListener("keydown", handleEscape);
         return () => document.removeEventListener("keydown", handleEscape);
-    }, [showArchive]);
-
-
-    // Fetch total commits from API on mount
-    useEffect(() => {
-        async function fetchCommits() {
-            try {
-                const response = await fetch("/api/stats/commits");
-                if (response.ok) {
-                    const data = await response.json();
-                    setTotalCommits(data.totalCommits);
-                }
-            } catch (err) {
-                console.error("Failed to fetch commits:", err);
-            } finally {
-                setIsLoadingCommits(false);
-            }
-        }
-        fetchCommits();
-    }, []);
-
-    // Fetch AI content and editions list
-    useEffect(() => {
-        async function fetchContent() {
-            try {
-                const [contentRes, editionsRes] = await Promise.all([
-                    fetch("/api/newspaper/generate"),
-                    fetch("/api/newspaper/editions"),
-                ]);
-                if (contentRes.ok) {
-                    const data = await contentRes.json();
-                    setEdition(data);
-                }
-                if (editionsRes.ok) {
-                    const data = await editionsRes.json();
-                    setEditions(data.editions);
-                }
-            } catch (err) {
-                console.error("Failed to fetch newspaper content:", err);
-            } finally {
-                setIsLoadingContent(false);
-            }
-        }
-        fetchContent();
-    }, []);
+    }, [showArchive, showSettings]);
 
     // Load specific edition
     const loadEdition = async (id: string) => {
@@ -130,6 +119,7 @@ export function NewspaperPage({ data }: ModeProps) {
             if (res.ok) {
                 const data = await res.json();
                 setEdition(data);
+                if (data.personality) setSelectedPersonality(data.personality);
             }
         } catch (err) {
             console.error("Failed to load edition:", err);
@@ -141,7 +131,11 @@ export function NewspaperPage({ data }: ModeProps) {
     const regenerateContent = async () => {
         setIsRegenerating(true);
         try {
-            const res = await fetch("/api/newspaper/generate", { method: "POST" });
+            const res = await fetch("/api/newspaper/generate", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ personalityId: selectedPersonality })
+            });
             if (res.ok) {
                 const data = await res.json();
                 setEdition(data);
@@ -188,7 +182,7 @@ export function NewspaperPage({ data }: ModeProps) {
     };
 
     if (error) {
-        return <div className="newspaper-mode min-h-screen flex items-center justify-center text-red-600">{error}</div>;
+        return <div className="font-serif bg-[var(--np-bg)] text-[var(--np-ink)] min-h-screen flex items-center justify-center text-red-600">{error}</div>;
     }
 
     // Get visible repos (filter hidden ones)
@@ -197,9 +191,8 @@ export function NewspaperPage({ data }: ModeProps) {
     const displayRepos = featuredRepos.length > 0 ? featuredRepos : visibleRepos.slice(0, 8);
     const otherRepos = visibleRepos.filter(r => !r.featured);
 
-    // Format date
-    const today = new Date();
-    const dateStr = today.toLocaleDateString("en-US", {
+    // Format date in IST
+    const dateStr = formatIST(new Date(), {
         year: "numeric",
         month: "long",
         day: "numeric",
@@ -210,233 +203,49 @@ export function NewspaperPage({ data }: ModeProps) {
     const totalForks = repos.reduce((sum, r) => sum + (r.forks_count || 0), 0);
 
     return (
-        <div className="newspaper-mode">
-            <div className="newspaper-container">
-                {/* Masthead */}
-                <header className="np-masthead">
-                    <p className="np-masthead-date">{dateStr} • Online Edition</p>
-                    <h1>TREMORS</h1>
-                    <p className="np-masthead-tagline">"All the Code That's Fit to Ship"</p>
-                    <div className="np-masthead-controls">
-                        {/* Archive button */}
-                        <button onClick={() => setShowArchive(true)} className="np-control-btn">
-                            <Calendar className="w-4 h-4" />
-                            Archive
-                        </button>
-                        {/* Admin regenerate button */}
-                        {isAdmin && (
-                            <button
-                                onClick={regenerateContent}
-                                disabled={isRegenerating}
-                                className="np-control-btn"
-                            >
-                                <RefreshCw className={`w-4 h-4 ${isRegenerating ? "animate-spin" : ""}`} />
-                                {isRegenerating ? "Generating..." : "Regenerate"}
-                            </button>
-                        )}
-                        <a href="/api/news/rss" target="_blank" rel="noopener noreferrer" className="np-control-btn">
-                            <Rss className="w-4 h-4" />
-                            RSS
-                        </a>
-                        <button onClick={toggleTheme} className="np-control-btn">
-                            {theme === "dark" ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
-                            {theme === "dark" ? "Light Edition" : "Dark Edition"}
-                        </button>
-                    </div>
-                </header>
+        <div className="font-serif bg-[var(--np-bg)] bg-none text-[var(--np-ink)] leading-[1.7] text-[18px] min-h-screen selection:bg-[var(--np-accent)] selection:text-[var(--np-paper)]">
+            <div className="max-w-[1100px] mx-auto bg-[var(--np-paper)] min-h-screen px-6 md:px-[60px] py-10 pt-16 md:pt-10">
+                <NewspaperHeader
+                    dateStr={dateStr}
+                    isAdmin={isAdmin}
+                    isRegenerating={isRegenerating}
+                    selectedPersonality={selectedPersonality}
+                    theme={theme}
+                    onShowArchive={() => setShowArchive(true)}
+                    onRegenerate={regenerateContent}
+                    onShowSettings={() => setShowSettings(true)}
+                    onToggleTheme={toggleTheme}
+                />
 
-                {/* Activity Ticker */}
-                {data.recentActivity.length > 0 && (
-                    <div className="np-ticker">
-                        <div className="np-ticker-content">
-                            {/* Duplicate for seamless loop - show 10 items */}
-                            {[...data.recentActivity.slice(0, 10), ...data.recentActivity.slice(0, 10)].map((item, i) => {
-                                const IconMap: Record<string, typeof GitCommit> = {
-                                    commit: GitCommit,
-                                    star: Star,
-                                    create: GitBranch,
-                                    pr: GitPullRequest,
-                                    release: Rocket,
-                                    fork: GitBranch,
-                                };
-                                const Icon = IconMap[item.type] || GitCommit;
-                                return (
-                                    <span key={i} className="np-ticker-item">
-                                        <Icon className="w-3 h-3 inline" />{" "}
-                                        <span className="np-ticker-highlight">{item.repoName}</span>: {item.title}
-                                    </span>
-                                );
-                            })}
-                        </div>
-                    </div>
-                )}
+                <ActivityTicker activity={data.recentActivity} />
 
-                {/* Main Headline - AI Generated */}
-                <h2 className="np-headline">
-                    {isLoadingContent ? (
-                        <span className="inline-block w-3/4 h-10 bg-current opacity-10 animate-pulse rounded" />
-                    ) : (
-                        edition?.headline || "Local Developer Builds AI-Powered Platforms, Refuses to Stop Pushing Commits"
-                    )}
-                </h2>
-                <p className="np-subheadline">
-                    {isLoadingContent ? (
-                        <span className="inline-block w-2/3 h-6 bg-current opacity-10 animate-pulse rounded" />
-                    ) : (
-                        edition?.subheadline || `${PERSONAL.name}, known online as "${PERSONAL.handle}," continues his relentless pursuit of cleaner code and smarter applications`
-                    )}
-                </p>
+                <EditionArticle edition={edition} isLoading={isLoadingContent} />
 
-                <div className="np-byline">
-                    <span>
-                        <span className="np-byline-author">{PERSONAL.name.toUpperCase()}</span> • {PERSONAL.tagline}
-                    </span>
-                    <span>📍 {edition?.location || "VØID"}</span>
-                </div>
+                <NewspaperStats
+                    repoCount={user?.public_repos || repos.length}
+                    totalCommits={totalCommits}
+                    isLoadingCommits={isLoadingCommits}
+                />
 
-                {/* Main Content - AI Generated */}
-                <div className="np-columns">
-                    {edition?.bodyContent ? (
-                        <>
-                            {edition.bodyContent.map((para, i) => (
-                                <p key={i}>{para}</p>
-                            ))}
-                            <div className="np-pull-quote">
-                                {edition.pullQuote}
-                            </div>
-                        </>
-                    ) : (
-                        <>
-                            <p>
-                                In a world increasingly dominated by AI assistants and automated workflows, one developer has made it his
-                                mission to bridge the gap between traditional web engineering and cutting-edge language models. {PERSONAL.name},
-                                a Computer Science graduate and self-proclaimed "{PERSONAL.tagline}," has been quietly building an impressive
-                                portfolio of projects that span from quiz platforms to music players.
-                            </p>
-                            <p>
-                                "I fell in love with Python," {PERSONAL.name.split(" ")[0]} explains, "and I never looked back. There's an elegance to it that
-                                just makes sense." His focus on the Django and FastAPI ecosystems has led to the creation of numerous
-                                production-ready applications, each demonstrating a deep understanding of backend architecture and
-                                real-time web features.
-                            </p>
-                            <div className="np-pull-quote">
-                                "I believe in writing code that's not just functional, but clean, efficient, and maintainable."
-                            </div>
-                            <p>
-                                Beyond application development, {PERSONAL.name.split(" ")[0]} has demonstrated a penchant for developer tooling—creating CLIs for
-                                Git visualization, remote control APIs for system management, and even a custom Terminal UI for his
-                                portfolio. "I appreciate the details of how software interacts with the underlying system," he notes.
-                            </p>
-                            <p>
-                                Currently, {PERSONAL.name.split(" ")[0]} is exploring the intersection of traditional web engineering and LLM capabilities, with
-                                the goal of creating "smarter applications" that adapt to user needs in real-time.
-                                {PERSONAL.availableForWork && " His status: actively seeking new opportunities."}
-                            </p>
-                        </>
-                    )}
-                </div>
+                <ProjectsTable
+                    displayRepos={displayRepos}
+                    otherRepos={otherRepos}
+                    showMoreProjects={showMoreProjects}
+                    onToggleShowMore={() => setShowMoreProjects(!showMoreProjects)}
+                    formatProjectTitle={formatProjectTitle}
+                />
 
-                {/* Statistics */}
-                <div className="np-stats-block">
-                    <div className="np-stat">
-                        <div className="np-stat-number">{user?.public_repos || repos.length}</div>
-                        <div className="np-stat-label">Public Repos</div>
-                    </div>
-                    <div className="np-stat">
-                        <div className="np-stat-number">
-                            {isLoadingCommits ? (
-                                <Loader2 className="w-8 h-8 animate-spin mx-auto" />
-                            ) : (
-                                totalCommits ?? "—"
-                            )}
-                        </div>
-                        <div className="np-stat-label">Total Commits</div>
-                    </div>
-                </div>
+                <TechnicalProficiencies />
 
-                {/* Projects as Data Table */}
-                <table className="np-data-table">
-                    <caption>Featured Projects</caption>
-                    <thead>
-                        <tr>
-                            <th>Project</th>
-                            <th>Language</th>
-                            <th>Topics</th>
-                            <th>Status</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {displayRepos.map((repo) => (
-                            <tr key={repo.id}>
-                                <td>
-                                    <a href={repo.html_url} target="_blank" rel="noopener noreferrer">
-                                        {formatProjectTitle(repo.name)}
-                                    </a>
-                                </td>
-                                <td>{repo.language || "—"}</td>
-                                <td>{repo.topics?.slice(0, 3).join(", ") || "—"}</td>
-                                <td>
-                                    {repo.homepage ? (
-                                        <a href={repo.homepage} target="_blank" rel="noopener noreferrer">Live</a>
-                                    ) : "Source"}
-                                </td>
-                            </tr>
-                        ))}
-                        {showMoreProjects && otherRepos.slice(0, 10).map((repo) => (
-                            <tr key={repo.id} className="np-more-project">
-                                <td>
-                                    <a href={repo.html_url} target="_blank" rel="noopener noreferrer">
-                                        {formatProjectTitle(repo.name)}
-                                    </a>
-                                </td>
-                                <td>{repo.language || "—"}</td>
-                                <td>{repo.topics?.slice(0, 3).join(", ") || "—"}</td>
-                                <td>
-                                    {repo.homepage ? (
-                                        <a href={repo.homepage} target="_blank" rel="noopener noreferrer">Live</a>
-                                    ) : "Source"}
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-
-                {/* Show More Projects Button */}
-                {otherRepos.length > 0 && (
-                    <button
-                        onClick={() => setShowMoreProjects(!showMoreProjects)}
-                        className="np-control-btn np-show-more"
-                    >
-                        <ChevronDown className={`w-4 h-4 transition-transform ${showMoreProjects ? "rotate-180" : ""}`} />
-                        {showMoreProjects ? "Show Less" : `Show ${Math.min(10, otherRepos.length)} More Projects`}
-                    </button>
-                )}
-
-                {/* Skills */}
-                <h3 className="np-section-header">Technical Proficiencies</h3>
-                <div className="np-skills-columns">
-                    {SKILLS.map((category) => (
-                        <div key={category.id} className="np-skill-column">
-                            <h4 className="np-skill-column-header">{category.label}</h4>
-                            <ul className="np-skill-column-list">
-                                {category.skills.map((skill, idx) => (
-                                    <li key={idx}>{skill}</li>
-                                ))}
-                            </ul>
-                        </div>
-                    ))}
-                </div>
-
-                {/* Contact */}
-                <div className="np-contact-block">
-                    <h2>Correspondence</h2>
+                {/* Correspondence */}
+                <div className="mt-12 pt-8 border-t-[3px] border-double border-[var(--np-ink)] text-center">
+                    <h2 className="font-display text-[1.5rem] mb-4">Correspondence</h2>
                     <p>For inquiries regarding positions, collaborations, or just to say hello:</p>
-                    <ContactLinks variant="icons-only" className="np-contact-links" />
+                    <ContactLinks variant="icons-only" className="flex justify-center gap-6 flex-wrap mt-4" />
                 </div>
 
-                {/* Footer */}
-                <footer className="np-footer">
-                    <p>© {new Date().getFullYear()} The Tremors Chronicle. All Rights Reserved.</p>
+                <footer className="mt-12 pt-6 border-t border-[var(--np-rule)] text-center text-[0.8rem] text-[var(--np-ink-light)]">
+                    <p>© {formatIST(new Date(), { year: "numeric" })} The Tremors Chronicle. All Rights Reserved.</p>
                 </footer>
             </div>
 
@@ -461,6 +270,14 @@ export function NewspaperPage({ data }: ModeProps) {
                         console.error("Failed to reset:", err);
                     }
                 }}
+            />
+
+            {/* Personality Settings Modal */}
+            <PersonalitySettingsModal
+                isOpen={showSettings}
+                onClose={() => setShowSettings(false)}
+                selectedPersonalityId={selectedPersonality}
+                onSelectPersonality={setSelectedPersonality}
             />
         </div>
     );

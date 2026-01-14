@@ -8,24 +8,15 @@
 
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
+import { motion, AnimatePresence } from "framer-motion";
 import type { ModeProps } from "@/types";
 import { PERSONAL, SKILLS, RESUME } from "@/config/site";
-import { Download, Upload, Check } from "lucide-react";
+import { Download, Upload, Check, List } from "lucide-react";
 import { ContactLinks } from "@/components/ContactLinks";
 import { useAdmin } from "@/components/AdminContext";
 import { useToast } from "@/components/ToastProvider";
-import "./resume.css";
-
-/**
- * Format project title - converts kebab-case to Title Case
- * "my-cool-project" -> "My Cool Project"
- */
-function formatProjectTitle(name: string): string {
-    return name
-        .split(/[-_]/)
-        .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-        .join(" ");
-}
+import { formatProjectTitle } from "@/lib/utils";
+// resume.css migrated to tailwind
 
 // Table of contents sections
 const sections = [
@@ -49,6 +40,7 @@ export function PaperPage({ data }: ModeProps) {
     const [activeSection, setActiveSection] = useState("intro");
     const [visibleProjects, setVisibleProjects] = useState(INITIAL_PROJECTS);
     const [showAllProjects, setShowAllProjects] = useState(false);
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
     // Resume upload state
     const [resumeUrl, setResumeUrl] = useState("/Aman_Singh.pdf");
@@ -153,7 +145,7 @@ export function PaperPage({ data }: ModeProps) {
     };
 
     if (error) {
-        return <div className="paper-mode min-h-screen flex items-center justify-center text-red-600">{error}</div>;
+        return <div className="font-serif text-[18px] leading-[1.8] text-[var(--paper-text)] bg-[var(--paper-bg)] min-h-screen [background-image:var(--paper-texture)] flex items-center justify-center text-red-600">{error}</div>;
     }
 
     // Track scroll position to update active section
@@ -198,10 +190,10 @@ export function PaperPage({ data }: ModeProps) {
     const hasMoreProjects = visibleRepos.length > visibleProjects && !showAllProjects;
 
     return (
-        <div className="paper-mode">
-            <div className="paper-layout pt-16 md:pt-0">
+        <div className="font-serif text-[18px] leading-[1.8] text-[var(--paper-text)] bg-[var(--paper-bg)] min-h-screen [background-image:var(--paper-texture)] pb-20 md:pb-0">
+            <div className="flex min-h-screen max-w-[1000px] mx-auto px-4 md:px-8 pt-16 md:pt-0">
                 {/* TOC Sidebar - Desktop only */}
-                <aside className="paper-sidebar">
+                <aside className="sticky top-24 w-[180px] h-fit shrink-0 mr-8 hidden lg:block">
                     {/* Hidden file input for upload */}
                     <input
                         type="file"
@@ -215,14 +207,14 @@ export function PaperPage({ data }: ModeProps) {
                         <button
                             onClick={() => fileInputRef.current?.click()}
                             disabled={isUploading}
-                            className="paper-back-link"
+                            className="flex items-center justify-center gap-2 p-3 px-4 mb-8 text-[var(--paper-muted)] no-underline uppercase tracking-wider font-semibold border border-[var(--paper-border)] rounded-md transition-all duration-200 hover:bg-[var(--paper-accent)] hover:border-[var(--paper-accent)] hover:text-[var(--paper-bg)] text-[0.8rem] whitespace-nowrap group"
                         >
-                            <span className="flex items-center justify-center gap-2">
-                                {isUploading ? (
-                                    <Upload className="w-4 h-4 animate-spin" />
-                                ) : (
-                                    <Upload className="w-4 h-4" />
-                                )}
+                            {isUploading ? (
+                                <Upload className="w-4 h-4 animate-spin" />
+                            ) : (
+                                <Upload className="w-4 h-4 transition-colors group-hover:text-[var(--paper-bg)]" />
+                            )}
+                            <span className="transition-colors group-hover:text-[var(--paper-bg)]">
                                 {isUploading ? "Uploading..." : "Upload Resume"}
                             </span>
                         </button>
@@ -230,21 +222,19 @@ export function PaperPage({ data }: ModeProps) {
                         <a
                             href={resumeUrl}
                             download="Aman_Singh.pdf"
-                            className="paper-back-link"
+                            className="flex items-center justify-center gap-2 p-3 px-4 mb-8 text-[var(--paper-muted)] no-underline uppercase tracking-wider font-semibold border border-[var(--paper-border)] rounded-md transition-all duration-200 hover:bg-[var(--paper-accent)] hover:border-[var(--paper-accent)] hover:text-[var(--paper-bg)] text-[0.8rem] whitespace-nowrap group"
                         >
-                            <span className="flex items-center justify-center gap-2">
-                                <Download className="w-4 h-4" />
-                                Download PDF
-                            </span>
+                            <Download className="w-4 h-4 transition-colors group-hover:text-[var(--paper-bg)]" />
+                            <span className="transition-colors group-hover:text-[var(--paper-bg)]">Download PDF</span>
                         </a>
                     )}
 
-                    <nav className="paper-toc">
+                    <nav className="flex flex-col gap-2">
                         {sections.map((section) => (
                             <button
                                 key={section.id}
                                 onClick={() => scrollToSection(section.id)}
-                                className={`paper-toc-link ${activeSection === section.id ? "active" : ""}`}
+                                className={`block p-3 px-4 text-[var(--paper-accent)] no-underline text-[1rem] rounded-md transition-all duration-200 font-medium text-left w-full bg-none border-none cursor-pointer hover:text-[var(--paper-text)] hover:bg-[var(--paper-highlight)] ${activeSection === section.id ? "text-[var(--paper-accent)] bg-[var(--paper-highlight)] font-semibold border-l-4 border-solid border-[var(--paper-accent)] rounded-lg pl-4" : ""}`}
                             >
                                 {section.label}
                             </button>
@@ -253,12 +243,12 @@ export function PaperPage({ data }: ModeProps) {
                 </aside>
 
                 {/* Main Content */}
-                <div className="paper-main">
-                    <main className="paper-container">
+                <div className="flex-1 min-w-0">
+                    <main className="max-w-[720px] py-8 md:py-16 px-4 md:px-8">
                         {/* INTRO */}
-                        <section id="intro" className="paper-section">
-                            <h1>{PERSONAL.name}</h1>
-                            <p><strong>{PERSONAL.tagline}</strong></p>
+                        <section id="intro" className="mb-12 scroll-mt-[100px]">
+                            <h1 className="font-serif font-semibold text-[var(--paper-text)] mb-4 text-[2.5rem] border-b-2 border-solid border-[var(--paper-border)] pb-2 mb-8">{PERSONAL.name}</h1>
+                            <p className="mb-6 text-justify [hyphens:auto]"><strong>{PERSONAL.tagline}</strong></p>
                             <p
                                 contentEditable={isAdmin && editMode}
                                 suppressContentEditableWarning
@@ -271,7 +261,7 @@ export function PaperPage({ data }: ModeProps) {
                                         }
                                     }
                                 }}
-                                className={isAdmin && editMode ? "outline-none focus:ring-2 focus:ring-[#8b7355] focus:ring-offset-2 rounded cursor-text" : ""}
+                                className={`mb-6 text-justify [hyphens:auto] ${isAdmin && editMode ? "outline-none focus:ring-2 focus:ring-[#8b7355] focus:ring-offset-2 rounded cursor-text" : ""}`}
                                 style={isAdmin && editMode ? { minHeight: "1em" } : undefined}
                             >
                                 {summary}
@@ -279,8 +269,8 @@ export function PaperPage({ data }: ModeProps) {
                         </section>
 
                         {/* ABOUT */}
-                        <section id="about" className="paper-section">
-                            <h2>About Me</h2>
+                        <section id="about" className="mb-12 scroll-mt-[100px]">
+                            <h2 className="font-serif font-semibold text-[var(--paper-text)] mb-4 text-[1.75rem] mt-12 mb-6 border-b border-solid border-[var(--paper-border)] pb-2">About Me</h2>
                             {about.map((paragraph, i) => (
                                 <p
                                     key={i}
@@ -297,7 +287,7 @@ export function PaperPage({ data }: ModeProps) {
                                             }
                                         }
                                     }}
-                                    className={isAdmin && editMode ? "outline-none focus:ring-2 focus:ring-[#8b7355] focus:ring-offset-2 rounded cursor-text" : ""}
+                                    className={`mb-6 text-justify [hyphens:auto] ${isAdmin && editMode ? "outline-none focus:ring-2 focus:ring-[#8b7355] focus:ring-offset-2 rounded cursor-text" : ""}`}
                                 >
                                     {paragraph}
                                 </p>
@@ -305,26 +295,26 @@ export function PaperPage({ data }: ModeProps) {
                         </section>
 
                         {/* EDUCATION */}
-                        <section id="education" className="paper-section">
-                            <h2>Education</h2>
+                        <section id="education" className="mb-12 scroll-mt-[100px]">
+                            <h2 className="font-serif font-semibold text-[var(--paper-text)] mb-4 text-[1.75rem] mt-12 mb-6 border-b border-solid border-[var(--paper-border)] pb-2">Education</h2>
                             {RESUME.education.map((edu, i) => (
-                                <div key={i} className="paper-entry">
-                                    <h3>{edu.institution}</h3>
-                                    <p><strong>{edu.degree}</strong></p>
-                                    <p>CGPA: {edu.cgpa} • Graduation: {edu.graduation}</p>
+                                <div key={i} className="mb-6 pb-6 border-b border-dashed border-[var(--paper-border)] last:mb-0 last:pb-0 last:border-b-0">
+                                    <h3 className="font-serif font-semibold text-[var(--paper-text)] mb-4 text-[1.25rem] mt-6">{edu.institution}</h3>
+                                    <p className="mb-6 text-justify [hyphens:auto]"><strong>{edu.degree}</strong></p>
+                                    <p className="mb-6 text-justify [hyphens:auto]">CGPA: {edu.cgpa} • Graduation: {edu.graduation}</p>
                                 </div>
                             ))}
                         </section>
 
                         {/* EXPERIENCE */}
-                        <section id="experience" className="paper-section">
-                            <h2>Experience</h2>
+                        <section id="experience" className="mb-12 scroll-mt-[100px]">
+                            <h2 className="font-serif font-semibold text-[var(--paper-text)] mb-4 text-[1.75rem] mt-12 mb-6 border-b border-solid border-[var(--paper-border)] pb-2">Experience</h2>
                             {RESUME.experience.map((exp, i) => (
-                                <div key={i} className="paper-entry">
-                                    <h3>{exp.title}</h3>
-                                    <p><strong>{exp.company}</strong>, {exp.location}</p>
-                                    <p className="paper-date">{exp.period}</p>
-                                    <ul className="paper-bullets">
+                                <div key={i} className="mb-6 pb-6 border-b border-dashed border-[var(--paper-border)] last:mb-0 last:pb-0 last:border-b-0">
+                                    <h3 className="font-serif font-semibold text-[var(--paper-text)] mb-4 text-[1.25rem] mt-6">{exp.title}</h3>
+                                    <p className="mb-6 text-justify [hyphens:auto]"><strong>{exp.company}</strong>, {exp.location}</p>
+                                    <p className="text-[var(--paper-muted)] italic text-[0.95rem] mb-2">{exp.period}</p>
+                                    <ul className="list-disc pl-6 my-2 [&_li]:mb-2 [&_li]:text-left last:[&_li]:mb-0">
                                         {exp.bullets.map((bullet, j) => (
                                             <li key={j}>{bullet}</li>
                                         ))}
@@ -334,14 +324,14 @@ export function PaperPage({ data }: ModeProps) {
                         </section>
 
                         {/* SKILLS */}
-                        <section id="skills" className="paper-section">
-                            <h2>Technical Skills</h2>
+                        <section id="skills" className="mb-12 scroll-mt-[100px]">
+                            <h2 className="font-serif font-semibold text-[var(--paper-text)] mb-4 text-[1.75rem] mt-12 mb-6 border-b border-solid border-[var(--paper-border)] pb-2 text-left">Technical Skills</h2>
                             {SKILLS.map((category) => (
                                 <div key={category.id}>
-                                    <h3>{category.label}</h3>
-                                    <ul className="paper-skills-inline">
+                                    <h3 className="font-serif font-semibold text-[var(--paper-text)] mb-4 text-[1.25rem] mt-6">{category.label}</h3>
+                                    <ul className="flex flex-wrap gap-3 list-none p-0 my-4 mb-6">
                                         {category.skills.map((skill) => (
-                                            <li key={skill}>{skill}</li>
+                                            <li key={skill} className="bg-[var(--paper-highlight)] border border-solid border-[var(--paper-border)] p-1.5 px-3 rounded-md text-[0.9rem]">{skill}</li>
                                         ))}
                                     </ul>
                                 </div>
@@ -349,20 +339,20 @@ export function PaperPage({ data }: ModeProps) {
                         </section>
 
                         {/* PROJECTS */}
-                        <section id="projects" className="paper-section">
-                            <h2>Projects</h2>
+                        <section id="projects" className="mb-12 scroll-mt-[100px]">
+                            <h2 className="font-serif font-semibold text-[var(--paper-text)] mb-4 text-[1.75rem] mt-12 mb-6 border-b border-solid border-[var(--paper-border)] pb-2 text-left">Projects</h2>
                             {displayedRepos.map((repo) => (
-                                <div key={repo.id} className="paper-entry">
-                                    <h3>{formatProjectTitle(repo.name)}</h3>
-                                    <p>{repo.description || "No description available."}</p>
-                                    <p>
+                                <div key={repo.id} className="mb-6 pb-6 border-b border-dashed border-[var(--paper-border)] last:mb-0 last:pb-0 last:border-b-0">
+                                    <h3 className="font-serif font-semibold text-[var(--paper-text)] mb-4 text-[1.25rem] mt-6">{formatProjectTitle(repo.name)}</h3>
+                                    <p className="mb-6 text-justify [hyphens:auto]">{repo.description || "No description available."}</p>
+                                    <p className="mb-6 text-justify [hyphens:auto]">
                                         {repo.homepage && (
                                             <>
-                                                <a href={repo.homepage} target="_blank" rel="noopener noreferrer">Website</a>
+                                                <a href={repo.homepage} target="_blank" rel="noopener noreferrer" className="text-[var(--paper-accent)] underline decoration-1 underline-offset-2 transition-opacity duration-200 hover:opacity-80">Website</a>
                                                 {" • "}
                                             </>
                                         )}
-                                        <a href={repo.html_url} target="_blank" rel="noopener noreferrer">GitHub</a>
+                                        <a href={repo.html_url} target="_blank" rel="noopener noreferrer" className="text-[var(--paper-accent)] underline decoration-1 underline-offset-2 transition-opacity duration-200 hover:opacity-80">GitHub</a>
                                     </p>
                                 </div>
                             ))}
@@ -374,13 +364,13 @@ export function PaperPage({ data }: ModeProps) {
                                         setShowAllProjects(true);
                                         // Scroll to the first newly revealed project
                                         setTimeout(() => {
-                                            const projectEntries = document.querySelectorAll('#projects .paper-entry');
+                                            const projectEntries = document.querySelectorAll('#projects > div');
                                             if (projectEntries[firstNewIndex]) {
                                                 projectEntries[firstNewIndex].scrollIntoView({ behavior: 'smooth', block: 'start' });
                                             }
                                         }, 50);
                                     }}
-                                    className="paper-load-more"
+                                    className="block mx-auto my-8 p-3 px-6 font-serif text-[1rem] text-[var(--paper-accent)] bg-transparent border border-solid border-[var(--paper-accent)] rounded transition-all duration-200 hover:bg-[var(--paper-accent)] hover:text-[var(--paper-bg)] cursor-pointer"
                                 >
                                     Load More Projects...
                                 </button>
@@ -396,7 +386,7 @@ export function PaperPage({ data }: ModeProps) {
                                             setShowAllProjects(false);
                                         }, 300);
                                     }}
-                                    className="paper-load-more"
+                                    className="block mx-auto my-8 p-3 px-6 font-serif text-[1rem] text-[var(--paper-accent)] bg-transparent border border-solid border-[var(--paper-accent)] rounded transition-all duration-200 hover:bg-[var(--paper-accent)] hover:text-[var(--paper-bg)] cursor-pointer"
                                 >
                                     Show Less
                                 </button>
@@ -404,25 +394,25 @@ export function PaperPage({ data }: ModeProps) {
                         </section>
 
                         {/* CERTIFICATIONS */}
-                        <section id="certifications" className="paper-section">
-                            <h2>Certifications</h2>
-                            <ul className="paper-certifications">
+                        <section id="certifications" className="mb-12 scroll-mt-[100px]">
+                            <h2 className="font-serif font-semibold text-[var(--paper-text)] mb-4 text-[1.75rem] mt-12 mb-6 border-b border-solid border-[var(--paper-border)] pb-2 text-left">Certifications</h2>
+                            <ul className="list-none p-0 m-0">
                                 {RESUME.certifications.map((cert, i) => (
-                                    <li key={i}>
-                                        <strong>{cert.name}</strong> – {cert.issuer} – {cert.date}
+                                    <li key={i} className="py-3 border-b border-dashed border-[var(--paper-border)] last:border-b-0">
+                                        <strong className="font-serif font-semibold text-[var(--paper-text)] mb-4 text-inherit">{cert.name}</strong> – {cert.issuer} – {cert.date}
                                     </li>
                                 ))}
                             </ul>
                         </section>
 
                         {/* CONTACT */}
-                        <section id="contact" className="paper-section">
-                            <h2>Contact</h2>
-                            <p>Interested in working together? Feel free to reach out:</p>
-                            <ContactLinks variant="paper" className="paper-contact-list" />
+                        <section id="contact" className="mb-12 scroll-mt-[100px]">
+                            <h2 className="font-serif font-semibold text-[var(--paper-text)] mb-4 text-[1.75rem] mt-12 mb-6 border-b border-solid border-[var(--paper-border)] pb-2 text-left">Contact</h2>
+                            <p className="mb-6 text-justify [hyphens:auto]">Interested in working together? Feel free to reach out:</p>
+                            <ContactLinks variant="paper" className="list-none p-0" />
 
                             {PERSONAL.availableForWork && (
-                                <div className="paper-available">
+                                <div className="inline-flex items-center gap-2 mt-4 p-2 px-4 bg-green-500/10 border border-solid border-green-500/30 rounded-md text-[#16a34a] text-[0.9rem]">
                                     <Check className="w-4 h-4" />
                                     <span>Available for new opportunities</span>
                                 </div>
@@ -431,6 +421,69 @@ export function PaperPage({ data }: ModeProps) {
                     </main>
                 </div>
             </div>
+
+            {/* Mobile Actions Bar */}
+            <div className="lg:hidden fixed bottom-0 left-0 right-0 z-30 border-t p-4 flex gap-3 shadow-[0_-4px_10px_rgba(0,0,0,0.05)] bg-[var(--paper-bg)] border-[var(--paper-border)]">
+                <a
+                    href={resumeUrl}
+                    download="Aman_Singh.pdf"
+                    className="flex-1 flex items-center justify-center gap-2 p-3 no-underline uppercase tracking-wider rounded-md text-sm transition-all border border-[var(--paper-border)] text-[var(--paper-muted)] font-bold active:scale-[0.98] hover:bg-[var(--paper-accent)] hover:border-[var(--paper-accent)] hover:text-[var(--paper-bg)] group"
+                >
+                    <Download className="w-4 h-4 transition-colors group-hover:text-[var(--paper-bg)]" />
+                    <span className="transition-colors group-hover:text-[var(--paper-bg)]">Download PDF</span>
+                </a>
+                <button
+                    onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                    className="flex items-center justify-center p-3 px-4 border rounded-md transition-colors bg-transparent border-[var(--paper-border)] text-[var(--paper-muted)]"
+                >
+                    <List className="w-5 h-5" />
+                </button>
+            </div>
+
+            {/* Mobile Section Menu Overlay */}
+            <AnimatePresence>
+                {isMobileMenuOpen && (
+                    <>
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            onClick={() => setIsMobileMenuOpen(false)}
+                            className="lg:hidden fixed inset-0 z-40 bg-black/20 backdrop-blur-sm"
+                        />
+                        <motion.div
+                            initial={{ y: "100%" }}
+                            animate={{ y: 0 }}
+                            exit={{ y: "100%" }}
+                            className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-[var(--paper-bg)] rounded-t-2xl p-6 pb-24 shadow-2xl"
+                        >
+                            <div className="flex items-center justify-between mb-6">
+                                <h3 className="font-display text-xl font-bold uppercase tracking-widest text-[var(--paper-muted)]">Jump to Section</h3>
+                                <button onClick={() => setIsMobileMenuOpen(false)} className="text-[var(--paper-muted)]">
+                                    <Check className="w-6 h-6" />
+                                </button>
+                            </div>
+                            <nav className="grid grid-cols-2 gap-3">
+                                {sections.map((section) => (
+                                    <button
+                                        key={section.id}
+                                        onClick={() => {
+                                            scrollToSection(section.id);
+                                            setIsMobileMenuOpen(false);
+                                        }}
+                                        className={`p-3 px-4 text-left rounded-lg text-sm transition-all ${activeSection === section.id
+                                            ? "bg-[var(--paper-highlight)] text-[var(--paper-accent)] border border-[var(--paper-accent)] font-bold shadow-sm"
+                                            : "bg-[var(--paper-highlight)]/50 text-[var(--paper-muted)] border border-transparent"
+                                            }`}
+                                    >
+                                        {section.label}
+                                    </button>
+                                ))}
+                            </nav>
+                        </motion.div>
+                    </>
+                )}
+            </AnimatePresence>
         </div>
     );
 }

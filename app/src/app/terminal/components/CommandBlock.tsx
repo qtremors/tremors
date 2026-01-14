@@ -13,7 +13,7 @@ interface Props {
 export function CommandBlock({ block, theme }: Props) {
     return (
         <div
-            className="rounded-lg overflow-hidden"
+            className="rounded-lg overflow-hidden animate-fade-in"
             style={{ borderWidth: 1, borderColor: theme.border }}
         >
             {/* Panel Header */}

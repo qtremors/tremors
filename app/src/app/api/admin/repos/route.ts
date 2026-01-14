@@ -34,7 +34,7 @@ export async function GET() {
         // Parse topics JSON for each repo using centralized utility
         const reposWithTopics = repos.map((repo) => ({
             ...repo,
-            topics: parseTopics(repo.topics, repo.name),
+            topics: parseTopics(repo.topics),
         }));
 
         return NextResponse.json({
@@ -122,7 +122,7 @@ export async function PATCH(request: NextRequest) {
             success: true,
             repo: {
                 ...repo,
-                topics: parseTopics(repo.topics, repo.name),
+                topics: parseTopics(repo.topics),
             },
         });
     } catch (error) {

@@ -189,7 +189,7 @@ function AnimatedCodeBlock({ availableForWork, onToggle, isAdmin, editMode }: An
     return (
         <div className="relative">
             <div className="absolute inset-0 bg-[var(--accent-cyan)] opacity-10 blur-3xl rounded-full" />
-            <div className="relative bg-[var(--card-bg)] border border-[var(--card-border)] rounded-2xl p-8 backdrop-blur-sm animate-float">
+            <div className="relative bg-[var(--card-bg)] border border-[var(--card-border)] rounded-2xl p-5 md:p-8 backdrop-blur-sm animate-float">
                 <div className="flex items-center gap-2 mb-6">
                     <div className="w-3 h-3 rounded-full bg-red-500" />
                     <div className="w-3 h-3 rounded-full bg-yellow-500" />
@@ -310,7 +310,7 @@ export function HeroSection() {
                         Hi, I&apos;m
                     </p>
 
-                    <h1 className="text-5xl md:text-7xl font-bold mb-6 leading-tight">{PERSONAL.name}</h1>
+                    <h1 className="text-4xl md:text-7xl font-bold mb-6 leading-tight">{PERSONAL.name}</h1>
 
                     <h2 className="text-2xl md:text-3xl text-[var(--text-muted)] font-light mb-6">
                         {PERSONAL.tagline}

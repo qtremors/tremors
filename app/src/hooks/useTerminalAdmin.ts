@@ -33,6 +33,8 @@ interface UseTerminalAdminReturn {
     setAwaitingPassword: (value: boolean) => void;
     setShowAdminSetup: (value: boolean) => void;
     setShowAdminManage: (value: boolean) => void;
+    setIsAdmin: (value: boolean) => void;
+    setSessionInfo: (value: SessionInfo | null) => void;
 }
 
 export function useTerminalAdmin(): UseTerminalAdminReturn {
@@ -135,5 +137,7 @@ export function useTerminalAdmin(): UseTerminalAdminReturn {
         setAwaitingPassword,
         setShowAdminSetup,
         setShowAdminManage,
+        setIsAdmin,
+        setSessionInfo,
     };
 }

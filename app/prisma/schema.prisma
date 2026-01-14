@@ -37,6 +37,10 @@ model Repo {
   customImageUrl    String?  // URL when imageSource = "custom"
 
   updatedAt   DateTime @updatedAt
+
+  // Indexes for optimized filtering
+  @@index([featured])
+  @@index([hidden])
 }
 
 // Site settings
@@ -84,6 +88,8 @@ model NewspaperEdition {
   isActive    Boolean  @default(false) // Only one active per day, shown to visitors
   isFallback  Boolean  @default(false) // True if this is default content
   generatedBy String?  // "gemini-2.5-flash" or null for fallback
+  agentName   String?  @default("Skye") // Name of the agent (e.g., Skye)
+  personality String?  @default("tabloid") // ID of the personality used
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 

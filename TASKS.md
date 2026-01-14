@@ -1,29 +1,48 @@
-# TASKS.md - Tremors Portfolio
+# Tremors Implementation Tasks & Codebase Review
 
-> **Version**: 2.0.2 | **Status**: 🟡 Review Complete
-
----
-
-## ✅ All Clear
-
-No open issues or pending tasks.
+> **Project:** Tremors  
+> **Version:** 2.2.0
+> **Last Updated:** 2026-01-14
 
 ---
 
-## 📊 Code Health
+## 🔍 Current Findings
 
-| Category | Status |
-|----------|--------|
-| Security | ✅ CSRF (Dynamic), Auth Secret Check |
-| Architecture | ✅ Modular, clean separation |
-| Performance | ✅ DB caching, API batching |
-| Accessibility | ✅ Aria labels, skip links |
-| Tests | ✅ 14 test files (Added API tests) |
+### 🛡️ Security
+- [x] **API Rate Limiting Middleware**: Created centralized middleware at `middleware.ts`.
+- [ ] **CSP Hardening**: Review `unsafe-inline`/`unsafe-eval` in `next.config.ts` (required by Next.js).
+
+### 🏗️ Architecture
+- [ ] **Database Typing**: Migrate `Repo.topics` from JSON string to `JSONB`.
+
+### 🧪 Logic & Bugs
+- [ ] **Relative Time Sync**: Audit `ProjectCard` relative time for hydration mismatches.
+
+### 🎨 UI/UX
+- [ ] **Loading States**: Add skeleton loaders to `ProjectsGrid`.
+- [ ] **Accessibility**: Terminal output needs `aria-live` blocks.
+- [ ] **Keyboard Navigation**: Audit modals for focus trapping.
 
 ---
 
-## ✅ Completed Checks
+## 📋 Backlog
 
-- **Security**: Auth flow (PBKDF2/HMAC) is secure. CSRF protection in place.
-- **Architecture**: Clean modular separation (Lib, API, Components).
-- **Performance**: Robust caching strategy in `data.ts`.
+### High Priority
+- [ ] JSONB migration for `topics`
+
+### Medium Priority
+- [ ] SEO: Dynamic meta tags for editions/projects
+- [ ] Unit tests for `useFetch`, `SettingsContext`, `useTerminalAdmin`
+
+### Low Priority
+- [ ] Terminal games (Snake/Tetris)
+- [ ] RSS feed metadata extensions
+
+---
+
+## 🏗️ Technical Notes
+
+- **Dates**: Use `formatIST` from `lib/date` for server/client consistency.
+- **Auth**: `verifyAdminCookie()` for APIs, `AdminContext` for client components.
+- **Fetching**: `useFetch<T>(url)` for reads, `fetch`/`useApiMutation` for mutations.
+- **Providers**: Use `ProviderComposer` for nested providers.

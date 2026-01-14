@@ -7,18 +7,8 @@
 
 import { Star, EyeOff, Eye, StarOff, GripVertical, ExternalLink, Pencil } from "lucide-react";
 import { LANGUAGE_COLORS } from "@/lib/github";
+import { formatProjectTitle } from "@/lib/utils";
 import type { GitHubRepo } from "@/types";
-
-/**
- * Format project title - converts kebab-case to Title Case
- * "my-cool-project" -> "My Cool Project"
- */
-function formatProjectTitle(name: string): string {
-    return name
-        .split(/[-_]/)
-        .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-        .join(" ");
-}
 
 /**
  * Get project image URL based on imageSource setting
@@ -181,7 +171,7 @@ export function ProjectCard({
                             target="_blank"
                             rel="noopener noreferrer"
                             onClick={(e) => editMode && e.preventDefault()}
-                            className={`${titleSize} font-bold group-hover:!text-cyan-400 transition-colors truncate`}
+                            className={`${titleSize} font-bold group-hover:text-[var(--accent-cyan)] transition-colors truncate`}
                         >
                             {formatProjectTitle(repo.name)}
                         </a>
@@ -243,7 +233,7 @@ export function ProjectCard({
             {(() => {
                 const imageUrl = showImages ? getProjectImageUrl(repo) : null;
                 return imageUrl && (
-                    <div className="relative w-full aspect-[2/1] bg-[var(--bg-secondary)]">
+                    <div className="relative w-full aspect-video md:aspect-[2/1] bg-[var(--bg-secondary)]">
                         <img
                             src={imageUrl}
                             alt={`${repo.name} preview`}
@@ -295,7 +285,7 @@ export function ProjectCard({
                     target="_blank"
                     rel="noopener noreferrer"
                     onClick={(e) => editMode && e.preventDefault()}
-                    className={`${titleSize} font-bold mb-2 block group-hover:!text-cyan-400 transition-colors ${size === "small" ? "truncate" : ""}`}
+                    className={`${titleSize} font-bold mb-2 block group-hover:text-[var(--accent-cyan)] transition-colors ${size === "small" ? "truncate" : ""}`}
                 >
                     {formatProjectTitle(repo.name)}
                 </a>

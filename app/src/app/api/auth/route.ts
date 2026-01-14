@@ -57,7 +57,7 @@ function cleanupExpiredEntries(): void {
 function checkRateLimit(ip: string): boolean {
     const now = Date.now();
 
-    // Periodically clean up expired entries
+    // Always clean up expired entries before checking
     cleanupExpiredEntries();
 
     const record = attempts.get(ip);

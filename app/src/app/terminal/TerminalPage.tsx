@@ -11,6 +11,7 @@ import { useRouter } from "next/navigation";
 import type { ModeProps } from "@/types";
 import { PERSONAL } from "@/config/site";
 import { useAdmin } from "@/components/AdminContext";
+import { useTerminalAdmin } from "@/hooks/useTerminalAdmin";
 
 // Local imports
 import {
@@ -25,14 +26,15 @@ import {
 import { commands, type CommandContext } from "./lib/commands";
 import {
     CommandBlock,
-    AsciiLogo,
-    CommandItem,
     TerminalInput,
     StatusBar,
     CommandAutocomplete,
     InlineSelector,
     InlineAdminSetup,
     InlineAdminManage,
+    TerminalWelcome,
+    TerminalHistory,
+    MobileKeyboardHelpers,
 } from "./components";
 
 // Session info type
@@ -43,12 +45,27 @@ interface SessionInfo {
 export function TerminalPage({ data }: ModeProps) {
     const router = useRouter();
     const { user, repos, error } = data;
-    const { isAdmin, setIsAdmin } = useAdmin();
 
     // State
     const [commandBlocks, setCommandBlocks] = useState<CommandBlockType[]>([]);
+    const {
+        isAdmin,
+        awaitingPassword,
+        showAdminSetup,
+        showAdminManage,
+        sessionInfo,
+        setAwaitingPassword,
+        setShowAdminSetup,
+        setShowAdminManage,
+        setIsAdmin,
+        setSessionInfo,
+        checkSecretCommand,
+        handlePasswordInput: hookHandlePasswordInput,
+        handleLogout: hookHandleLogout,
+        handleSetupSuccess,
+    } = useTerminalAdmin();
+
     const [input, setInput] = useState("");
-    const [awaitingPassword, setAwaitingPassword] = useState(false);
     const [shakeAscii, setShakeAscii] = useState(false);
     const [shakeInput, setShakeInput] = useState(false);
     const [termTheme, setTermTheme] = useState<ThemeId>("rosepine");
@@ -58,11 +75,6 @@ export function TerminalPage({ data }: ModeProps) {
     const [historyIndex, setHistoryIndex] = useState(-1);
     const [tuiSelector, setTuiSelector] = useState<TuiSelector | null>(null);
     const [autocompleteIndex, setAutocompleteIndex] = useState(0);
-
-    // Admin TUI states
-    const [showAdminSetup, setShowAdminSetup] = useState(false);
-    const [showAdminManage, setShowAdminManage] = useState(false);
-    const [sessionInfo, setSessionInfo] = useState<SessionInfo | null>(null);
 
     // Refs
     const inputRef = useRef<HTMLInputElement>(null);
@@ -81,7 +93,6 @@ export function TerminalPage({ data }: ModeProps) {
 
         if (savedTheme && (savedTheme === "dracula" || savedTheme === "tokyonight" || savedTheme === "rosepine")) setTermTheme(savedTheme);
         if (savedFont && (savedFont === "mono" || savedFont === "firacode" || savedFont === "jetbrains")) setTermFont(savedFont);
-        // Note: hiddenRepos is no longer in localStorage - repos are filtered by DB
         if (savedSession) {
             try {
                 const session = JSON.parse(savedSession);
@@ -147,66 +158,29 @@ export function TerminalPage({ data }: ModeProps) {
     };
 
     const triggerErrorShake = () => {
-        if (isAsciiVisible()) {
+        // If no commands yet, shake ASCII logo; otherwise shake input
+        if (commandBlocks.length === 0 && isAsciiVisible()) {
             setShakeAscii(true);
             setTimeout(() => setShakeAscii(false), 500);
-        } else {
-            setShakeInput(true);
-            setTimeout(() => setShakeInput(false), 500);
         }
+        // Always shake input for feedback
+        setShakeInput(true);
+        setTimeout(() => setShakeInput(false), 500);
     };
 
     const addCommandBlock = (command: string, lines: TerminalLine[]) => {
         setCommandBlocks(prev => [...prev, { command, lines }]);
     };
 
-    // Check if input is the secret admin command
-    const checkSecretCommand = async (cmd: string): Promise<{
-        isSecret: boolean;
-        needsSetup?: boolean;
-        isLoggedIn?: boolean;
-        sessionInfo?: SessionInfo;
-    }> => {
-        try {
-            const res = await fetch("/api/auth", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ username: cmd }),
-            });
-            const data = await res.json();
-            if (data.success && data.isSecret) {
-                return {
-                    isSecret: true,
-                    needsSetup: data.needsSetup,
-                    isLoggedIn: data.isLoggedIn,
-                    sessionInfo: data.sessionInfo,
-                };
-            }
-        } catch { /* ignore */ }
-        return { isSecret: false };
-    };
-
     // Handle password input for login
     const handlePasswordInput = async (password: string) => {
-        try {
-            const res = await fetch("/api/auth", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ action: "login", password }),
-            });
-            const data = await res.json();
-            if (data.success) {
-                setIsAdmin(true);
-                addCommandBlock("password", [{ type: "success", content: "Authentication successful. Admin mode enabled." }]);
-            } else {
-                addCommandBlock("password", [{ type: "error", content: data.error || "Authentication failed." }]);
-                triggerErrorShake();
-            }
-        } catch {
-            addCommandBlock("password", [{ type: "error", content: "Server error." }]);
+        const result = await hookHandlePasswordInput(password);
+        if (result.success) {
+            addCommandBlock("password", [{ type: "success", content: "Authentication successful. Admin mode enabled." }]);
+        } else {
+            addCommandBlock("password", [{ type: "error", content: result.error || "Authentication failed." }]);
             triggerErrorShake();
         }
-        setAwaitingPassword(false);
     };
 
     const processCommand = async (cmd: string) => {
@@ -256,9 +230,7 @@ export function TerminalPage({ data }: ModeProps) {
                 addCommandBlock(cmd, result.lines);
 
             } else if (result.action === "logout") {
-                // Call logout API to clear server-side cookie
-                fetch("/api/auth/logout", { method: "POST" }).catch(() => { });
-                setIsAdmin(false);
+                hookHandleLogout();
                 addCommandBlock(cmd, result.lines);
             } else {
                 if (result.lines.length > 0) addCommandBlock(cmd, result.lines);
@@ -312,16 +284,46 @@ export function TerminalPage({ data }: ModeProps) {
                 return;
             }
 
-            // Unknown command
-            addCommandBlock(cmd, [
-                { type: "error", content: `Command not found: ${command}` },
-                { type: "output", content: "Type /commands for available commands." }
-            ]);
+            // Unknown command - just shake, no output
             triggerErrorShake();
         }
 
         if (trimmedLower && command !== "history") {
             setCommandHistory(prev => [...prev.slice(-49), trimmedLower]);
+        }
+    };
+
+    const handleUp = () => {
+        if (commandHistory.length > 0) {
+            const newIndex = historyIndex < commandHistory.length - 1 ? historyIndex + 1 : historyIndex;
+            setHistoryIndex(newIndex);
+            setInput(commandHistory[commandHistory.length - 1 - newIndex] || "");
+        }
+    };
+
+    const handleDown = () => {
+        if (historyIndex > 0) {
+            const newIndex = historyIndex - 1;
+            setHistoryIndex(newIndex);
+            setInput(commandHistory[commandHistory.length - 1 - newIndex] || "");
+        } else if (historyIndex === 0) {
+            setHistoryIndex(-1);
+            setInput("");
+        }
+    };
+
+    const handleTab = () => {
+        const cmds = Object.keys(commands).filter(c => !c.startsWith("/") && !c.startsWith(":"));
+        const searchTerm = input.trim().toLowerCase().startsWith("/")
+            ? input.trim().toLowerCase().slice(1)
+            : input.trim().toLowerCase();
+        const matches = cmds.filter(c => c.startsWith(searchTerm));
+
+        if (matches.length > 0) {
+            // Complete with current selection
+            setInput(`/${matches[autocompleteIndex % matches.length]}`);
+            // Cycle to next match for next Tab press
+            setAutocompleteIndex(prev => (prev + 1) % matches.length);
         }
     };
 
@@ -366,35 +368,13 @@ export function TerminalPage({ data }: ModeProps) {
             setAutocompleteIndex(0);
         } else if (e.key === "ArrowUp") {
             e.preventDefault();
-            if (commandHistory.length > 0) {
-                const newIndex = historyIndex < commandHistory.length - 1 ? historyIndex + 1 : historyIndex;
-                setHistoryIndex(newIndex);
-                setInput(commandHistory[commandHistory.length - 1 - newIndex] || "");
-            }
+            handleUp();
         } else if (e.key === "ArrowDown") {
             e.preventDefault();
-            if (historyIndex > 0) {
-                const newIndex = historyIndex - 1;
-                setHistoryIndex(newIndex);
-                setInput(commandHistory[commandHistory.length - 1 - newIndex] || "");
-            } else if (historyIndex === 0) {
-                setHistoryIndex(-1);
-                setInput("");
-            }
+            handleDown();
         } else if (e.key === "Tab") {
             e.preventDefault();
-            const cmds = Object.keys(commands).filter(c => !c.startsWith("/") && !c.startsWith(":"));
-            const searchTerm = input.trim().toLowerCase().startsWith("/")
-                ? input.trim().toLowerCase().slice(1)
-                : input.trim().toLowerCase();
-            const matches = cmds.filter(c => c.startsWith(searchTerm));
-
-            if (matches.length > 0) {
-                // Complete with current selection
-                setInput(`/${matches[autocompleteIndex % matches.length]}`);
-                // Cycle to next match for next Tab press
-                setAutocompleteIndex(prev => (prev + 1) % matches.length);
-            }
+            handleTab();
         }
     };
 
@@ -412,45 +392,46 @@ export function TerminalPage({ data }: ModeProps) {
         addCommandBlock("logout", [{ type: "success", content: "Logged out successfully." }]);
     };
 
-    if (error) return <div className="h-screen bg-[#191724] text-[#eb6f92] p-8 font-mono">{error}</div>;
+    if (error) return <div className="h-[100dvh] bg-[#191724] text-[#eb6f92] p-8 font-mono">{error}</div>;
 
     return (
         <div
-            className={`h-screen ${FONT_CLASSES[termFont]} flex flex-col overflow-hidden ${crtEffect ? 'crt-effect' : ''}`}
+            className={`h-[100dvh] ${FONT_CLASSES[termFont]} flex flex-col overflow-hidden ${crtEffect ? 'crt-effect' : ''}`}
             style={{ backgroundColor: theme.bg, color: theme.text }}
             onClick={focusInput}
         >
-            <div ref={scrollRef} className="flex-1 overflow-y-auto flex flex-col">
-                <div className={`flex flex-col items-center justify-center ${commandBlocks.length === 0 ? 'flex-1' : 'pt-8 pb-4'}`}>
-                    <AsciiLogo ref={asciiRef} theme={theme} shaking={shakeAscii} />
-                    <p className="text-xs mb-6" style={{ color: theme.muted }}>{PERSONAL.tagline} • v2.0</p>
-
+            <div ref={scrollRef} className="flex-1 overflow-y-auto flex flex-col scrollbar-hide">
+                {/* Spacer - centers content when fresh, pushes to bottom otherwise */}
+                <div className={`${commandBlocks.length === 0 ? 'flex-1 flex items-center justify-center' : 'flex-1'}`}>
                     {commandBlocks.length === 0 && (
-                        <>
-                            <div className="grid grid-cols-2 gap-x-12 gap-y-3 text-sm max-w-sm text-left mb-6">
-                                <CommandItem cmd="/whoami" desc="profile" colors={theme} />
-                                <CommandItem cmd="/projects" desc="repos" colors={theme} />
-                                <CommandItem cmd="/neofetch" desc="sysinfo" colors={theme} />
-                                <CommandItem cmd="/theme" desc="colors" colors={theme} />
-                                <CommandItem cmd="/commands" desc="all" colors={theme} />
-                                <CommandItem cmd="exit" desc="go back" colors={theme} />
-                            </div>
-                            <p className="text-xs" style={{ color: theme.muted }}>Type /commands to see all available commands</p>
-                        </>
+                        <TerminalWelcome
+                            theme={theme}
+                            shaking={shakeAscii}
+                            asciiRef={asciiRef}
+                        />
                     )}
                 </div>
 
+                {/* ASCII Logo - shown at top of history when commands exist */}
                 {commandBlocks.length > 0 && (
-                    <div className="px-6 pb-4 max-w-3xl mx-auto w-full space-y-4">
-                        {commandBlocks.map((block, i) => (
-                            <CommandBlock key={i} block={block} theme={theme} />
-                        ))}
-                    </div>
+                    <TerminalWelcome
+                        theme={theme}
+                        shaking={shakeAscii}
+                        asciiRef={asciiRef}
+                    />
+                )}
+
+                {/* Command history - rendered after ASCII, pushes content up */}
+                {commandBlocks.length > 0 && (
+                    <TerminalHistory
+                        blocks={commandBlocks}
+                        theme={theme}
+                    />
                 )}
 
                 {/* Inline TUIs - inside scroll area so they push content up */}
                 {tuiSelector && (
-                    <div ref={tuiRef} className="p-4 max-w-3xl mx-auto w-full">
+                    <div ref={tuiRef} className="p-4 max-w-3xl mx-auto w-full animate-fade-in">
                         <InlineSelector
                             type={tuiSelector.type}
                             options={tuiSelector.options}
@@ -482,7 +463,7 @@ export function TerminalPage({ data }: ModeProps) {
                     </div>
                 )}
                 {showAdminSetup && (
-                    <div ref={tuiRef} className="p-4 max-w-3xl mx-auto w-full">
+                    <div ref={tuiRef} className="p-4 max-w-3xl mx-auto w-full animate-fade-in">
                         <InlineAdminSetup
                             theme={theme}
                             onSuccess={handleAdminSetupSuccess}
@@ -491,7 +472,7 @@ export function TerminalPage({ data }: ModeProps) {
                     </div>
                 )}
                 {showAdminManage && (
-                    <div ref={tuiRef} className="p-4 max-w-3xl mx-auto w-full">
+                    <div ref={tuiRef} className="p-4 max-w-3xl mx-auto w-full animate-fade-in">
                         <InlineAdminManage
                             theme={theme}
                             onLogout={handleAdminLogout}
@@ -511,6 +492,15 @@ export function TerminalPage({ data }: ModeProps) {
                     selectedIndex={autocompleteIndex}
                 />
             )}
+
+            {/* Mobile Keyboard Helpers */}
+            <MobileKeyboardHelpers
+                theme={theme}
+                onUp={handleUp}
+                onDown={handleDown}
+                onTab={handleTab}
+                onClear={() => processCommand("clear")}
+            />
 
             <TerminalInput
                 ref={inputRef}

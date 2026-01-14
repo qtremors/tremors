@@ -1,5 +1,19 @@
 @import "tailwindcss";
 
+@theme {
+  --animate-np-ticker: np-ticker 40s linear infinite;
+
+  @keyframes np-ticker {
+    0% {
+      transform: translateX(0);
+    }
+
+    100% {
+      transform: translateX(-50%);
+    }
+  }
+}
+
 /* ============================================
    CSS VARIABLES / DESIGN TOKENS
    Premium Black & White Theme
@@ -44,6 +58,23 @@
 
   /* Safe areas */
   --safe-area-bottom: env(safe-area-inset-bottom, 0px);
+
+  /* Newspaper Mode Colors (Default/Dark) */
+  --np-bg: #0d0d0d;
+  --np-paper: #f5f0e8;
+  --np-ink: #1a1a1a;
+  --np-ink-light: #4a4a4a;
+  --np-accent: #c41e3a;
+  --np-rule: #333;
+
+  /* Paper Mode Colors (Default/Dark) */
+  --paper-bg: #1a1a1a;
+  --paper-text: #e0e0e0;
+  --paper-muted: #a0a0a0;
+  --paper-accent: #f5f3ef;
+  --paper-border: #3a3a3a;
+  --paper-highlight: rgba(245, 243, 239, 0.12);
+  --paper-texture: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='4' height='4' viewBox='0 0 4 4'%3E%3Cpath fill='%233a3a3a' fill-opacity='0.4' d='M1 3h1v1H1V3zm2-2h1v1H3V1z'%3E%3C/path%3E%3C/svg%3E");
 }
 
 [data-theme="light"] {
@@ -71,6 +102,23 @@
   --card-bg: rgba(240, 240, 240, 0.6);
   --card-border: rgba(213, 213, 213, 0.8);
   --card-text: #1a1a1a;
+
+  /* Newspaper Mode Colors (Light) */
+  --np-bg: #f5f0e8;
+  --np-paper: #0d0d0d;
+  --np-ink: #f5f0e8;
+  --np-ink-light: #c0c0c0;
+  --np-accent: #ff4d6a;
+  --np-rule: #ddd;
+
+  /* Paper Mode Colors (Light) */
+  --paper-bg: #f5f3ef;
+  --paper-text: #2c2c2c;
+  --paper-muted: #6b6b6b;
+  --paper-accent: #1a1a1a;
+  --paper-border: #d4d0c8;
+  --paper-highlight: rgba(26, 26, 26, 0.08);
+  --paper-texture: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='4' height='4' viewBox='0 0 4 4'%3E%3Cpath fill='%23d4d0c8' fill-opacity='0.4' d='M1 3h1v1H1V3zm2-2h1v1H3V1z'%3E%3C/path%3E%3C/svg%3E");
 }
 
 /* ============================================
@@ -232,6 +280,15 @@ a:hover {
 
 ::-webkit-scrollbar-thumb:hover {
   background: var(--text-muted);
+}
+
+/* Hide scrollbar utility */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
 }
 
 /* ============================================
