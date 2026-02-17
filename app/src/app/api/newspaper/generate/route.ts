@@ -56,6 +56,7 @@ async function buildContext() {
     });
 
     const twentyFourHoursAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+    const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
 
     // Fetch all repos (Global Context)
     const allRepos = await prisma.repo.findMany({
@@ -63,21 +64,27 @@ async function buildContext() {
         orderBy: { pushedAt: "desc" },
     });
 
-    // Fetch all commits (Historical Context)
-    const allCommits = await prisma.commit.findMany({
+    // Fetch all commits (Historical Context for streaks/active repo)
+    const recentCommits = await prisma.commit.findMany({
         orderBy: { date: "desc" },
-        take: 50, // Enough for recent history + distinct streak check
+        take: 100, // Increased for weekly depth
     });
 
-    // Fetch strictly today's/24h data (Daily Context)
-    const [recentCommits24h, recentActivity24h] = await Promise.all([
+    // Fetch Strictly Weekly data (7 days)
+    const [weeklyCommits, weeklyActivity, previousEditions] = await Promise.all([
         prisma.commit.findMany({
-            where: { date: { gte: twentyFourHoursAgo } },
+            where: { date: { gte: sevenDaysAgo } },
             orderBy: { date: "desc" },
         }),
         prisma.activity.findMany({
-            where: { date: { gte: twentyFourHoursAgo } },
+            where: { date: { gte: sevenDaysAgo } },
             orderBy: { date: "desc" },
+        }),
+        prisma.newspaperEdition.findMany({
+            where: { isActive: true },
+            orderBy: { date: "desc" },
+            take: 5,
+            select: { headline: true, date: true }
         })
     ]);
 
@@ -96,53 +103,45 @@ async function buildContext() {
         .slice(0, 3)
         .map(([lang, count]) => `${lang} (${count})`);
 
-    // Least active repos (Dormant - no commits in 30+ days)
-    const recentRepoNames = new Set(allCommits.map(c => c.repoName));
-    const dormantRepos = allRepos
-        .filter(r => !recentRepoNames.has(r.name))
-        .slice(0, 3)
-        .map(r => {
-            const lastPush = new Date(r.pushedAt);
-            const daysDormant = Math.floor((now.getTime() - lastPush.getTime()) / (1000 * 60 * 60 * 24));
-            return `${r.name} (${daysDormant} days dormant)`;
-        });
-
-    // Oldest active repo (Legacy check)
+    // Memory: Oldest active repo
     const oldestActiveRepo = allRepos
         .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())[0];
 
-    // === DAILY ACTIVITY (Last 24h) ===
-    // Most active repo in last 24h
-    const commitsByRepo24h: Record<string, number> = {};
-    recentCommits24h.forEach(c => {
-        commitsByRepo24h[c.repoName] = (commitsByRepo24h[c.repoName] || 0) + 1;
+    // === WEEKLY ACTIVITY (Last 7 Days) ===
+    const mostActiveRepoWeekly = Object.entries(
+        weeklyCommits.reduce((acc, c) => {
+            acc[c.repoName] = (acc[c.repoName] || 0) + 1;
+            return acc;
+        }, {} as Record<string, number>)
+    ).sort((a, b) => b[1] - a[1])[0];
+
+    // Group commits by day for better temporal reading
+    const commitsByDay: Record<string, string[]> = {};
+    weeklyCommits.forEach(c => {
+        const day = getISTDateString(new Date(c.date));
+        if (!commitsByDay[day]) commitsByDay[day] = [];
+        if (commitsByDay[day].length < 15) { // Max 15 per day for better detail
+            commitsByDay[day].push(`${c.repoName}: ${c.message}`);
+        }
     });
-    const mostActiveToday = Object.entries(commitsByRepo24h)
-        .sort((a, b) => b[1] - a[1])[0];
 
-    const commitSummary24h = recentCommits24h.length > 0
-        ? recentCommits24h.slice(0, 15).map(c => `- ${c.repoName}: ${c.message} (${getISTDate(new Date(c.date))})`).join("\n")
-        : "No commits pushed in the last 24 hours.";
-
-    const eventSummary24h = recentActivity24h.length > 0
-        ? recentActivity24h.slice(0, 15).map(a => `- ${a.repoName}: ${a.title} (${getISTDate(new Date(a.date))})`).join("\n")
-        : "No major repository events tracked in the last 24 hours.";
+    const weeklySummary = Object.entries(commitsByDay)
+        .slice(0, 7)
+        .map(([day, msgs]) => `[${day}]\n${msgs.map(m => `- ${m}`).join("\n")}`)
+        .join("\n\n");
 
     // Streak Check
-    const commitDates = new Set(allCommits.map(c => getISTDateString(new Date(c.date))));
+    const commitDates = new Set(recentCommits.map(c => getISTDateString(new Date(c.date))));
     let streak = 0;
-    // We need to check streak based on "Today" in IST
     const todayIST = getISTDateString(now);
     let checkDateObj = new Date(now);
 
-    // Simple loop check using IST date strings
     while (true) {
         const dateStr = getISTDateString(checkDateObj);
         if (commitDates.has(dateStr)) {
             streak++;
             checkDateObj.setDate(checkDateObj.getDate() - 1);
         } else {
-            // If today has no commits yet, allowing streak to continue from yesterday
             if (streak === 0 && dateStr === todayIST) {
                 checkDateObj.setDate(checkDateObj.getDate() - 1);
                 continue;
@@ -158,7 +157,6 @@ async function buildContext() {
     });
 
     const { month, day } = getISTParts(now);
-
     const holidays: string[] = [];
     if (month === 1 && day === 1) holidays.push("New Year's Day");
     if (month === 10 && day === 31) holidays.push("Halloween");
@@ -170,22 +168,24 @@ async function buildContext() {
         todayDate: todayDateStr + " (IST)",
         holidays: holidays.length > 0 ? holidays.join(", ") : null,
 
-        // Global Context (History)
+        // Global Context
         repoCount,
         totalStars,
         topLanguages: topLanguages.join(", "),
         featuredRepos: featuredRepos.join(", "),
-        dormantRepos: dormantRepos.join(", "),
         oldestActiveRepo: oldestActiveRepo ? `${oldestActiveRepo.name} (since ${new Date(oldestActiveRepo.createdAt).getFullYear()})` : "None",
 
-        // Daily Context (24h)
-        activityInLast24h: {
-            commitCount: recentCommits24h.length,
-            eventCount: recentActivity24h.length,
-            mostActiveRepo: mostActiveToday ? mostActiveToday[0] : null,
-            commits: commitSummary24h,
-            events: eventSummary24h,
+        // Weekly Context (7 Days)
+        weeklyActivity: {
+            commitCount: weeklyCommits.length,
+            eventCount: weeklyActivity.length,
+            mostActiveRepo: mostActiveRepoWeekly ? mostActiveRepoWeekly[0] : null,
+            summary: weeklySummary || "Minimal activity this week.",
         },
+
+        // Awareness of Previous Content
+        recentHeadlines: previousEditions.map(e => `("${e.headline}" on ${getISTDateString(new Date(e.date))})`),
+
         streak: streak > 1 ? `${streak} days` : null,
         skills: SKILLS.map(s => s.skills.slice(0, 3).join(", ")).join(" | "),
     };
@@ -203,26 +203,26 @@ async function generateWithGemini(
 
     const personality = NEWS_AGENT.personalities.find(p => p.id === personalityId) || NEWS_AGENT.personalities[0];
 
-    // UPDATED PROMPT: Combining History + Daily Context
     const prompt = `You are ${NEWS_AGENT.name}, an AI news agent.
 Current Time: ${context.todayDate}
 Style/Personality: ${personality.prompt}
 
-=== DAILY UPDATE (LAST 24 HOURS in IST) ===
-Commits Today: ${context.activityInLast24h.commitCount}
-Events Today: ${context.activityInLast24h.eventCount}
-Active Repo Today: ${context.activityInLast24h.mostActiveRepo || "None"}
+=== WEEKLY RECAP (LAST 7 DAYS in IST) ===
+Total Commits this week: ${context.weeklyActivity.commitCount}
+Total Events this week: ${context.weeklyActivity.eventCount}
+Most Involved Repo this week: ${context.weeklyActivity.mostActiveRepo || "None"}
 
-RECENT ACTIVITY LOG:
-${context.activityInLast24h.commits}
-${context.activityInLast24h.events}
+DETAILED WEEKLY LOG:
+${context.weeklyActivity.summary}
+
+=== PREVIOUS NEWS HEADLINES (DO NOT REPEAT THESE) ===
+${context.recentHeadlines.length > 0 ? context.recentHeadlines.join("\n") : "None (First edition of the week!)"}
 
 === HISTORICAL PROFILE (THE BIG PICTURE) ===
 Total Repos: ${context.repoCount} (Stars: ${context.totalStars})
 Top Languages: ${context.topLanguages}
 Featured Projects: ${context.featuredRepos}
 Oldest Project: ${context.oldestActiveRepo}
-Dormant/Abandoned Projects: ${context.dormantRepos || "None (Everything is fresh!)"}
 Current Streak: ${context.streak || "No active streak"}
 
 === GLOBAL CONTEXT ===
@@ -232,9 +232,10 @@ Skills: ${context.skills}
 
 INSTRUCTIONS:
 Generate a newspaper edition in JSON.
-1. Use the provided context data (Daily Update + Historical Profile) to generate the content.
-2. Fully adopt the persona of ${personality.name}.
-3. Reference specific repo names, commit messages, and timestamps from the data where relevant.
+1. Use the provided WEEKLY context to generate a fresh, relevant story.
+2. Adopt the persona of ${personality.name} strictly.
+3. DO NOT repeat the narrative or jokes from the PREVIOUS NEWS HEADLINES provided above.
+4. Reference specific repos, commit messages, and dates from the log to make the story feel authentic.
 
 RESPOND ONLY WITH VALID JSON:
 {"headline":"...","subheadline":"...","bodyContent":["...","...","..."],"pullQuote":"...","location":"..."}`;

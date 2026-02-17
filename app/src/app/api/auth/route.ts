@@ -24,9 +24,9 @@ import { validateCsrf } from "@/lib/csrf";
 
 // Simple in-memory rate limiting with cleanup
 const attempts = new Map<string, { count: number; firstAttempt: number }>();
-const RATE_LIMIT = 5;
-const RATE_WINDOW = 15 * 60 * 1000; // 15 minutes
-const CLEANUP_INTERVAL = 5 * 60 * 1000; // Cleanup every 5 minutes
+const RATE_LIMIT = 10;
+const RATE_WINDOW = 5 * 60 * 1000; // 5 minutes (reduced from 15)
+const CLEANUP_INTERVAL = 1 * 60 * 1000; // Cleanup every minute
 let lastCleanup = Date.now();
 
 function getClientIP(request: Request): string {
@@ -238,15 +238,17 @@ export async function POST(request: NextRequest) {
             if (adminSecret && username === adminSecret) {
                 const exists = await adminExists();
                 const isLoggedIn = await verifyAdminCookie();
+                const sessionInfo = isLoggedIn ? await getSessionInfo() : null;
 
                 return NextResponse.json({
                     success: true,
                     isSecret: true,
                     needsSetup: !exists,
                     isLoggedIn,
+                    sessionInfo,
                 });
             }
-            return NextResponse.json({ success: false });
+            return NextResponse.json({ success: false, error: "Invalid credentials" });
         }
 
         return NextResponse.json(

@@ -12,8 +12,8 @@ import { verifyAdminCookie } from "@/lib/auth";
 export async function GET() {
     try {
         const isAdmin = await verifyAdminCookie();
-        return NextResponse.json({ isAdmin });
+        return NextResponse.json({ success: true, isAdmin });
     } catch {
-        return NextResponse.json({ isAdmin: false });
+        return NextResponse.json({ success: false, isAdmin: false });
     }
 }

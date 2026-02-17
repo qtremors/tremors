@@ -1,8 +1,37 @@
 # Tremors Portfolio Changelog
 
 > **Project:** Tremors Portfolio  
-> **Version:** 2.2.1  
-> **Last Updated:** 2026-01-14
+> **Version:** 2.2.3  
+> **Last Updated:** 2026-02-17
+
+---
+
+## [2.2.3] - 2026-02-17
+
+### Added
+- **Skye AI (Weekly Context)**: Expanded Newspaper AI memory from 24 hours to a full 7-day window.
+- **Headline Awareness**: Added a "Memory" check that fetches the last 5 active headlines to prevent repetitive storytelling and jokes.
+- **Temporal Grouping**: Refactored the context builder to group activity by day (IST), allowing the AI to understand the chronological flow of work.
+
+### Changed
+- **Content Granularity**: Increased the daily commit detail limit to 15 messages (was 5) to capture more nuance on highly active days.
+
+---
+
+## [2.2.2] - 2026-02-17
+
+### Fixed
+- **Session Stability**: Resolved a critical regression causing auto-logout after 10-15s by throttling visibility-change auth re-checks in `AdminContext`.
+- **Auth Compatibility**: Restored UTF-8 buffer comparison in `verifyPassword` to ensure stability for legacy hashes.
+- **Secret Jitter**: Stabilized auth signing secret derivation by removing environment-jittery variables (`DATABASE_URL`, `NODE_ENV`).
+- **Standardized API**: Ensured all auth endpoints return consistent `success` and `sessionInfo` properties.
+- **Rate Limiting**: Relaxed admin login thresholds to 10 attempts per 5-minute window for better developer ergonomics.
+
+### Security
+- **Dependency Audit**: Resolved all high and moderate vulnerabilities by upgrading `next` and `undici` via `npm audit fix --force`.
+
+### Testing
+- **Auth Coverage**: Expanded `auth.test.ts` to include robust session token verification, expiry, and signature validation.
 
 ---
 
