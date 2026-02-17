@@ -5,7 +5,7 @@
 
 "use client";
 
-import { createContext, useContext, useState, useEffect, ReactNode, useRef } from "react";
+import { createContext, useContext, useState, useEffect, ReactNode, useRef, useCallback } from "react";
 
 interface AdminContextType {
     isAdmin: boolean;
@@ -24,54 +24,42 @@ export function AdminProvider({ children }: { children: ReactNode }) {
     const [isAdmin, setIsAdmin] = useState(false);
     const [editMode, setEditMode] = useState(false);
     const hasChecked = useRef(false);
+    const lastCheckTime = useRef(0);
 
-    const checkAdminStatus = () => {
-        fetch("/api/auth/check")
-            .then(res => res.json())
-            .then(data => {
-                setIsAdmin(!!data.isAdmin);
-                if (data.isAdmin) {
-                    // Mark as checked in session
-                    sessionStorage.setItem(ADMIN_CACHE_KEY, "true");
-                } else {
-                    // Clear cache on logout/session expiry
-                    sessionStorage.removeItem(ADMIN_CACHE_KEY);
-                }
-            })
-            .catch(() => {
-                setIsAdmin(false);
-                sessionStorage.removeItem(ADMIN_CACHE_KEY);
-            });
-    };
+    const checkAdminStatus = useCallback(async (isFocusCheck = false) => {
+        const now = Date.now();
+        // Don't re-check more than once every 30 seconds on focus (prevent spam)
+        if (isFocusCheck && now - lastCheckTime.current < 30000) return;
+        
+        lastCheckTime.current = now;
+        try {
+            const res = await fetch("/api/auth/check");
+            const data = await res.json();
+            setIsAdmin(!!data.isAdmin);
+        } catch {
+            // Silently ignore network errors on focus check, don't logout
+            if (!isFocusCheck) setIsAdmin(false);
+        }
+    }, []);
 
-    // Verify admin session on initial mount only
+    // Verify admin session on initial mount
     useEffect(() => {
-        // Skip if already checked this render cycle
         if (hasChecked.current) return;
         hasChecked.current = true;
-
-        // Check if we've already verified in this session
-        const alreadyChecked = sessionStorage.getItem(ADMIN_CACHE_KEY);
-        if (alreadyChecked) {
-            // Still need to verify cookie is valid, but can be less urgent
-            checkAdminStatus();
-            return;
-        }
-
         checkAdminStatus();
-    }, []);
+    }, [checkAdminStatus]);
 
     // Recheck on window focus (in case session expired while tab was hidden)
     useEffect(() => {
         const handleFocus = () => {
             if (document.visibilityState === "visible") {
-                checkAdminStatus();
+                checkAdminStatus(true);
             }
         };
 
         document.addEventListener("visibilitychange", handleFocus);
         return () => document.removeEventListener("visibilitychange", handleFocus);
-    }, []);
+    }, [checkAdminStatus]);
 
     return (
         <AdminContext.Provider value={{ isAdmin, setIsAdmin, editMode, setEditMode, refreshAdminStatus: checkAdminStatus }}>

@@ -1,8 +1,25 @@
 # Tremors Portfolio Changelog
 
 > **Project:** Tremors Portfolio  
-> **Version:** 2.2.1  
-> **Last Updated:** 2026-01-14
+> **Version:** 2.2.2  
+> **Last Updated:** 2026-02-17
+
+---
+
+## [2.2.2] - 2026-02-17
+
+### Fixed
+- **Session Stability**: Resolved a critical regression causing auto-logout after 10-15s by throttling visibility-change auth re-checks in `AdminContext`.
+- **Auth Compatibility**: Restored UTF-8 buffer comparison in `verifyPassword` to ensure stability for legacy hashes.
+- **Secret Jitter**: Stabilized auth signing secret derivation by removing environment-jittery variables (`DATABASE_URL`, `NODE_ENV`).
+- **Standardized API**: Ensured all auth endpoints return consistent `success` and `sessionInfo` properties.
+- **Rate Limiting**: Relaxed admin login thresholds to 10 attempts per 5-minute window for better developer ergonomics.
+
+### Security
+- **Dependency Audit**: Resolved all high and moderate vulnerabilities by upgrading `next` and `undici` via `npm audit fix --force`.
+
+### Testing
+- **Auth Coverage**: Expanded `auth.test.ts` to include robust session token verification, expiry, and signature validation.
 
 ---
 

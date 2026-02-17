@@ -1,6 +1,6 @@
 {
   "name": "tremors-portfolio",
-  "version": "2.2.1",
+  "version": "2.2.2",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -24,7 +24,7 @@
     "dotenv": "^17.2.3",
     "framer-motion": "^12.23.26",
     "lucide-react": "^0.561.0",
-    "next": "16.0.10",
+    "next": "^16.1.6",
     "prisma": "^6.19.1",
     "react": "19.2.1",
     "react-dom": "19.2.1"

@@ -61,6 +61,7 @@ export function useTerminalAdmin(): UseTerminalAdminReturn {
                 if (data.needsSetup) {
                     setShowAdminSetup(true);
                 } else if (data.isLoggedIn) {
+                    setIsAdmin(true);
                     setSessionInfo(data.sessionInfo || null);
                     setShowAdminManage(true);
                 } else {
