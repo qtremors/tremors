@@ -1,4 +1,4 @@
-# Tremors Implementation Tasks & Codebase Review
+# Tremors Implementation Tasks
 
 > **Project:** Tremors  
 > **Version:** 2.2.3
@@ -6,63 +6,62 @@
 
 ---
 
-## 🔍 Current Findings
+## ⚡ Quick Fixes
+*Low effort, high impact changes that can be addressed immediately.*
 
-### 🛡️ Security
-- [x] **API Rate Limiting Middleware**: Created centralized middleware at `middleware.ts`.
-- [ ] **CSP Hardening**: Review `unsafe-inline`/`unsafe-eval` in `next.config.ts` (required by Next.js).
+- [ ] **Auth Status**: Change "Invalid credentials" response from 200 to 401 in `api/auth/route.ts`.
+- [ ] **Type Safety**: Replace `any` with `Repo` type in `ProjectsGrid.tsx`.
+- [ ] **Hardcoded Version**: Replace "v2.0" with `APP_VERSION` in `TerminalWelcome.tsx`.
+- [ ] **Cleanup**: Delete unused `twentyFourHoursAgo` constant in `newspaper/generate/route.ts`.
+- [ ] **Unused Parameter**: Remove `idx` from map callback in `SpotlightSection.tsx`.
+- [ ] **CSS Cleanup**: Remove redundant `flex` (keep `inline-flex`) in `ProjectsTable.tsx`.
+- [ ] **Markdown Lint**: Fix list indentation in `CHANGELOG.md`.
 
-### 🏗️ Architecture
-- [ ] **Database Typing**: Migrate `Repo.topics` from JSON string to `JSONB`.
+---
 
-### 🧪 Logic & Bugs
-- [ ] **Relative Time Sync**: Audit `ProjectCard` relative time for hydration mismatches.
+## 🔴 High Priority
+*Critical security or architectural tasks.*
 
-### 🎨 UI/UX
+- [ ] **Database Typing**: Migrate `Repo.topics` from JSON string to `JSONB` for better querying.
+- [ ] **Auth Secret Incorporation**: Update `lib/auth.ts` to incorporate provided short secrets into derived keys.
+- [ ] **Admin Safety**: Check `res.ok` before parsing JSON in `AdminContext.tsx` to prevent state corruption.
+- [ ] **Security (Middleware)**:
+    - [ ] Replace UA-based fallback with hashed anonymous ID (SHA-256 + salt).
+    - [ ] Fix Key Collision: Use exact routes from config for rate limit keys.
+
+---
+
+## 🔍 Active Investigations & Logic
+*Bugs or improvements identified in recent reviews.*
+
+- [ ] **Relative Time Sync**: Audit `ProjectCard` for hydration mismatches.
+- [ ] **Test Refactor**: Use structured helper/timestamp in `auth.test.ts` instead of manual manipulation.
+- [ ] **Border Conflicts**: Resolve `TechnicalProficiencies.tsx` border overlaps in `lg` layout.
+- [ ] **Security**: Review `unsafe-inline`/`unsafe-eval` in `next.config.ts`.
+
+---
+
+## 🎨 UI/UX & Accessibility
+*Enhancing the user experience and ensuring inclusivity.*
+
 - [ ] **Loading States**: Add skeleton loaders to `ProjectsGrid`.
-- [ ] **Accessibility**: Terminal output needs `aria-live` blocks.
+- [ ] **Accessibility**: Add `aria-live` blocks to terminal output.
 - [ ] **Keyboard Navigation**: Audit modals for focus trapping.
 
 ---
 
-## � CodeRabbit PR Review (v2.2.0)
+## 📋 Backlog
+*Future work and enhancements.*
 
-### Security
-- [ ] **Weak IP Fallback** (`middleware.ts:20-30`): UA-based fallback is spoofable. Replace with hashed anonymous ID using SHA-256 + server-side salt from env.
-- [ ] **Rate Limit Key Collision** (`middleware.ts:83-87`): Key truncates to 3 segments causing `/api/newspaper/generate` to share key with `/api/newspaper/*`. Use exact route from config.
-
-### Code Quality
-- [ ] **Duplicate CSS Class** (`ProjectsTable.tsx:83-89`): Remove redundant `flex` (keep `inline-flex`).
-- [ ] **Unused Parameter** (`SpotlightSection.tsx:73-93`): Remove unused `idx` from map callback.
-- [ ] **Type Safety** (`ProjectsGrid.tsx:44-61`): Replace `any` with proper Repo type, preserve DB fields.
-
-### UI/Layout
-- [ ] **Border Conflicts** (`TechnicalProficiencies.tsx:15`): `md:nth-child` rules conflict with `lg` layout. Use `last:border-r-0` or grid gap approach.
-- [ ] **Hardcoded Version** (`TerminalWelcome.tsx:22`): Replace "v2.0" with centralized `APP_VERSION` constant.
-
-### Documentation
-- [ ] **Markdown Lint** (`CHANGELOG.md:51-54`): Fix 4-space indent to 2-space for nested lists.
-
----
-
-## �📋 Backlog
-
-### High Priority
-- [ ] JSONB migration for `topics`
-
-### Medium Priority
-- [ ] SEO: Dynamic meta tags for editions/projects
-- [ ] Unit tests for `useFetch`, `SettingsContext`, `useTerminalAdmin`
-
-### Low Priority
-- [ ] Terminal games (Snake/Tetris)
-- [ ] RSS feed metadata extensions
+- [ ] **SEO**: Implement dynamic meta tags for editions and projects.
+- [ ] **Unit Tests**: Full coverage for `useFetch`, `SettingsContext`, and `useTerminalAdmin`.
+- [ ] **Terminal Extensions**: Games (Snake/Tetris) and RSS feed metadata.
 
 ---
 
 ## 🏗️ Technical Notes
-
 - **Dates**: Use `formatIST` from `lib/date` for server/client consistency.
 - **Auth**: `verifyAdminCookie()` for APIs, `AdminContext` for client components.
 - **Fetching**: `useFetch<T>(url)` for reads, `fetch`/`useApiMutation` for mutations.
 - **Providers**: Use `ProviderComposer` for nested providers.
+
