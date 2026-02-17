@@ -1,8 +1,20 @@
 # Tremors Portfolio Changelog
 
 > **Project:** Tremors Portfolio  
-> **Version:** 2.2.2  
+> **Version:** 2.2.3  
 > **Last Updated:** 2026-02-17
+
+---
+
+## [2.2.3] - 2026-02-17
+
+### Added
+- **Skye AI (Weekly Context)**: Expanded Newspaper AI memory from 24 hours to a full 7-day window.
+- **Headline Awareness**: Added a "Memory" check that fetches the last 5 active headlines to prevent repetitive storytelling and jokes.
+- **Temporal Grouping**: Refactored the context builder to group activity by day (IST), allowing the AI to understand the chronological flow of work.
+
+### Changed
+- **Content Granularity**: Increased the daily commit detail limit to 15 messages (was 5) to capture more nuance on highly active days.
 
 ---
 
