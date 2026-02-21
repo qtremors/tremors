@@ -6,6 +6,7 @@
 import { NextResponse } from "next/server";
 import { put, del } from "@vercel/blob";
 import { prisma } from "@/lib/db";
+import { verifyAdminCookie } from "@/lib/auth";
 
 const FALLBACK_RESUME_URL = "/Aman_Singh.pdf";
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
@@ -36,8 +37,8 @@ export async function GET() {
 export async function POST(request: Request) {
     try {
         // Check admin auth
-        const authCookie = request.headers.get("cookie")?.includes("admin_session");
-        if (!authCookie) {
+        const isAdmin = await verifyAdminCookie();
+        if (!isAdmin) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
 

@@ -1,8 +1,20 @@
 # Tremors Portfolio Changelog
 
 > **Project:** Tremors Portfolio  
-> **Version:** 2.2.3  
-> **Last Updated:** 2026-02-17
+> **Version:** 2.2.4  
+> **Last Updated:** 2026-02-21
+
+---
+
+## [2.2.4] - 2026-02-21
+
+### Security
+- **Resume Upload Auth**: Enforced `verifyAdminCookie()` for Vercel Blob PDF uploads.
+- **CSP**: Removed `unsafe-eval` from script-src in production environments.
+- **CSRF**: Strengthened origin validation with strict URL parsing.
+- **Newspaper Generation**: Added CSRF protection to the generate admin endpoint.
+- **Auth Secret**: Prevented predictability of derived signing secrets when using default admin secrets.
+- **Legacy Auth**: Fixed API route returning 200 OK for invalid credentials; now properly returns 401.
 
 ---
 

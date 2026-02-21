@@ -4,10 +4,11 @@
  * Falls back to stored content if API unavailable
  */
 
-import { NextResponse } from "next/server";
+import { NextResponse, NextRequest } from "next/server";
 import { prisma } from "@/lib/db";
 import { PERSONAL, SKILLS, NEWS_AGENT } from "@/config/site";
 import { verifyAdminCookie } from "@/lib/auth";
+import { validateCsrf } from "@/lib/csrf";
 import {
     getISTDateString,
     getISTParts,
@@ -378,12 +379,21 @@ export async function GET(request: Request) {
  * POST: Generate new edition variant (admin only)
  * Creates a NEW edition (doesn't replace existing) and sets it as active
  */
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
     try {
         // Verify admin session
         const isAdmin = await verifyAdminCookie();
         if (!isAdmin) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
+
+        // Validate CSRF
+        const csrf = validateCsrf(request);
+        if (!csrf.valid) {
+            return NextResponse.json(
+                { success: false, error: csrf.error },
+                { status: 403 }
+            );
         }
 
         const body = await request.json().catch(() => ({}));

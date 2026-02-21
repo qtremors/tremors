@@ -1,20 +1,20 @@
 # Tremors Implementation Tasks
 
 > **Project:** Tremors  
-> **Version:** 2.2.3
-> **Last Updated:** 2026-02-18
+> **Version:** 2.2.4
+> **Last Updated:** 2026-02-21
 > **Audit Scope:** Full codebase — Frontend, Backend, Database, Documentation
 
 ---
 
 ## 🔴 Critical Security
 
-- [ ] **Resume Upload Auth Bypass**: `api/admin/resume/route.ts` POST checks `request.headers.get("cookie")?.includes("admin_session")` — this only checks if the cookie **name** appears in the header string, not whether the session token is valid. Must use `verifyAdminCookie()` like all other admin routes.
-- [ ] **CSP `unsafe-inline` / `unsafe-eval`**: `next.config.ts` allows `'unsafe-inline'` for scripts and `'unsafe-eval'`, which weakens CSP significantly and enables XSS vectors. Investigate if Next.js 16 has nonce support to remove these.
-- [ ] **CSRF Origin Bypass**: In `csrf.ts`, the check `origin.includes(host)` (line 51) is bypassable — an attacker at `evil.com?host=localhost:3000` or `localhost:3000.evil.com` would pass. Should use strict `URL` parsing and exact host comparison.
-- [ ] **Newspaper Generate Missing CSRF**: `api/newspaper/generate/route.ts` POST does not call `validateCsrf()`, unlike every other mutating admin endpoint. Add CSRF validation.
-- [ ] **Auth Secret Fallback Weakness**: In `auth.ts`, `getSigningSecret()` falls back to deriving from `ADMIN_SECRET + "tremors-auth-v1-stable"`. If `ADMIN_SECRET` is well-known (e.g., never changed from `"your_secret_command"`), the derived signing secret is predictable and session tokens can be forged.
-- [ ] **Legacy Auth Route Returns 200 for Invalid Credentials**: `api/auth/route.ts` line 251 returns `NextResponse.json({ success: false, error: "Invalid credentials" })` **without a status code** (defaults to 200). Must return 401.
+- [x] **Resume Upload Auth Bypass**: `api/admin/resume/route.ts` POST checks `request.headers.get("cookie")?.includes("admin_session")` — this only checks if the cookie **name** appears in the header string, not whether the session token is valid. Must use `verifyAdminCookie()` like all other admin routes.
+- [x] **CSP `unsafe-inline` / `unsafe-eval`**: `next.config.ts` allows `'unsafe-inline'` for scripts and `'unsafe-eval'`, which weakens CSP significantly and enables XSS vectors. Investigate if Next.js 16 has nonce support to remove these.
+- [x] **CSRF Origin Bypass**: In `csrf.ts`, the check `origin.includes(host)` (line 51) is bypassable — an attacker at `evil.com?host=localhost:3000` or `localhost:3000.evil.com` would pass. Should use strict `URL` parsing and exact host comparison.
+- [x] **Newspaper Generate Missing CSRF**: `api/newspaper/generate/route.ts` POST does not call `validateCsrf()`, unlike every other mutating admin endpoint. Add CSRF validation.
+- [x] **Auth Secret Fallback Weakness**: In `auth.ts`, `getSigningSecret()` falls back to deriving from `ADMIN_SECRET + "tremors-auth-v1-stable"`. If `ADMIN_SECRET` is well-known (e.g., never changed from `"your_secret_command"`), the derived signing secret is predictable and session tokens can be forged.
+- [x] **Legacy Auth Route Returns 200 for Invalid Credentials**: `api/auth/route.ts` line 251 returns `NextResponse.json({ success: false, error: "Invalid credentials" })` **without a status code** (defaults to 200). Must return 401.
 
 ---
 

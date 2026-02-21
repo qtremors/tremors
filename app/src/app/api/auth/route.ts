@@ -248,7 +248,7 @@ export async function POST(request: NextRequest) {
                     sessionInfo,
                 });
             }
-            return NextResponse.json({ success: false, error: "Invalid credentials" });
+            return NextResponse.json({ success: false, error: "Invalid credentials" }, { status: 401 });
         }
 
         return NextResponse.json(
