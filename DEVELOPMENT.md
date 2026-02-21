@@ -2,7 +2,7 @@
 
 > Comprehensive documentation for developers working on Tremors Portfolio.
 
-**Version:** 2.2.5 | **Last Updated:** 2026-02-21
+**Version:** 2.2.6 | **Last Updated:** 2026-02-21
 
 ---
 

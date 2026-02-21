@@ -20,19 +20,6 @@ import {
 const GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models";
 const MODEL = "gemini-flash-lite-latest"; // Latest flash lite model
 
-// Fallback content when AI is unavailable
-const FALLBACK_CONTENT = {
-    headline: `${PERSONAL.name.split(" ")[0].toUpperCase()} CONTINUES REIGN OF TERROR ACROSS GITHUB`,
-    subheadline: "Repositories tremble as commits pile up at alarming rate",
-    bodyContent: JSON.stringify([
-        `In what industry analysts are calling "absolutely expected behavior," local developer ${PERSONAL.name} has once again demonstrated an unwavering commitment to pushing code at hours that medical professionals describe as "concerning."`,
-        `Sources close to the keyboard report that the developer has mastered technologies including ${SKILLS[0]?.skills.slice(0, 3).join(", ") || "various programming languages"}, leaving competitors to wonder: "Do they ever sleep?"`,
-        `When reached for comment, ${PERSONAL.name.split(" ")[0]} simply muttered something about "one more commit" before returning to what witnesses describe as "an unhealthy number of browser tabs."`
-    ]),
-    pullQuote: `"I'll refactor it tomorrow." — ${PERSONAL.name.split(" ")[0]}, reportedly every single day`,
-    location: "VØID",
-};
-
 interface GeminiResponse {
     candidates?: Array<{
         content: {
@@ -197,7 +184,7 @@ async function buildContext() {
 async function generateWithGemini(
     context: Awaited<ReturnType<typeof buildContext>>,
     personalityId: string = "tabloid"
-): Promise<typeof FALLBACK_CONTENT | null> {
+): Promise<{ headline: string, subheadline: string, bodyContent: string, pullQuote: string, location: string } | null> {
     const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) return null;
 
@@ -283,11 +270,11 @@ RESPOND ONLY WITH VALID JSON:
         try {
             const parsed = JSON.parse(jsonMatch[0]);
             return {
-                headline: parsed.headline || FALLBACK_CONTENT.headline,
-                subheadline: parsed.subheadline || FALLBACK_CONTENT.subheadline,
-                bodyContent: JSON.stringify(parsed.bodyContent || JSON.parse(FALLBACK_CONTENT.bodyContent)),
-                pullQuote: parsed.pullQuote || FALLBACK_CONTENT.pullQuote,
-                location: parsed.location || FALLBACK_CONTENT.location,
+                headline: parsed.headline || "DEVELOPER SILENT, SERVERS HUMMING",
+                subheadline: parsed.subheadline || "No new updates from the void",
+                bodyContent: JSON.stringify(parsed.bodyContent || ["The central nexus reports no new structural paradigm shifts. Assume standard operating procedures."]),
+                pullQuote: parsed.pullQuote || '"Just keep swimming." — Dory',
+                location: parsed.location || "VØID",
             };
         } catch (parseError) {
             console.error("JSON parse failed, response may be truncated:", text.substring(0, 300));
@@ -349,9 +336,13 @@ export async function GET(request: Request) {
         }
 
         if (!edition) {
-            // Return hardcoded fallback
+            // Return dummy fallback if DB is completely empty
             return NextResponse.json({
-                bodyContent: JSON.parse(FALLBACK_CONTENT.bodyContent),
+                headline: "AWAITING FIRST EDITION",
+                subheadline: "The presses are warming up",
+                bodyContent: ["No newspaper editions have been published yet."],
+                pullQuote: "Patience is a virtue.",
+                location: "VØID",
                 date: todayStart.toISOString(),
                 isFallback: true,
             });
@@ -364,8 +355,11 @@ export async function GET(request: Request) {
     } catch (error) {
         console.error("Failed to get newspaper edition:", error);
         return NextResponse.json({
-            ...FALLBACK_CONTENT,
-            bodyContent: JSON.parse(FALLBACK_CONTENT.bodyContent),
+            headline: "TEMPORARY OUTAGE",
+            subheadline: "We're experiencing technical difficulties",
+            bodyContent: ["The newspaper delivery system encountered an error."],
+            pullQuote: "Brb, fixing the printer.",
+            location: "VØID",
             date: new Date().toISOString(),
             isFallback: true,
             agentName: NEWS_AGENT.name,
@@ -405,7 +399,15 @@ export async function POST(request: NextRequest) {
         const startOfToday = getStartOfDayIST(now);
         const endOfToday = getEndOfDayIST(now);
 
-        const content = generated || FALLBACK_CONTENT;
+        const content = generated;
+
+        // If Gemini totally fails, DO NOT overwrite the active edition. Let the frontend show the latest historical paper instead.
+        if (!content) {
+            return NextResponse.json(
+                { success: false, error: "Failed to generate content with Gemini. Keeping latest existing edition." },
+                { status: 500 }
+            );
+        }
 
         // Deactivate all editions for today
         await prisma.newspaperEdition.updateMany({

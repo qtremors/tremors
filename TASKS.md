@@ -1,7 +1,7 @@
 # Tremors Implementation Tasks
 
 > **Project:** Tremors  
-> **Version:** 2.2.5
+> **Version:** 2.2.6
 > **Last Updated:** 2026-02-21
 > **Audit Scope:** Full codebase — Frontend, Backend, Database, Documentation
 
@@ -35,16 +35,16 @@
 
 ## 🟡 Medium Priority — Code Quality & Maintainability
 
-- [ ] **Type Safety**: Replace `any` with `Repo` type in `ProjectsGrid.tsx` lines 39, 48.
-- [ ] **Hardcoded Version**: Replace "v2.0" with `APP_VERSION` in `TerminalWelcome.tsx`.
-- [ ] **Unused `ADMIN_CACHE_KEY` Constant**: `AdminContext.tsx` line 21 defines `ADMIN_CACHE_KEY = "admin_status_checked"` but it's never used anywhere. Dead code from a removed feature.
-- [ ] **Empty `lib/agent/` Directory**: `src/lib/agent/` exists but is empty — vestigial from a removed feature. Delete it.
-- [ ] **`data.ts` Always Fetches User from GitHub**: On the DB-cache path (line 171), `getUser(GITHUB_USERNAME)` is called every page load via `getGitHubData()`. This GitHub API call has no caching and serves data that rarely changes. Should be cached in DB or use `revalidate`.
-- [ ] **`data.ts` Duplicated `GITHUB_USERNAME`**: Both `data.ts` and `api/admin/refresh/route.ts` independently define `const GITHUB_USERNAME = process.env.GITHUB_USERNAME || "qtremors"`. Use the centralized `GITHUB_CONFIG.username` from `config/site.ts` instead.
-- [ ] **Duplicated `GITHUB_USERNAME` in `stats/commits`**: Same pattern — `stats/commits/route.ts` line 11 defines its own `GITHUB_USERNAME`. Third duplicate.
-- [ ] **`getRecentCommits` Limit Mismatch**: `data.ts` line 220 calls `getRecentCommits(repos, 10)` in the fallback path but `api/admin/refresh/route.ts` line 50 calls it with `50`. `DATA_LIMITS.maxCommitsRefresh` (50) exists in config but isn't used consistently.
-- [ ] **`mergeActivityWithCache` Potential Duplicates**: `data.ts` line 124 pushes cached activity items alongside commit-derived items without deduplication. If a commit also exists as a cached activity item, it appears twice.
-- [ ] **Prisma Seed Scripts Coupled to Env**: `prisma/seed-newspaper.ts` and cleanup scripts load `.env` via `dotenv` but are run as part of `vercel-build`. If env vars aren't available at that stage, the seed silently generates fallback content.
+- [x] **Type Safety**: Replace `any` with `Repo` type in `ProjectsGrid.tsx` lines 39, 48.
+- [x] **Hardcoded Version**: Replace "v2.0" with `APP_VERSION` in `TerminalWelcome.tsx`.
+- [x] **Unused `ADMIN_CACHE_KEY` Constant**: `AdminContext.tsx` line 21 defines `ADMIN_CACHE_KEY = "admin_status_checked"` but it's never used anywhere. Dead code from a removed feature.
+- [x] **Empty `lib/agent/` Directory**: `src/lib/agent/` exists but is empty — vestigial from a removed feature. Delete it.
+- [x] **`data.ts` Always Fetches User from GitHub**: On the DB-cache path (line 171), `getUser(GITHUB_USERNAME)` is called every page load via `getGitHubData()`. This GitHub API call has no caching and serves data that rarely changes. Should be cached in DB or use `revalidate`.
+- [x] **`data.ts` Duplicated `GITHUB_USERNAME`**: Both `data.ts` and `api/admin/refresh/route.ts` independently define `const GITHUB_USERNAME = process.env.GITHUB_USERNAME || "qtremors"`. Use the centralized `GITHUB_CONFIG.username` from `config/site.ts` instead.
+- [x] **Duplicated `GITHUB_USERNAME` in `stats/commits`**: Same pattern — `stats/commits/route.ts` line 11 defines its own `GITHUB_USERNAME`. Third duplicate.
+- [x] **`getRecentCommits` Limit Mismatch**: `data.ts` line 220 calls `getRecentCommits(repos, 10)` in the fallback path but `api/admin/refresh/route.ts` line 50 calls it with `50`. `DATA_LIMITS.maxCommitsRefresh` (50) exists in config but isn't used consistently.
+- [x] **`mergeActivityWithCache` Potential Duplicates**: `data.ts` line 124 pushes cached activity items alongside commit-derived items without deduplication. If a commit also exists as a cached activity item, it appears twice.
+- [x] **Prisma Seed Scripts Coupled to Env**: Deleted `seed-newspaper`, `clean-editions`, and `delete-empty-today` entirely. Gemini generator now falls back to the most recent historical newspaper if an AI generation fails or hits rate limits.
 
 ---
 

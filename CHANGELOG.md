@@ -1,8 +1,23 @@
 # Tremors Portfolio Changelog
 
 > **Project:** Tremors Portfolio  
-> **Version:** 2.2.5  
+> **Version:** 2.2.6  
 > **Last Updated:** 2026-02-21
+
+---
+
+## [2.2.6] - 2026-02-21
+
+### Changed
+- **Config Centralization**: Merged duplicate `GITHUB_USERNAME` variables globally across `api/admin/refresh/route.ts` and `api/stats/commits/route.ts` by pointing them to `config/site.ts`.
+- **Commit Limit Standardization**: Coordinated `DATA_LIMITS.maxCommitsRefresh` to be strictly respected by both `admin/refresh` and `lib/data.ts` fallbacks.
+- **Activity Data Deduplication**: Ensured `mergeActivityWithCache` inside `data.ts` filters out duplicate events based on identical item ID, preventing pushed commits from flooding activity timeline.
+
+### Fixed
+- **Type Safety**: Converted `ProjectsGrid` implicit `any` arrays to the strongly typed Prisma `Repo` shape, strictly typing the JSONB `topics` column.
+- **Hardcoded Scripts & DB Connections**: Rather than injecting static fallback editions into the database which caused Vercel deployment crashes via `P1001` timeouts, the `seed-newspaper.ts`, `delete-empty-today.ts`, and `clean-editions.ts` scripts have been entirely deleted. The Gemini generation API (`api/newspaper/generate/route.ts`) now dynamically falls back to the most recent historical newspaper edition seamlessly if an AI generation fails or hits rate limits.
+- **Vestigial Directory Cleanups**: Dropped the defunct `lib/agent` layout and unused `ADMIN_CACHE_KEY`.
+- **Dynamic Versions**: Rewrote `TerminalWelcome` static app tags to read via `pkg.version`.
 
 ---
 

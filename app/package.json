@@ -1,6 +1,6 @@
 {
   "name": "tremors-portfolio",
-  "version": "2.2.5",
+  "version": "2.2.6",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -10,7 +10,7 @@
     "test": "vitest",
     "test:coverage": "vitest run --coverage",
     "postinstall": "prisma generate",
-    "vercel-build": "prisma generate && prisma db push && npx tsx prisma/seed-newspaper.ts && next build"
+    "vercel-build": "prisma generate && prisma db push && next build"
   },
   "dependencies": {
     "@icons-pack/react-simple-icons": "^13.8.0",

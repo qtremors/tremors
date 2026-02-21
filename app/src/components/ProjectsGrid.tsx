@@ -13,10 +13,11 @@ import { useToast } from "@/components/ToastProvider";
 import { useFetch } from "@/hooks/useFetch";
 import { RepoWithStatus } from "@/components/ProjectCard";
 import { ProjectEditModal } from "@/components/ProjectEditModal";
+import type { GitHubRepo } from "@/types";
 import { GridControls } from "@/components/Projects/GridControls";
 import { SpotlightSection } from "@/components/Projects/SpotlightSection";
 import { MoreProjectsSection } from "@/components/Projects/MoreProjectsSection";
-import type { GitHubRepo } from "@/types";
+import { Repo } from "@prisma/client";
 
 interface ProjectsGridProps {
     repos: GitHubRepo[];
@@ -36,7 +37,7 @@ export function ProjectsGrid({ repos: initialRepos }: ProjectsGridProps) {
     const [isInitialized, setIsInitialized] = useState(false);
 
     // Fetch repos from API when admin
-    const { data: adminData, loading } = useFetch<{ success: boolean; repos: any[] }>(
+    const { data: adminData, loading } = useFetch<{ success: boolean; repos: Repo[] }>(
         isAdmin ? "/api/admin/repos" : "",
         { immediate: isAdmin }
     );
@@ -45,7 +46,7 @@ export function ProjectsGrid({ repos: initialRepos }: ProjectsGridProps) {
     useEffect(() => {
         if (adminData?.repos && !isInitialized) {
             const dbRepos = adminData.repos.map(
-                (r: any) => ({
+                (r: Repo): RepoWithStatus => ({
                     ...r,
                     full_name: r.fullName,
                     stargazers_count: r.stars,
@@ -53,6 +54,11 @@ export function ProjectsGrid({ repos: initialRepos }: ProjectsGridProps) {
                     pushed_at: "",
                     created_at: "",
                     fork: false,
+                    html_url: r.htmlUrl,
+                    homepage: r.homepage,
+                    language: r.language,
+                    topics: Array.isArray(r.topics) ? (r.topics as string[]) : [], // Handle Prisma JsonValue to string array
+                    imageSource: (r.imageSource as "github" | "custom" | "none" | null) || null,
                 })
             );
             setRepos(dbRepos);
