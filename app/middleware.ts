@@ -26,7 +26,8 @@ function getClientIP(request: NextRequest): string {
     if (ip) return ip;
     // Fallback fingerprint
     const ua = request.headers.get("user-agent") || "";
-    return `anon-${ua.slice(0, 30)}`;
+    const lang = request.headers.get("accept-language") || "";
+    return `anon-${(ua + lang).slice(0, 50)}`;
 }
 
 function getRateLimitConfig(pathname: string): { requests: number; windowMs: number } {
@@ -82,7 +83,7 @@ export function middleware(request: NextRequest) {
 
     const ip = getClientIP(request);
     const config = getRateLimitConfig(pathname);
-    const key = `${ip}:${pathname.split("/").slice(0, 3).join("/")}`;
+    const key = `${ip}:${pathname}`;
 
     const { allowed, remaining, resetTime } = checkRateLimit(key, config);
 

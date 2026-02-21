@@ -1,8 +1,27 @@
 # Tremors Portfolio Changelog
 
 > **Project:** Tremors Portfolio  
-> **Version:** 2.2.4  
+> **Version:** 2.2.5  
 > **Last Updated:** 2026-02-21
+
+---
+
+## [2.2.5] - 2026-02-21
+
+### Changed
+- **Database Typing**: Migrated `Repo.topics` from JSON string to `JSONB` (`Json`) native type for improved Prisma type safety.
+- **Rate Limiting**: Removed redundant rate limiter from `api/auth/route.ts` and consolidated everything into `middleware.ts` using exact route paths.
+- **GitHub Auth Token**: Standardized GitHub API requests in `stats/commits` to use the `Bearer` token format instead of the deprecated `token` format.
+
+### Fixed
+- **Auth Safety**: `AdminContext` now strictly validates `res.ok` before attempting to parse JSON.
+- **Settings API**: Switched `SettingsContext` API call from `POST` to `PATCH` to fix the silent 405 Method Not Allowed error.
+- **Auth Secrets**: Strengthened derived signing secret generation in `lib/auth.ts` to properly incorporate short fallback secrets.
+- **Client IP Fingerprinting**: Fixed inconsistent fallback IP generation between `middleware.ts` and `api/auth/route.ts` by coordinating `user-agent` and `accept-language` parsing.
+- **API Perf**: Bounded parallelism in `/api/stats/commits` to a max concurrency of 5 to prevent hitting GitHub's secondary rate limits on large portfolios.
+
+### Removed
+- **Dead Code**: Removed the unused `twentyFourHoursAgo` variable from the newspaper generation route.
 
 ---
 

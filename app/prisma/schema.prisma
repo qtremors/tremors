@@ -19,7 +19,7 @@ model Repo {
   stars       Int      @default(0)
   forks       Int      @default(0)
   language    String?
-  topics      String   @default("[]") // JSON array stored as string
+  topics      Json     @default("[]") // JSON array
   pushedAt    DateTime
   createdAt   DateTime
 

@@ -225,19 +225,40 @@ export function ProjectsGrid({ repos: initialRepos }: ProjectsGridProps) {
             />
 
             {/* Other Projects Section */}
-            <MoreProjectsSection
-                otherRepos={otherRepos}
-                visibleOtherCount={visibleOtherCount}
-                viewMode={viewMode}
-                editMode={editMode}
-                isAdmin={isAdmin}
-                draggedId={draggedId}
-                dragOverId={dragOverId}
-                showImages={showImages ?? false}
-                onShowMore={() => setVisibleOtherCount(prev => Math.min(prev + 6, otherRepos.length))}
-                onShowLess={() => setVisibleOtherCount(prev => Math.max(prev - 6, 6))}
-                handlers={handlers}
-            />
+            <div id="projects-list-container">
+                <MoreProjectsSection
+                    otherRepos={otherRepos}
+                    visibleOtherCount={visibleOtherCount}
+                    viewMode={viewMode}
+                    editMode={editMode}
+                    isAdmin={isAdmin}
+                    draggedId={draggedId}
+                    dragOverId={dragOverId}
+                    showImages={showImages ?? false}
+                    onShowMore={() => setVisibleOtherCount(prev => Math.min(prev + 6, otherRepos.length))}
+                    onShowLess={() => {
+                        const container = document.getElementById('projects-list-container');
+                        if (container) {
+                            const offset = 100; // offset for the header
+                            const elementPosition = container.getBoundingClientRect().top;
+                            const offsetPosition = elementPosition + window.pageYOffset - offset;
+                            
+                            window.scrollTo({
+                                top: offsetPosition,
+                                behavior: "smooth"
+                            });
+                            
+                            // Let the scroll start before truncating the list
+                            setTimeout(() => {
+                                setVisibleOtherCount(prev => Math.max(prev - 6, 6));
+                            }, 100);
+                        } else {
+                            setVisibleOtherCount(prev => Math.max(prev - 6, 6));
+                        }
+                    }}
+                    handlers={handlers}
+                />
+            </div>
 
             {/* Edit Modal */}
             {editingRepo && (

@@ -17,7 +17,7 @@ function getAuthHeaders(): HeadersInit {
         "User-Agent": "tremors-portfolio",
     };
     if (GITHUB_TOKEN) {
-        headers.Authorization = `token ${GITHUB_TOKEN}`;
+        headers.Authorization = `Bearer ${GITHUB_TOKEN}`;
     }
     return headers;
 }
@@ -70,13 +70,25 @@ export async function GET() {
             return NextResponse.json({ totalCommits: 0, repos: [] });
         }
 
-        // Fetch commit counts for all repos in parallel
-        const results = await Promise.allSettled(
-            repos.map(async (repo: { name: string }) => {
-                const count = await fetchCommitCount(GITHUB_USERNAME, repo.name);
-                return { name: repo.name, count };
-            })
-        );
+        // Fetch commit counts for all repos with batching (Max 5 parallel)
+        const BATCH_SIZE = 5;
+        const results: Array<PromiseSettledResult<{ name: string; count: number }>> = [];
+        
+        for (let i = 0; i < repos.length; i += BATCH_SIZE) {
+            const batch = repos.slice(i, i + BATCH_SIZE);
+            const batchResults = await Promise.allSettled(
+                batch.map(async (repo: { name: string }) => {
+                    const count = await fetchCommitCount(GITHUB_USERNAME, repo.name);
+                    return { name: repo.name, count };
+                })
+            );
+            results.push(...batchResults);
+            
+            // Wait slightly between batches to avoid rate limits
+            if (i + BATCH_SIZE < repos.length) {
+                await new Promise(r => setTimeout(r, 200));
+            }
+        }
 
         // Aggregate results
         let totalCommits = 0;

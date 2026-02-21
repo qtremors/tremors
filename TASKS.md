@@ -1,7 +1,7 @@
 # Tremors Implementation Tasks
 
 > **Project:** Tremors  
-> **Version:** 2.2.4
+> **Version:** 2.2.5
 > **Last Updated:** 2026-02-21
 > **Audit Scope:** Full codebase — Frontend, Backend, Database, Documentation
 
@@ -20,16 +20,16 @@
 
 ## 🟠 High Priority — Bugs & Logic Issues
 
-- [ ] **Database Typing**: Migrate `Repo.topics` from JSON string to `JSONB` for better querying and type safety.
-- [ ] **Auth Secret Incorporation**: Update `lib/auth.ts` to incorporate provided short secrets into derived keys (if < 32 chars, hash `short_secret + stable_salt` rather than ignoring it).
-- [ ] **Admin Safety**: Check `res.ok` before parsing JSON in `AdminContext.tsx` to prevent state corruption on non-200 responses.
-- [ ] **SettingsContext Uses Wrong HTTP Method**: `SettingsContext.tsx` line 56 sends `POST` to `/api/admin/settings`, but that route only handles `GET` and `PATCH`. The update silently fails (405). Must use `PATCH`.
-- [ ] **Duplicate Rate Limiting**: Both `middleware.ts` and `api/auth/route.ts` implement independent in-memory rate limiters with different algorithms, configs, and fingerprinting. The auth route limiter is redundant since middleware already rate-limits `/api/auth`. Consolidate.
-- [ ] **Inconsistent Client IP Fingerprinting**: `middleware.ts` uses `anon-${ua.slice(0, 30)}` as fallback, while `api/auth/route.ts` uses `anon-${(ua + lang).slice(0, 50)}`. Same client gets different keys, defeating rate limit coordination.
-- [ ] **Rate Limit Key Collision in Middleware**: `pathname.split("/").slice(0, 3).join("/")` maps `/api/auth`, `/api/auth/check`, and `/api/auth/logout` all to the key `/api/auth`. A visitor checking their auth status via GET `/api/auth/check` consumes the rate limit for login attempts (POST `/api/auth`).
-- [ ] **Unused `twentyFourHoursAgo`**: `api/newspaper/generate/route.ts` line 58 creates `twentyFourHoursAgo` but never uses it after the weekly context refactor. Dead code.
-- [ ] **`stats/commits` Unbounded Parallelism**: `api/stats/commits/route.ts` fires `Promise.allSettled` for ALL repos simultaneously. With many repos, this can hit GitHub API rate limits instantly. Needs batching like `github.ts` does for commits.
-- [ ] **Inconsistent GitHub Auth Token Format**: `github.ts` uses `Bearer ${token}` while `stats/commits/route.ts` uses `token ${token}`. Both work, but inconsistency is confusing and the `token` prefix is deprecated by GitHub.
+- [x] **Database Typing**: Migrate `Repo.topics` from JSON string to `JSONB` for better querying and type safety.
+- [x] **Auth Secret Incorporation**: Update `lib/auth.ts` to incorporate provided short secrets into derived keys (if < 32 chars, hash `short_secret + stable_salt` rather than ignoring it).
+- [x] **Admin Safety**: Check `res.ok` before parsing JSON in `AdminContext.tsx` to prevent state corruption on non-200 responses.
+- [x] **SettingsContext Uses Wrong HTTP Method**: `SettingsContext.tsx` line 56 sends `POST` to `/api/admin/settings`, but that route only handles `GET` and `PATCH`. The update silently fails (405). Must use `PATCH`.
+- [x] **Duplicate Rate Limiting**: Both `middleware.ts` and `api/auth/route.ts` implement independent in-memory rate limiters with different algorithms, configs, and fingerprinting. The auth route limiter is redundant since middleware already rate-limits `/api/auth`. Consolidate.
+- [x] **Inconsistent Client IP Fingerprinting**: `middleware.ts` uses `anon-${ua.slice(0, 30)}` as fallback, while `api/auth/route.ts` uses `anon-${(ua + lang).slice(0, 50)}`. Same client gets different keys, defeating rate limit coordination.
+- [x] **Rate Limit Key Collision in Middleware**: `pathname.split("/").slice(0, 3).join("/")` maps `/api/auth`, `/api/auth/check`, and `/api/auth/logout` all to the key `/api/auth`. A visitor checking their auth status via GET `/api/auth/check` consumes the rate limit for login attempts (POST `/api/auth`).
+- [x] **Unused `twentyFourHoursAgo`**: `api/newspaper/generate/route.ts` line 58 creates `twentyFourHoursAgo` but never uses it after the weekly context refactor. Dead code.
+- [x] **`stats/commits` Unbounded Parallelism**: `api/stats/commits/route.ts` fires `Promise.allSettled` for ALL repos simultaneously. With many repos, this can hit GitHub API rate limits instantly. Needs batching like `github.ts` does for commits.
+- [x] **Inconsistent GitHub Auth Token Format**: `github.ts` uses `Bearer ${token}` while `stats/commits/route.ts` uses `token ${token}`. Both work, but inconsistency is confusing and the `token` prefix is deprecated by GitHub.
 
 ---
 

@@ -34,6 +34,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
         lastCheckTime.current = now;
         try {
             const res = await fetch("/api/auth/check");
+            if (!res.ok) throw new Error("Network response was not ok");
             const data = await res.json();
             setIsAdmin(!!data.isAdmin);
         } catch {

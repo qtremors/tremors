@@ -18,7 +18,7 @@ function dbRepoToGitHubFormat(dbRepo: {
     stars: number;
     forks: number;
     language: string | null;
-    topics: string;
+    topics: any; // Mapped from Prisma JsonValue
     pushedAt: Date;
     createdAt: Date;
     customName: string | null;
@@ -134,6 +134,9 @@ export async function getGitHubData(): Promise<PortfolioData> {
     try {
         // Get ALL repos from database (for commits)
         const allDbRepos = await prisma.repo.findMany({
+            where: {
+                id: { gte: 0 } // Dummy condition to change the SQL string and bypass Postgres cached plans for the JSONB migration
+            },
             orderBy: [
                 { featured: "desc" },
                 { order: "asc" },
@@ -239,7 +242,17 @@ export async function getGitHubData(): Promise<PortfolioData> {
     } catch (error) {
         console.error("Failed to fetch data:", error);
         return {
-            user: null,
+            // Provide a dummy user instead of null to prevent crash
+            user: {
+                login: GITHUB_USERNAME,
+                avatar_url: "",
+                html_url: `https://github/${GITHUB_USERNAME}`,
+                name: GITHUB_USERNAME,
+                bio: "Loading profile data...",
+                public_repos: 0,
+                followers: 0,
+                following: 0,
+            },
             repos: [],
             featuredRepos: [],
             activity: [],
@@ -247,7 +260,7 @@ export async function getGitHubData(): Promise<PortfolioData> {
             recentActivity: [],
             totalStars: 0,
             totalCommits: 0,
-            error: "Failed to load data",
+            error: "Failed to load data from database",
         };
     }
 }
