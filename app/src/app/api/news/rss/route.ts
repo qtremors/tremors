@@ -57,7 +57,11 @@ export async function GET() {
             try {
                 const bodyParts = JSON.parse(edition.bodyContent) as string[];
                 if (bodyParts.length > 0) {
-                    description = `${edition.subheadline} — ${bodyParts[0].substring(0, 200)}...`;
+                    const firstPara = bodyParts[0];
+                    const truncated = firstPara.length > 200 
+                        ? firstPara.substring(0, 200).replace(/\s+\S*$/, "") + "..." 
+                        : firstPara;
+                    description = `${edition.subheadline} — ${truncated}`;
                     // Build full HTML content
                     fullContent = `<h2>${escapeXml(edition.subheadline)}</h2>\n` +
                         bodyParts.map(p => `<p>${escapeXml(p)}</p>`).join("\n");

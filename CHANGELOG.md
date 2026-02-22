@@ -1,8 +1,19 @@
 # Tremors Portfolio Changelog
 
 > **Project:** Tremors Portfolio  
-> **Version:** 2.2.6  
-> **Last Updated:** 2026-02-21
+> **Version:** 2.2.7  
+> **Last Updated:** 2026-02-22
+
+---
+
+## [2.2.7] - 2026-02-22
+
+### Fixed
+- **CSS Formatting**: Removed redundant `flex` alignment on `ProjectsTable` button to properly apply `inline-flex`.
+- **Markdown Linting**: Fixed nested list indentation for the v2.1.5 entry in the changelog.
+- **Title Formatting**: Restored consistent GitHub repository title casing by utilizing `formatProjectTitle` utility instead of inline rendering for `SpotlightSection`.
+- **RSS Feed Truncation**: Improved character truncation in `api/news/rss` to split text at word boundaries within the 200 character limit without midline clipping.
+- **Hook Optimization**: Removed volatile `toast` dependency from `useFetch` to prevent unintended infinite fetching when toast contexts re-render.
 
 ---
 
@@ -135,8 +146,8 @@
 - **AI Personalities**: Introduced "Skye", the AI News Agent with 4 distinct personas (Tabloid, Senior Dev, Scholar, Hacker).
 - **Personality Manager**: New UI modal to switch between AI personalities dynamically.
 - **Context Engine V2**: 
-    - **Hybrid Memory**: Combines historical portfolio data (Dormant, Featured, Oldest) with real-time daily activity.
-    - **Time Awareness**: Enforced GMT+5:30 (IST) for accurate "Daily Update" tracking and "Vibe" checks.
+  - **Hybrid Memory**: Combines historical portfolio data (Dormant, Featured, Oldest) with real-time daily activity.
+  - **Time Awareness**: Enforced GMT+5:30 (IST) for accurate "Daily Update" tracking and "Vibe" checks.
 - **Admin Refresh**: Improved GitHub sync logic to transactionally update Repos, Commits, and Activity events.
 
 ### Changed

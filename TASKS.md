@@ -50,11 +50,11 @@
 
 ## 🔵 Low Priority — Cleanup & Quick Fixes
 
-- [ ] **CSS Cleanup**: Remove redundant `flex` (keep `inline-flex`) in `ProjectsTable.tsx`.
-- [ ] **Markdown Lint**: Fix list indentation in `CHANGELOG.md` (e.g., lines 87, 103 missing `---` separators).
-- [ ] **`formatProjectTitle` Not Used in All Paths**: `lib/utils.ts` exports it but some components still do their own title formatting inline.
-- [ ] **Newspaper RSS `description` Truncation**: `api/news/rss/route.ts` line 60 uses `substring(0, 200)` and appends `...` — not ideal for non-English or short body content where 200 chars is too much or too little.
-- [ ] **`useFetch` Infinite Re-fetch Risk**: `useFetch.ts` includes `toast` in the `useCallback` dependency array for `fetchData`. If `toast` identity changes (common with context providers), it triggers re-fetches. Should use a ref instead.
+- [x] **CSS Cleanup**: Remove redundant `flex` (keep `inline-flex`) in `ProjectsTable.tsx`.
+- [x] **Markdown Lint**: Fix list indentation in `CHANGELOG.md` (e.g., lines 87, 103 missing `---` separators).
+- [x] **`formatProjectTitle` Not Used in All Paths**: `lib/utils.ts` exports it but some components still do their own title formatting inline.
+- [x] **Newspaper RSS `description` Truncation**: `api/news/rss/route.ts` line 60 uses `substring(0, 200)` and appends `...` — not ideal for non-English or short body content where 200 chars is too much or too little.
+- [x] **`useFetch` Infinite Re-fetch Risk**: `useFetch.ts` includes `toast` in the `useCallback` dependency array for `fetchData`. If `toast` identity changes (common with context providers), it triggers re-fetches. Should use a ref instead.
 
 ---
 

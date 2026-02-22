@@ -82,7 +82,7 @@ export function ProjectsTable({
             {otherRepos.length > 0 && (
                 <button
                     onClick={onToggleShowMore}
-                    className="inline-flex items-center gap-2 bg-none border border-[var(--np-ink)] px-4 py-2 font-inherit text-[0.85rem] cursor-pointer text-[var(--np-ink)] no-underline transition-all duration-200 hover:bg-[var(--np-ink)] hover:text-[var(--np-paper)] flex mx-auto my-6"
+                    className="inline-flex items-center gap-2 bg-none border border-[var(--np-ink)] px-4 py-2 font-inherit text-[0.85rem] cursor-pointer text-[var(--np-ink)] no-underline transition-all duration-200 hover:bg-[var(--np-ink)] hover:text-[var(--np-paper)] mx-auto my-6"
                 >
                     <ChevronDown className={`w-4 h-4 transition-transform ${showMoreProjects ? "rotate-180" : ""}`} />
                     {showMoreProjects ? "Show Less" : `Show ${Math.min(10, otherRepos.length)} More Projects`}

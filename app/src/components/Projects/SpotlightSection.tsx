@@ -5,6 +5,7 @@
 "use client";
 
 import { ProjectCard, RepoWithStatus } from "@/components/ProjectCard";
+import { formatProjectTitle } from "@/lib/utils";
 import type { GitHubRepo } from "@/types";
 
 interface SpotlightSectionProps {
@@ -136,7 +137,7 @@ export function SpotlightSection({
                                     className="block hover:text-[var(--accent-cyan)] transition-colors"
                                 >
                                     <p className="text-xs text-[var(--text-muted)] uppercase tracking-widest mb-2">Last Active</p>
-                                    <p className="text-sm font-semibold truncate max-w-[140px] mx-auto mb-1">{lastUpdated.name}</p>
+                                    <p className="text-sm font-semibold truncate max-w-[140px] mx-auto mb-1">{formatProjectTitle(lastUpdated.name)}</p>
                                     <p className="text-xs text-[var(--accent-cyan)] font-medium">{timeAgo}</p>
                                 </a>
                             )}

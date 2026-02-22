@@ -5,7 +5,7 @@
 
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useToast } from "@/components/ToastProvider";
 
 interface UseFetchOptions<T> {
@@ -41,6 +41,11 @@ export function useFetch<T>(
     const [loading, setLoading] = useState(immediate);
     const [error, setError] = useState<Error | null>(null);
     const toast = useToast();
+    const toastRef = useRef(toast);
+
+    useEffect(() => {
+        toastRef.current = toast;
+    }, [toast]);
 
     const fetchData = useCallback(async () => {
         setLoading(true);
@@ -57,12 +62,12 @@ export function useFetch<T>(
             const error = err instanceof Error ? err : new Error("Unknown error");
             setError(error);
             if (showError) {
-                toast.error(errorMessage);
+                toastRef.current.error(errorMessage);
             }
         } finally {
             setLoading(false);
         }
-    }, [url, showError, errorMessage, toast]);
+    }, [url, showError, errorMessage]);
 
     useEffect(() => {
         if (immediate) {
@@ -105,6 +110,11 @@ export function useApiMutation<TData, TVariables>(
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<Error | null>(null);
     const toast = useToast();
+    const toastRef = useRef(toast);
+
+    useEffect(() => {
+        toastRef.current = toast;
+    }, [toast]);
 
     const mutate = useCallback(async (variables: TVariables): Promise<TData | null> => {
         setLoading(true);
@@ -124,7 +134,7 @@ export function useApiMutation<TData, TVariables>(
             const data = await res.json();
 
             if (successMessage) {
-                toast.success(successMessage);
+                toastRef.current.success(successMessage);
             }
 
             onSuccess?.();
@@ -132,12 +142,12 @@ export function useApiMutation<TData, TVariables>(
         } catch (err) {
             const error = err instanceof Error ? err : new Error("Unknown error");
             setError(error);
-            toast.error(errorMessage);
+            toastRef.current.error(errorMessage);
             return null;
         } finally {
             setLoading(false);
         }
-    }, [url, method, successMessage, errorMessage, onSuccess, toast]);
+    }, [url, method, successMessage, errorMessage, onSuccess]);
 
     return { mutate, loading, error };
 }
