@@ -54,7 +54,7 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
             setSettings(prev => ({ ...prev, [key]: value }));
 
             const res = await fetch("/api/admin/settings", {
-                method: "POST",
+                method: "PATCH",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ [key]: value }),
             });

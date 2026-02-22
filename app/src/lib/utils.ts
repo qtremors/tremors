@@ -7,16 +7,21 @@
  * @param topicsJson - JSON string representing an array of topics
  * @returns Parsed array of topics, or empty array on failure
  */
-export function parseTopics(topicsJson: string): string[] {
-    try {
-        const parsed = JSON.parse(topicsJson);
-        if (Array.isArray(parsed)) {
-            return parsed;
-        }
-        return [];
-    } catch {
-        return [];
+export function parseTopics(topicsInput: any): string[] {
+    if (Array.isArray(topicsInput)) {
+        return topicsInput;
     }
+    if (typeof topicsInput === 'string') {
+        try {
+            const parsed = JSON.parse(topicsInput);
+            if (Array.isArray(parsed)) {
+                return parsed;
+            }
+        } catch {
+            return [];
+        }
+    }
+    return [];
 }
 
 /**

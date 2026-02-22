@@ -19,15 +19,6 @@ const contactIcons: Record<string, React.ComponentType<{ className?: string }>> 
     website: Globe,
 };
 
-// Map contact link IDs to emoji (for paper mode)
-const contactEmoji: Record<string, string> = {
-    email: "📧",
-    github: "🐙",
-    linkedin: "💼",
-    resume: "📄",
-    twitter: "🐦",
-    website: "🌐",
-};
 
 interface ContactLinksProps {
     variant?: "default" | "paper" | "icons-only";

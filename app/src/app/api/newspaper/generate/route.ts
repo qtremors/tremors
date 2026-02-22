@@ -4,10 +4,11 @@
  * Falls back to stored content if API unavailable
  */
 
-import { NextResponse } from "next/server";
+import { NextResponse, NextRequest } from "next/server";
 import { prisma } from "@/lib/db";
 import { PERSONAL, SKILLS, NEWS_AGENT } from "@/config/site";
 import { verifyAdminCookie } from "@/lib/auth";
+import { validateCsrf } from "@/lib/csrf";
 import {
     getISTDateString,
     getISTParts,
@@ -18,19 +19,6 @@ import {
 
 const GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models";
 const MODEL = "gemini-flash-lite-latest"; // Latest flash lite model
-
-// Fallback content when AI is unavailable
-const FALLBACK_CONTENT = {
-    headline: `${PERSONAL.name.split(" ")[0].toUpperCase()} CONTINUES REIGN OF TERROR ACROSS GITHUB`,
-    subheadline: "Repositories tremble as commits pile up at alarming rate",
-    bodyContent: JSON.stringify([
-        `In what industry analysts are calling "absolutely expected behavior," local developer ${PERSONAL.name} has once again demonstrated an unwavering commitment to pushing code at hours that medical professionals describe as "concerning."`,
-        `Sources close to the keyboard report that the developer has mastered technologies including ${SKILLS[0]?.skills.slice(0, 3).join(", ") || "various programming languages"}, leaving competitors to wonder: "Do they ever sleep?"`,
-        `When reached for comment, ${PERSONAL.name.split(" ")[0]} simply muttered something about "one more commit" before returning to what witnesses describe as "an unhealthy number of browser tabs."`
-    ]),
-    pullQuote: `"I'll refactor it tomorrow." — ${PERSONAL.name.split(" ")[0]}, reportedly every single day`,
-    location: "VØID",
-};
 
 interface GeminiResponse {
     candidates?: Array<{
@@ -55,7 +43,6 @@ async function buildContext() {
         hour: "numeric", minute: "numeric", hour12: false
     });
 
-    const twentyFourHoursAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
     const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
 
     // Fetch all repos (Global Context)
@@ -81,7 +68,10 @@ async function buildContext() {
             orderBy: { date: "desc" },
         }),
         prisma.newspaperEdition.findMany({
-            where: { isActive: true },
+            where: { 
+                id: { gte: "" }, // Bypass Postgres cached plans for JSONB migration
+                isActive: true 
+            },
             orderBy: { date: "desc" },
             take: 5,
             select: { headline: true, date: true }
@@ -161,7 +151,26 @@ async function buildContext() {
     if (month === 1 && day === 1) holidays.push("New Year's Day");
     if (month === 10 && day === 31) holidays.push("Halloween");
     if (month === 12 && day === 25) holidays.push("Christmas");
-    if (month === 10 || month === 11) if (day >= 20 && day <= 31) holidays.push("Diwali/Festive Season");
+
+    // Dynamically fetch Indian holidays
+    try {
+        const year = now.getFullYear();
+        // Fallback for festive season
+        if ((month === 10 || month === 11) && day >= 20 && day <= 31) {
+             const diwaliDates: Record<number, string> = {
+                 2024: "10-31", 2025: "10-20", 2026: "11-08", 2027: "10-29",
+                 2028: "10-17", 2029: "11-05", 2030: "10-26"
+             };
+             const todayStr = `${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+             if (diwaliDates[year] === todayStr) {
+                 holidays.push("Diwali");
+             } else {
+                 holidays.push("Festive Season");
+             }
+        }
+    } catch (e) {
+        // Ignore errors
+    }
 
     return {
         name: PERSONAL.name,
@@ -197,7 +206,7 @@ async function buildContext() {
 async function generateWithGemini(
     context: Awaited<ReturnType<typeof buildContext>>,
     personalityId: string = "tabloid"
-): Promise<typeof FALLBACK_CONTENT | null> {
+): Promise<{ headline: string, subheadline: string, bodyContent: string, pullQuote: string, location: string } | null> {
     const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) return null;
 
@@ -283,11 +292,11 @@ RESPOND ONLY WITH VALID JSON:
         try {
             const parsed = JSON.parse(jsonMatch[0]);
             return {
-                headline: parsed.headline || FALLBACK_CONTENT.headline,
-                subheadline: parsed.subheadline || FALLBACK_CONTENT.subheadline,
-                bodyContent: JSON.stringify(parsed.bodyContent || JSON.parse(FALLBACK_CONTENT.bodyContent)),
-                pullQuote: parsed.pullQuote || FALLBACK_CONTENT.pullQuote,
-                location: parsed.location || FALLBACK_CONTENT.location,
+                headline: parsed.headline || "DEVELOPER SILENT, SERVERS HUMMING",
+                subheadline: parsed.subheadline || "No new updates from the void",
+                bodyContent: parsed.bodyContent || ["The central nexus reports no new structural paradigm shifts. Assume standard operating procedures."],
+                pullQuote: parsed.pullQuote || '"Just keep swimming." — Dory',
+                location: parsed.location || "VØID",
             };
         } catch (parseError) {
             console.error("JSON parse failed, response may be truncated:", text.substring(0, 300));
@@ -310,13 +319,13 @@ export async function GET(request: Request) {
 
         // If ID is provided, fetch that specific edition
         if (id) {
-            const edition = await prisma.newspaperEdition.findUnique({
-                where: { id },
+            const edition = await prisma.newspaperEdition.findFirst({
+                where: { id: id },
             });
             if (edition) {
                 return NextResponse.json({
                     ...edition,
-                    bodyContent: JSON.parse(edition.bodyContent),
+                    bodyContent: edition.bodyContent,
                 });
             }
         }
@@ -327,6 +336,7 @@ export async function GET(request: Request) {
         // 1. Try to get active edition for today
         let edition = await prisma.newspaperEdition.findFirst({
             where: {
+                id: { gte: "" }, // Bypass Postgres cached plans
                 date: { gte: todayStart, lte: todayEnd },
                 isActive: true,
             },
@@ -335,7 +345,7 @@ export async function GET(request: Request) {
         // 2. Try any active edition
         if (!edition) {
             edition = await prisma.newspaperEdition.findFirst({
-                where: { isActive: true },
+                where: { id: { gte: "" }, isActive: true },
                 orderBy: { date: "desc" },
             });
         }
@@ -343,15 +353,19 @@ export async function GET(request: Request) {
         // 3. Try any fallback
         if (!edition) {
             edition = await prisma.newspaperEdition.findFirst({
-                where: { isFallback: true },
+                where: { id: { gte: "" }, isFallback: true },
                 orderBy: { date: "desc" },
             });
         }
 
         if (!edition) {
-            // Return hardcoded fallback
+            // Return dummy fallback if DB is completely empty
             return NextResponse.json({
-                bodyContent: JSON.parse(FALLBACK_CONTENT.bodyContent),
+                headline: "AWAITING FIRST EDITION",
+                subheadline: "The presses are warming up",
+                bodyContent: ["No newspaper editions have been published yet."],
+                pullQuote: "Patience is a virtue.",
+                location: "VØID",
                 date: todayStart.toISOString(),
                 isFallback: true,
             });
@@ -359,13 +373,16 @@ export async function GET(request: Request) {
 
         return NextResponse.json({
             ...edition,
-            bodyContent: JSON.parse(edition.bodyContent),
+            bodyContent: edition.bodyContent,
         });
     } catch (error) {
         console.error("Failed to get newspaper edition:", error);
         return NextResponse.json({
-            ...FALLBACK_CONTENT,
-            bodyContent: JSON.parse(FALLBACK_CONTENT.bodyContent),
+            headline: "TEMPORARY OUTAGE",
+            subheadline: "We're experiencing technical difficulties",
+            bodyContent: ["The newspaper delivery system encountered an error."],
+            pullQuote: "Brb, fixing the printer.",
+            location: "VØID",
             date: new Date().toISOString(),
             isFallback: true,
             agentName: NEWS_AGENT.name,
@@ -378,12 +395,21 @@ export async function GET(request: Request) {
  * POST: Generate new edition variant (admin only)
  * Creates a NEW edition (doesn't replace existing) and sets it as active
  */
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
     try {
         // Verify admin session
         const isAdmin = await verifyAdminCookie();
         if (!isAdmin) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
+
+        // Validate CSRF
+        const csrf = validateCsrf(request);
+        if (!csrf.valid) {
+            return NextResponse.json(
+                { success: false, error: csrf.error },
+                { status: 403 }
+            );
         }
 
         const body = await request.json().catch(() => ({}));
@@ -396,11 +422,20 @@ export async function POST(request: Request) {
         const startOfToday = getStartOfDayIST(now);
         const endOfToday = getEndOfDayIST(now);
 
-        const content = generated || FALLBACK_CONTENT;
+        const content = generated;
+
+        // If Gemini totally fails, DO NOT overwrite the active edition. Let the frontend show the latest historical paper instead.
+        if (!content) {
+            return NextResponse.json(
+                { success: false, error: "Failed to generate content with Gemini. Keeping latest existing edition." },
+                { status: 500 }
+            );
+        }
 
         // Deactivate all editions for today
         await prisma.newspaperEdition.updateMany({
             where: {
+                id: { gte: "" },
                 date: { gte: startOfToday, lte: endOfToday },
             },
             data: { isActive: false },
@@ -412,9 +447,7 @@ export async function POST(request: Request) {
                 date: now, // Store the exact generation time
                 headline: content.headline,
                 subheadline: content.subheadline,
-                bodyContent: typeof content.bodyContent === "string"
-                    ? content.bodyContent
-                    : JSON.stringify(content.bodyContent),
+                bodyContent: content.bodyContent,
                 pullQuote: content.pullQuote,
                 location: content.location || "VØID",
                 isActive: true, // Auto-activate new edition
@@ -428,7 +461,7 @@ export async function POST(request: Request) {
         return NextResponse.json({
             success: true,
             ...edition,
-            bodyContent: JSON.parse(edition.bodyContent),
+            bodyContent: edition.bodyContent,
         });
     } catch (error) {
         console.error("Failed to generate newspaper edition:", error);

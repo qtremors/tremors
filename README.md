@@ -96,7 +96,7 @@ tremors/
 │   ├── prisma/               # Database schema & seeds
 │   ├── public/               # Static assets
 │   └── ...
-├── Templates/                # Documentation templates
+
 ├── DEVELOPMENT.md            # Developer documentation
 ├── CHANGELOG.md              # Version history
 ├── LICENSE.md                # License terms

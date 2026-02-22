@@ -1,8 +1,95 @@
 # Tremors Portfolio Changelog
 
-> **Project:** Tremors Portfolio  
-> **Version:** 2.2.3  
-> **Last Updated:** 2026-02-17
+> **Project:** Tremors Portfolio
+> **Version:** 2.3.0  
+> **Last Updated:** 2026-02-22
+
+---
+
+## [2.3.0] - 2026-02-22
+
+### Changed
+- **Documentation**: Fixed missing references, updated environment variables (`NEXT_PUBLIC_URL`, `DATABASE_URL_UNPOOLED`, `NEXT_PUBLIC_CONTACT_EMAIL`, `NEXT_PUBLIC_LINKEDIN_URL`).
+- **Config**: Removed hardcoded personal email, LinkedIn URL, and emojis from `site.ts` and `ContactLinks.tsx`, making them env-configurable dynamic.
+- **App**: Changed `ErrorBoundary` to be a normal client component instead of pretending to be a Provider.
+- **Database**: Migrated `NewspaperEdition.bodyContent` to use `Json` instead of String.
+- **Admin**: Updated `Settings` GET API to require admin authentication.
+- **Resume Upload**: Fixed issue where uploading to Vercel Blob used original filename resulting in no versioning.
+- **Newspaper Generation**: Fixed holiday detection logic that used hardcoded inaccurate dates.
+
+---
+
+## [2.2.8] - 2026-02-22
+
+### Changed
+- **UI Tweaks**: Centered the "Show More Projects" button in the Newspaper layout list for better visual harmony.
+
+### Fixed
+- **Edge Runtime**: Resolved a build failure in `middleware.ts` by replacing the Node.js `crypto` library with the native Web Crypto API (`crypto.subtle`).
+- **Hydration Errors**: Fixed React hydration mismatches on timestamps within `SpotlightSection` and `ProjectCard` via a new client-side `useHydratedTimeAgo` hook.
+- **Styling Overlaps**: Corrected CSS grid border right computations for 5-column `lg` layouts inside `TechnicalProficiencies`.
+
+### Security
+- **Middleware IP Fingerprinting**: Strengthened fallback fingerprinting by applying a `SHA-256` hash to `user-agent` data instead of truncating plain strings, optimizing user privacy and preventing rate bucket collisions.
+- **Rate Limit Paths**: Refactored middleware tracking to evaluate the exact `request.nextUrl.pathname` rather than sliced path variables to correctly distinguish API endpoints. Un-duplicated secondary tracking in `/api/auth`.
+- **Content Security Policy**: Tightened production CSP configurations within `next.config.ts`, omitting `unsafe-eval` and clamping `img-src` down to explicitly trusted sources.
+
+---
+
+## [2.2.7] - 2026-02-22
+
+### Fixed
+- **CSS Formatting**: Removed redundant `flex` alignment on `ProjectsTable` button to properly apply `inline-flex`.
+- **Markdown Linting**: Fixed nested list indentation for the v2.1.5 entry in the changelog.
+- **Title Formatting**: Restored consistent GitHub repository title casing by utilizing `formatProjectTitle` utility instead of inline rendering for `SpotlightSection`.
+- **RSS Feed Truncation**: Improved character truncation in `api/news/rss` to split text at word boundaries within the 200 character limit without midline clipping.
+- **Hook Optimization**: Removed volatile `toast` dependency from `useFetch` to prevent unintended infinite fetching when toast contexts re-render.
+
+---
+
+## [2.2.6] - 2026-02-21
+
+### Changed
+- **Config Centralization**: Merged duplicate `GITHUB_USERNAME` variables globally across `api/admin/refresh/route.ts` and `api/stats/commits/route.ts` by pointing them to `config/site.ts`.
+- **Commit Limit Standardization**: Coordinated `DATA_LIMITS.maxCommitsRefresh` to be strictly respected by both `admin/refresh` and `lib/data.ts` fallbacks.
+- **Activity Data Deduplication**: Ensured `mergeActivityWithCache` inside `data.ts` filters out duplicate events based on identical item ID, preventing pushed commits from flooding activity timeline.
+
+### Fixed
+- **Type Safety**: Converted `ProjectsGrid` implicit `any` arrays to the strongly typed Prisma `Repo` shape, strictly typing the JSONB `topics` column.
+- **Hardcoded Scripts & DB Connections**: Rather than injecting static fallback editions into the database which caused Vercel deployment crashes via `P1001` timeouts, the `seed-newspaper.ts`, `delete-empty-today.ts`, and `clean-editions.ts` scripts have been entirely deleted. The Gemini generation API (`api/newspaper/generate/route.ts`) now dynamically falls back to the most recent historical newspaper edition seamlessly if an AI generation fails or hits rate limits.
+- **Vestigial Directory Cleanups**: Dropped the defunct `lib/agent` layout and unused `ADMIN_CACHE_KEY`.
+- **Dynamic Versions**: Rewrote `TerminalWelcome` static app tags to read via `pkg.version`.
+
+---
+
+## [2.2.5] - 2026-02-21
+
+### Changed
+- **Database Typing**: Migrated `Repo.topics` from JSON string to `JSONB` (`Json`) native type for improved Prisma type safety.
+- **Rate Limiting**: Removed redundant rate limiter from `api/auth/route.ts` and consolidated everything into `middleware.ts` using exact route paths.
+- **GitHub Auth Token**: Standardized GitHub API requests in `stats/commits` to use the `Bearer` token format instead of the deprecated `token` format.
+
+### Fixed
+- **Auth Safety**: `AdminContext` now strictly validates `res.ok` before attempting to parse JSON.
+- **Settings API**: Switched `SettingsContext` API call from `POST` to `PATCH` to fix the silent 405 Method Not Allowed error.
+- **Auth Secrets**: Strengthened derived signing secret generation in `lib/auth.ts` to properly incorporate short fallback secrets.
+- **Client IP Fingerprinting**: Fixed inconsistent fallback IP generation between `middleware.ts` and `api/auth/route.ts` by coordinating `user-agent` and `accept-language` parsing.
+- **API Perf**: Bounded parallelism in `/api/stats/commits` to a max concurrency of 5 to prevent hitting GitHub's secondary rate limits on large portfolios.
+
+### Removed
+- **Dead Code**: Removed the unused `twentyFourHoursAgo` variable from the newspaper generation route.
+
+---
+
+## [2.2.4] - 2026-02-21
+
+### Security
+- **Resume Upload Auth**: Enforced `verifyAdminCookie()` for Vercel Blob PDF uploads.
+- **CSP**: Removed `unsafe-eval` from script-src in production environments.
+- **CSRF**: Strengthened origin validation with strict URL parsing.
+- **Newspaper Generation**: Added CSRF protection to the generate admin endpoint.
+- **Auth Secret**: Prevented predictability of derived signing secrets when using default admin secrets.
+- **Legacy Auth**: Fixed API route returning 200 OK for invalid credentials; now properly returns 401.
 
 ---
 
@@ -89,8 +176,8 @@
 - **AI Personalities**: Introduced "Skye", the AI News Agent with 4 distinct personas (Tabloid, Senior Dev, Scholar, Hacker).
 - **Personality Manager**: New UI modal to switch between AI personalities dynamically.
 - **Context Engine V2**: 
-    - **Hybrid Memory**: Combines historical portfolio data (Dormant, Featured, Oldest) with real-time daily activity.
-    - **Time Awareness**: Enforced GMT+5:30 (IST) for accurate "Daily Update" tracking and "Vibe" checks.
+  - **Hybrid Memory**: Combines historical portfolio data (Dormant, Featured, Oldest) with real-time daily activity.
+  - **Time Awareness**: Enforced GMT+5:30 (IST) for accurate "Daily Update" tracking and "Vibe" checks.
 - **Admin Refresh**: Improved GitHub sync logic to transactionally update Repos, Commits, and Activity events.
 
 ### Changed

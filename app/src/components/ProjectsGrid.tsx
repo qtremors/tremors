@@ -13,10 +13,11 @@ import { useToast } from "@/components/ToastProvider";
 import { useFetch } from "@/hooks/useFetch";
 import { RepoWithStatus } from "@/components/ProjectCard";
 import { ProjectEditModal } from "@/components/ProjectEditModal";
+import type { GitHubRepo } from "@/types";
 import { GridControls } from "@/components/Projects/GridControls";
 import { SpotlightSection } from "@/components/Projects/SpotlightSection";
 import { MoreProjectsSection } from "@/components/Projects/MoreProjectsSection";
-import type { GitHubRepo } from "@/types";
+import { Repo } from "@prisma/client";
 
 interface ProjectsGridProps {
     repos: GitHubRepo[];
@@ -36,7 +37,7 @@ export function ProjectsGrid({ repos: initialRepos }: ProjectsGridProps) {
     const [isInitialized, setIsInitialized] = useState(false);
 
     // Fetch repos from API when admin
-    const { data: adminData, loading } = useFetch<{ success: boolean; repos: any[] }>(
+    const { data: adminData, loading } = useFetch<{ success: boolean; repos: Repo[] }>(
         isAdmin ? "/api/admin/repos" : "",
         { immediate: isAdmin }
     );
@@ -45,7 +46,7 @@ export function ProjectsGrid({ repos: initialRepos }: ProjectsGridProps) {
     useEffect(() => {
         if (adminData?.repos && !isInitialized) {
             const dbRepos = adminData.repos.map(
-                (r: any) => ({
+                (r: Repo): RepoWithStatus => ({
                     ...r,
                     full_name: r.fullName,
                     stargazers_count: r.stars,
@@ -53,6 +54,11 @@ export function ProjectsGrid({ repos: initialRepos }: ProjectsGridProps) {
                     pushed_at: "",
                     created_at: "",
                     fork: false,
+                    html_url: r.htmlUrl,
+                    homepage: r.homepage,
+                    language: r.language,
+                    topics: Array.isArray(r.topics) ? (r.topics as string[]) : [], // Handle Prisma JsonValue to string array
+                    imageSource: (r.imageSource as "github" | "custom" | "none" | null) || null,
                 })
             );
             setRepos(dbRepos);
@@ -225,19 +231,40 @@ export function ProjectsGrid({ repos: initialRepos }: ProjectsGridProps) {
             />
 
             {/* Other Projects Section */}
-            <MoreProjectsSection
-                otherRepos={otherRepos}
-                visibleOtherCount={visibleOtherCount}
-                viewMode={viewMode}
-                editMode={editMode}
-                isAdmin={isAdmin}
-                draggedId={draggedId}
-                dragOverId={dragOverId}
-                showImages={showImages ?? false}
-                onShowMore={() => setVisibleOtherCount(prev => Math.min(prev + 6, otherRepos.length))}
-                onShowLess={() => setVisibleOtherCount(prev => Math.max(prev - 6, 6))}
-                handlers={handlers}
-            />
+            <div id="projects-list-container">
+                <MoreProjectsSection
+                    otherRepos={otherRepos}
+                    visibleOtherCount={visibleOtherCount}
+                    viewMode={viewMode}
+                    editMode={editMode}
+                    isAdmin={isAdmin}
+                    draggedId={draggedId}
+                    dragOverId={dragOverId}
+                    showImages={showImages ?? false}
+                    onShowMore={() => setVisibleOtherCount(prev => Math.min(prev + 6, otherRepos.length))}
+                    onShowLess={() => {
+                        const container = document.getElementById('projects-list-container');
+                        if (container) {
+                            const offset = 100; // offset for the header
+                            const elementPosition = container.getBoundingClientRect().top;
+                            const offsetPosition = elementPosition + window.pageYOffset - offset;
+                            
+                            window.scrollTo({
+                                top: offsetPosition,
+                                behavior: "smooth"
+                            });
+                            
+                            // Let the scroll start before truncating the list
+                            setTimeout(() => {
+                                setVisibleOtherCount(prev => Math.max(prev - 6, 6));
+                            }, 100);
+                        } else {
+                            setVisibleOtherCount(prev => Math.max(prev - 6, 6));
+                        }
+                    }}
+                    handlers={handlers}
+                />
+            </div>
 
             {/* Edit Modal */}
             {editingRepo && (

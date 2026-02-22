@@ -3,9 +3,7 @@ import { prisma } from "@/lib/db";
 import { parseTopics } from "@/lib/utils";
 import { eventToActivityItem } from "@/lib/activity";
 import type { PortfolioData, GitHubEvent, GitHubCommit, ActivityItem, GitHubRepo } from "@/types";
-
-// GitHub username - can be configured via env
-const GITHUB_USERNAME = process.env.GITHUB_USERNAME || "qtremors";
+import { GITHUB_CONFIG, DATA_LIMITS } from "@/config/site";
 
 // Convert DB repo to GitHub repo format
 function dbRepoToGitHubFormat(dbRepo: {
@@ -18,7 +16,7 @@ function dbRepoToGitHubFormat(dbRepo: {
     stars: number;
     forks: number;
     language: string | null;
-    topics: string;
+    topics: any; // Mapped from Prisma JsonValue
     pushedAt: Date;
     createdAt: Date;
     customName: string | null;
@@ -120,8 +118,14 @@ function mergeActivityWithCache(commits: GitHubCommit[], cachedActivity: Activit
         });
     });
 
-    // Add cached activity items (already filtered, no need to exclude PushEvents)
-    activityItems.push(...cachedActivity);
+    // Add cached activity items, deduplicating strictly by checking if id already exists in activityItems
+    const existingIds = new Set(activityItems.map(item => item.id));
+    
+    cachedActivity.forEach(item => {
+        if (!existingIds.has(item.id)) {
+            activityItems.push(item);
+        }
+    });
 
     // Sort by date and return top items
     return activityItems
@@ -134,6 +138,9 @@ export async function getGitHubData(): Promise<PortfolioData> {
     try {
         // Get ALL repos from database (for commits)
         const allDbRepos = await prisma.repo.findMany({
+            where: {
+                id: { gte: 0 } // Dummy condition to change the SQL string and bypass Postgres cached plans for the JSONB migration
+            },
             orderBy: [
                 { featured: "desc" },
                 { order: "asc" },
@@ -151,10 +158,10 @@ export async function getGitHubData(): Promise<PortfolioData> {
             const featuredRepos = visibleRepos.slice(0, 6);
             const totalStars = visibleRepos.reduce((sum: number, repo) => sum + repo.stargazers_count, 0);
 
-            // Fetch cached commits from database (30 for Show More feature)
+            // Fetch cached commits from database
             const dbCommits = await prisma.commit.findMany({
                 orderBy: { date: "desc" },
-                take: 30,
+                take: DATA_LIMITS.recentCommits,
             });
 
             // Convert DB commits to GitHubCommit format
@@ -167,20 +174,20 @@ export async function getGitHubData(): Promise<PortfolioData> {
                 author: c.author,
             }));
 
-            // Fetch user from GitHub (lightweight call)
-            const user = await getUser(GITHUB_USERNAME);
+            // Fetch user from GitHub (lightweight call) but cache heavily
+            const user = await getUser(GITHUB_CONFIG.username);
 
             // Try to get cached activity from database
             const dbActivity = await prisma.activity.findMany({
                 orderBy: { date: "desc" },
-                take: 30,
+                take: DATA_LIMITS.recentActivity,
             });
 
             // Convert cached activity or fallback to GitHub
             let activity: GitHubEvent[] = [];
             if (dbActivity.length === 0) {
                 // No cached activity, fetch from GitHub
-                activity = await getActivity(GITHUB_USERNAME);
+                activity = await getActivity(GITHUB_CONFIG.username);
             }
 
             // Convert DB activity to ActivityItem format
@@ -189,8 +196,8 @@ export async function getGitHubData(): Promise<PortfolioData> {
             // Merge commits and events into unified activity (30 for Show More feature)
             // Use cached activity if available, otherwise merge from GitHub events
             const recentActivity = cachedActivityItems.length > 0
-                ? mergeActivityWithCache(recentCommits, cachedActivityItems, 30)
-                : mergeActivity(recentCommits, activity, 30);
+                ? mergeActivityWithCache(recentCommits, cachedActivityItems, DATA_LIMITS.recentActivity)
+                : mergeActivity(recentCommits, activity, DATA_LIMITS.recentActivity);
 
             // Get total commits count from database
             const totalCommits = await prisma.commit.count();
@@ -211,14 +218,14 @@ export async function getGitHubData(): Promise<PortfolioData> {
         // Fallback: Database empty, fetch from GitHub directly
         const { getRepos, getRecentCommits } = await import("@/lib/github");
         const [user, repos, activity] = await Promise.all([
-            getUser(GITHUB_USERNAME),
-            getRepos(GITHUB_USERNAME),
-            getActivity(GITHUB_USERNAME),
+            getUser(GITHUB_CONFIG.username),
+            getRepos(GITHUB_CONFIG.username),
+            getActivity(GITHUB_CONFIG.username),
         ]);
 
         // Fetch recent commits from the repos (only when DB is empty)
-        const recentCommits = await getRecentCommits(repos, 10);
-        const recentActivity = mergeActivity(recentCommits, activity, 10);
+        const recentCommits = await getRecentCommits(repos, DATA_LIMITS.recentCommits);
+        const recentActivity = mergeActivity(recentCommits, activity, DATA_LIMITS.recentActivity);
 
         const totalStars = repos.reduce((sum, repo) => sum + repo.stargazers_count, 0);
         const featuredRepos = [...repos]
@@ -239,7 +246,17 @@ export async function getGitHubData(): Promise<PortfolioData> {
     } catch (error) {
         console.error("Failed to fetch data:", error);
         return {
-            user: null,
+            // Provide a dummy user instead of null to prevent crash
+            user: {
+                login: GITHUB_CONFIG.username,
+                avatar_url: "",
+                html_url: `https://github/${GITHUB_CONFIG.username}`,
+                name: GITHUB_CONFIG.username,
+                bio: "Loading profile data...",
+                public_repos: 0,
+                followers: 0,
+                following: 0,
+            },
             repos: [],
             featuredRepos: [],
             activity: [],
@@ -247,7 +264,7 @@ export async function getGitHubData(): Promise<PortfolioData> {
             recentActivity: [],
             totalStars: 0,
             totalCommits: 0,
-            error: "Failed to load data",
+            error: "Failed to load data from database",
         };
     }
 }

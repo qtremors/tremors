@@ -17,9 +17,6 @@ interface AdminContextType {
 
 const AdminContext = createContext<AdminContextType | undefined>(undefined);
 
-// Cache admin check in sessionStorage to avoid redundant API calls
-const ADMIN_CACHE_KEY = "admin_status_checked";
-
 export function AdminProvider({ children }: { children: ReactNode }) {
     const [isAdmin, setIsAdmin] = useState(false);
     const [editMode, setEditMode] = useState(false);
@@ -34,6 +31,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
         lastCheckTime.current = now;
         try {
             const res = await fetch("/api/auth/check");
+            if (!res.ok) throw new Error("Network response was not ok");
             const data = await res.json();
             setIsAdmin(!!data.isAdmin);
         } catch {

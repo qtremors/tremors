@@ -48,8 +48,15 @@ export function validateCsrf(request: NextRequest): { valid: boolean; error?: st
         }
         // Allow same-origin
         const host = request.headers.get("host");
-        if (host && origin.includes(host)) {
-            return { valid: true };
+        if (host) {
+            try {
+                const originUrl = new URL(origin);
+                if (originUrl.host === host) {
+                    return { valid: true };
+                }
+            } catch {
+                // Invalid URL
+            }
         }
     }
 

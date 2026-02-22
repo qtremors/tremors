@@ -4,6 +4,7 @@
 
 "use client";
 
+import pkg from "../../../../package.json";
 import { PERSONAL } from "@/config/site";
 import { AsciiLogo } from "./AsciiLogo";
 import { CommandItem } from "./CommandItem";
@@ -19,7 +20,7 @@ export function TerminalWelcome({ theme, shaking, asciiRef }: TerminalWelcomePro
     return (
         <div className="flex flex-col items-center justify-center flex-1 pt-8 pb-4">
             <AsciiLogo ref={asciiRef} theme={theme} shaking={shaking} />
-            <p className="text-xs mb-6" style={{ color: theme.muted }}>{PERSONAL.tagline} • v2.0</p>
+            <p className="text-xs mb-6" style={{ color: theme.muted }}>{PERSONAL.tagline} • v{pkg.version}</p>
 
             <div className="grid grid-cols-2 gap-x-12 gap-y-3 text-sm max-w-sm text-left mb-6">
                 <CommandItem cmd="/whoami" desc="profile" colors={theme} />

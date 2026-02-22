@@ -1,67 +1,22 @@
 # Tremors Implementation Tasks
 
 > **Project:** Tremors  
-> **Version:** 2.2.3
-> **Last Updated:** 2026-02-17
+> **Version:** 2.3.0
+> **Last Updated:** 2026-02-22
 
 ---
 
-## ⚡ Quick Fixes
-*Low effort, high impact changes that can be addressed immediately.*
+### A. Correctness & Reliability
+- **[Bug] CSP Blocking Repo Images:** In `next.config.ts`, the Content Security Policy `img-src` directive does not include `https://opengraph.githubassets.com`. However, this domain is explicitly used in `ProjectCard.tsx` for GitHub fallback images, causing them to be blocked by the browser in production.
+- **[Architecture] Missing Route Error Boundaries:** The application uses a custom `<ErrorBoundary>` component inside `layout.tsx`. While this catches client-side render errors, Next.js App Router strongly recommends using `error.tsx` and `global-error.tsx` files to properly catch server-component errors and integrate with the router's recovery features. There are currently no `error.tsx` files in the `src/app` directory.
 
-- [ ] **Auth Status**: Change "Invalid credentials" response from 200 to 401 in `api/auth/route.ts`.
-- [ ] **Type Safety**: Replace `any` with `Repo` type in `ProjectsGrid.tsx`.
-- [ ] **Hardcoded Version**: Replace "v2.0" with `APP_VERSION` in `TerminalWelcome.tsx`.
-- [ ] **Cleanup**: Delete unused `twentyFourHoursAgo` constant in `newspaper/generate/route.ts`.
-- [ ] **Unused Parameter**: Remove `idx` from map callback in `SpotlightSection.tsx`.
-- [ ] **CSS Cleanup**: Remove redundant `flex` (keep `inline-flex`) in `ProjectsTable.tsx`.
-- [ ] **Markdown Lint**: Fix list indentation in `CHANGELOG.md`.
+### B. Security
+- **[Risk] Memory Leak in Rate Limiter:** `middleware.ts` uses an in-memory `Map` for rate limiting with a probabilistic cleanup mechanism (`Math.random() < 0.01`). While acceptable for low-traffic single instances, under sustained automated requests it could lead to memory leaks. A TTL-based store (like Redis) or a deterministic `setInterval` cleanup is recommended for production.
 
----
+### C. Performance & Resource Efficiency
+- **[Inefficiency] Database Query Waterfall:** In `api/newspaper/generate/route.ts`, `allRepos` and `recentCommits` are fetched sequentially before a `Promise.all` block that fetches weekly stats. Moving all 5 database queries into a single `Promise.all` will significantly reduce the total request duration.
+- **[Optimization] Next/Image Component:** `ProjectCard.tsx` uses standard HTML `<img>` tags. Since Next.js is installed (`v16.1.6`), refactoring to `next/image` will provide automatic WebP conversion, optimized sizing, and better Cumulative Layout Shift (CLS) prevention. 
 
-## 🔴 High Priority
-*Critical security or architectural tasks.*
-
-- [ ] **Database Typing**: Migrate `Repo.topics` from JSON string to `JSONB` for better querying.
-- [ ] **Auth Secret Incorporation**: Update `lib/auth.ts` to incorporate provided short secrets into derived keys.
-- [ ] **Admin Safety**: Check `res.ok` before parsing JSON in `AdminContext.tsx` to prevent state corruption.
-- [ ] **Security (Middleware)**:
-    - [ ] Replace UA-based fallback with hashed anonymous ID (SHA-256 + salt).
-    - [ ] Fix Key Collision: Use exact routes from config for rate limit keys.
-
----
-
-## 🔍 Active Investigations & Logic
-*Bugs or improvements identified in recent reviews.*
-
-- [ ] **Relative Time Sync**: Audit `ProjectCard` for hydration mismatches.
-- [ ] **Test Refactor**: Use structured helper/timestamp in `auth.test.ts` instead of manual manipulation.
-- [ ] **Border Conflicts**: Resolve `TechnicalProficiencies.tsx` border overlaps in `lg` layout.
-- [ ] **Security**: Review `unsafe-inline`/`unsafe-eval` in `next.config.ts`.
-
----
-
-## 🎨 UI/UX & Accessibility
-*Enhancing the user experience and ensuring inclusivity.*
-
-- [ ] **Loading States**: Add skeleton loaders to `ProjectsGrid`.
-- [ ] **Accessibility**: Add `aria-live` blocks to terminal output.
-- [ ] **Keyboard Navigation**: Audit modals for focus trapping.
-
----
-
-## 📋 Backlog
-*Future work and enhancements.*
-
-- [ ] **SEO**: Implement dynamic meta tags for editions and projects.
-- [ ] **Unit Tests**: Full coverage for `useFetch`, `SettingsContext`, and `useTerminalAdmin`.
-- [ ] **Terminal Extensions**: Games (Snake/Tetris) and RSS feed metadata.
-
----
-
-## 🏗️ Technical Notes
-- **Dates**: Use `formatIST` from `lib/date` for server/client consistency.
-- **Auth**: `verifyAdminCookie()` for APIs, `AdminContext` for client components.
-- **Fetching**: `useFetch<T>(url)` for reads, `fetch`/`useApiMutation` for mutations.
-- **Providers**: Use `ProviderComposer` for nested providers.
-
+### D. Architecture & Design Quality
+- **[Tech Debt] Global Prisma Query Hack:** In `lib/data.ts`, `prisma.repo.findMany({ where: { id: { gte: 0 } } })` is used with a comment explaining it bypasses Postgres cached plans for a JSONB migration. This is a fragile database workaround. The core database index cache should be regenerated or a more robust Prisma querying strategy should be adopted.
+- **[Type Safety] JSONB Type Casting:** In `ProjectsGrid.tsx`, the `topics` field is manually cast `(r.topics as string[])` because Prisma's `JsonValue` type is too broad. Implementing a Zod schema or a custom Prisma Result extension would guarantee runtime and build-time type safety.

@@ -14,6 +14,8 @@ const PBKDF2_ITERATIONS = 100000;
 const PBKDF2_KEYLEN = 64;
 const PBKDF2_DIGEST = "sha512";
 
+let RANDOM_FALLBACK_SECRET: string | null = null;
+
 // Get signing secret (auto-generate if not set)
 function getSigningSecret(): string {
     const secret = process.env.AUTH_SECRET;
@@ -27,11 +29,22 @@ function getSigningSecret(): string {
 
     if (secret && secret.length < 32) {
         console.warn("SECURITY WARNING: AUTH_SECRET is too short (min 32 chars). Using derived fallback for better entropy.");
+        return crypto.createHash("sha256").update(secret + "tremors-auth-v1-stable").digest("hex");
+    }
+
+    const adminSecret = process.env.ADMIN_SECRET || "default-site-secret";
+    
+    // Prevent predictable derived secret if user left ADMIN_SECRET as a default value
+    if (adminSecret === "your_secret_command" || adminSecret === "default-site-secret") {
+        if (!RANDOM_FALLBACK_SECRET) {
+            RANDOM_FALLBACK_SECRET = crypto.randomBytes(32).toString("hex");
+        }
+        return RANDOM_FALLBACK_SECRET;
     }
 
     // Fallback for development/preview: derive from multiple stable sources
     const derived = [
-        process.env.ADMIN_SECRET || "default-site-secret",
+        adminSecret,
         "tremors-auth-v1-stable"
     ].join("-");
     return crypto.createHash("sha256").update(derived).digest("hex");

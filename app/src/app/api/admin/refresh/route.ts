@@ -11,8 +11,7 @@ import { verifyAdminCookie } from "@/lib/auth";
 import { validateCsrf } from "@/lib/csrf";
 import { eventToDbActivity } from "@/lib/activity";
 import type { GitHubEvent } from "@/types";
-
-const GITHUB_USERNAME = process.env.GITHUB_USERNAME || "qtremors";
+import { GITHUB_CONFIG, DATA_LIMITS } from "@/config/site";
 
 export async function POST(request: NextRequest) {
     // Validate CSRF
@@ -35,7 +34,7 @@ export async function POST(request: NextRequest) {
 
     try {
         // Fetch repos from GitHub
-        const repos = await getRepos(GITHUB_USERNAME);
+        const repos = await getRepos(GITHUB_CONFIG.username);
 
         // SAFEGUARD: Prevent data loss if GitHub API returns empty/incomplete results
         // This protects against: rate limiting (403), service outages, network failures
@@ -47,7 +46,7 @@ export async function POST(request: NextRequest) {
         }
 
         // Fetch commits in parallel with repo processing
-        const commits = await getRecentCommits(repos, 50);
+        const commits = await getRecentCommits(repos, DATA_LIMITS.maxCommitsRefresh);
 
         // Use transaction to ensure data integrity (30s timeout for cloud DB)
         await prisma.$transaction(async (tx) => {
@@ -118,7 +117,7 @@ export async function POST(request: NextRequest) {
             });
 
             // Cache activity events using shared utility
-            const events = await getActivity(GITHUB_USERNAME, 30);
+            const events = await getActivity(GITHUB_CONFIG.username, DATA_LIMITS.recentActivity);
             await tx.activity.deleteMany({});
 
             // Convert events to activity items using shared utility

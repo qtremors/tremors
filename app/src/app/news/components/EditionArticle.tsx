@@ -52,9 +52,22 @@ export function EditionArticle({ edition, isLoading }: EditionArticleProps) {
             <div className="columns-1 md:columns-2 gap-10 [column-rule:1px_solid_var(--np-rule)] [&_p]:mb-[1.5em] [&_p]:text-justify [&_p]:[hyphens:auto] [&_p:first-of-type::first-letter]:font-display [&_p:first-of-type::first-letter]:text-[4rem] [&_p:first-of-type::first-letter]:float-left [&_p:first-of-type::first-letter]:leading-[0.8] [&_p:first-of-type::first-letter]:pr-3 [&_p:first-of-type::first-letter]:text-[var(--np-accent)]">
                 {edition?.bodyContent ? (
                     <>
-                        {edition.bodyContent.map((para, i) => (
-                            <p key={i}>{para}</p>
-                        ))}
+                        {(() => {
+                            let content: string[] = [];
+                            try {
+                                content = Array.isArray(edition.bodyContent) 
+                                    ? edition.bodyContent 
+                                    : typeof edition.bodyContent === "string" 
+                                        ? JSON.parse(edition.bodyContent) 
+                                        : [String(edition.bodyContent)];
+                                if (!Array.isArray(content)) content = [String(content)];
+                            } catch {
+                                content = [String(edition.bodyContent)];
+                            }
+                            return content.map((para, i) => (
+                                <p key={i}>{para}</p>
+                            ));
+                        })()}
                         <div className="[break-inside:avoid] border-l-4 border-[var(--np-accent)] px-6 py-4 my-6 text-[1.3rem] italic font-display">
                             {edition.pullQuote}
                         </div>
