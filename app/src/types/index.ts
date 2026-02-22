@@ -153,7 +153,6 @@ export interface ContactLink {
     id: string;
     label: string;
     url: string;
-    icon: string;
 }
 
 export interface SkillCategory {

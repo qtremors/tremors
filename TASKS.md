@@ -1,124 +1,22 @@
 # Tremors Implementation Tasks
 
 > **Project:** Tremors  
-> **Version:** 2.2.8
+> **Version:** 2.3.0
 > **Last Updated:** 2026-02-22
-> **Audit Scope:** Full codebase — Frontend, Backend, Database, Documentation
 
 ---
 
-## 🔴 Critical Security
+### A. Correctness & Reliability
+- **[Bug] CSP Blocking Repo Images:** In `next.config.ts`, the Content Security Policy `img-src` directive does not include `https://opengraph.githubassets.com`. However, this domain is explicitly used in `ProjectCard.tsx` for GitHub fallback images, causing them to be blocked by the browser in production.
+- **[Architecture] Missing Route Error Boundaries:** The application uses a custom `<ErrorBoundary>` component inside `layout.tsx`. While this catches client-side render errors, Next.js App Router strongly recommends using `error.tsx` and `global-error.tsx` files to properly catch server-component errors and integrate with the router's recovery features. There are currently no `error.tsx` files in the `src/app` directory.
 
-- [x] **Resume Upload Auth Bypass**: `api/admin/resume/route.ts` POST checks `request.headers.get("cookie")?.includes("admin_session")` — this only checks if the cookie **name** appears in the header string, not whether the session token is valid. Must use `verifyAdminCookie()` like all other admin routes.
-- [x] **CSP `unsafe-inline` / `unsafe-eval`**: `next.config.ts` allows `'unsafe-inline'` for scripts and `'unsafe-eval'`, which weakens CSP significantly and enables XSS vectors. Investigate if Next.js 16 has nonce support to remove these.
-- [x] **CSRF Origin Bypass**: In `csrf.ts`, the check `origin.includes(host)` (line 51) is bypassable — an attacker at `evil.com?host=localhost:3000` or `localhost:3000.evil.com` would pass. Should use strict `URL` parsing and exact host comparison.
-- [x] **Newspaper Generate Missing CSRF**: `api/newspaper/generate/route.ts` POST does not call `validateCsrf()`, unlike every other mutating admin endpoint. Add CSRF validation.
-- [x] **Auth Secret Fallback Weakness**: In `auth.ts`, `getSigningSecret()` falls back to deriving from `ADMIN_SECRET + "tremors-auth-v1-stable"`. If `ADMIN_SECRET` is well-known (e.g., never changed from `"your_secret_command"`), the derived signing secret is predictable and session tokens can be forged.
-- [x] **Legacy Auth Route Returns 200 for Invalid Credentials**: `api/auth/route.ts` line 251 returns `NextResponse.json({ success: false, error: "Invalid credentials" })` **without a status code** (defaults to 200). Must return 401.
+### B. Security
+- **[Risk] Memory Leak in Rate Limiter:** `middleware.ts` uses an in-memory `Map` for rate limiting with a probabilistic cleanup mechanism (`Math.random() < 0.01`). While acceptable for low-traffic single instances, under sustained automated requests it could lead to memory leaks. A TTL-based store (like Redis) or a deterministic `setInterval` cleanup is recommended for production.
 
----
+### C. Performance & Resource Efficiency
+- **[Inefficiency] Database Query Waterfall:** In `api/newspaper/generate/route.ts`, `allRepos` and `recentCommits` are fetched sequentially before a `Promise.all` block that fetches weekly stats. Moving all 5 database queries into a single `Promise.all` will significantly reduce the total request duration.
+- **[Optimization] Next/Image Component:** `ProjectCard.tsx` uses standard HTML `<img>` tags. Since Next.js is installed (`v16.1.6`), refactoring to `next/image` will provide automatic WebP conversion, optimized sizing, and better Cumulative Layout Shift (CLS) prevention. 
 
-## 🟠 High Priority — Bugs & Logic Issues
-
-- [x] **Database Typing**: Migrate `Repo.topics` from JSON string to `JSONB` for better querying and type safety.
-- [x] **Auth Secret Incorporation**: Update `lib/auth.ts` to incorporate provided short secrets into derived keys (if < 32 chars, hash `short_secret + stable_salt` rather than ignoring it).
-- [x] **Admin Safety**: Check `res.ok` before parsing JSON in `AdminContext.tsx` to prevent state corruption on non-200 responses.
-- [x] **SettingsContext Uses Wrong HTTP Method**: `SettingsContext.tsx` line 56 sends `POST` to `/api/admin/settings`, but that route only handles `GET` and `PATCH`. The update silently fails (405). Must use `PATCH`.
-- [x] **Duplicate Rate Limiting**: Both `middleware.ts` and `api/auth/route.ts` implement independent in-memory rate limiters with different algorithms, configs, and fingerprinting. The auth route limiter is redundant since middleware already rate-limits `/api/auth`. Consolidate.
-- [x] **Inconsistent Client IP Fingerprinting**: `middleware.ts` uses `anon-${ua.slice(0, 30)}` as fallback, while `api/auth/route.ts` uses `anon-${(ua + lang).slice(0, 50)}`. Same client gets different keys, defeating rate limit coordination.
-- [x] **Rate Limit Key Collision in Middleware**: `pathname.split("/").slice(0, 3).join("/")` maps `/api/auth`, `/api/auth/check`, and `/api/auth/logout` all to the key `/api/auth`. A visitor checking their auth status via GET `/api/auth/check` consumes the rate limit for login attempts (POST `/api/auth`).
-- [x] **Unused `twentyFourHoursAgo`**: `api/newspaper/generate/route.ts` line 58 creates `twentyFourHoursAgo` but never uses it after the weekly context refactor. Dead code.
-- [x] **`stats/commits` Unbounded Parallelism**: `api/stats/commits/route.ts` fires `Promise.allSettled` for ALL repos simultaneously. With many repos, this can hit GitHub API rate limits instantly. Needs batching like `github.ts` does for commits.
-- [x] **Inconsistent GitHub Auth Token Format**: `github.ts` uses `Bearer ${token}` while `stats/commits/route.ts` uses `token ${token}`. Both work, but inconsistency is confusing and the `token` prefix is deprecated by GitHub.
-
----
-
-## 🟡 Medium Priority — Code Quality & Maintainability
-
-- [x] **Type Safety**: Replace `any` with `Repo` type in `ProjectsGrid.tsx` lines 39, 48.
-- [x] **Hardcoded Version**: Replace "v2.0" with `APP_VERSION` in `TerminalWelcome.tsx`.
-- [x] **Unused `ADMIN_CACHE_KEY` Constant**: `AdminContext.tsx` line 21 defines `ADMIN_CACHE_KEY = "admin_status_checked"` but it's never used anywhere. Dead code from a removed feature.
-- [x] **Empty `lib/agent/` Directory**: `src/lib/agent/` exists but is empty — vestigial from a removed feature. Delete it.
-- [x] **`data.ts` Always Fetches User from GitHub**: On the DB-cache path (line 171), `getUser(GITHUB_USERNAME)` is called every page load via `getGitHubData()`. This GitHub API call has no caching and serves data that rarely changes. Should be cached in DB or use `revalidate`.
-- [x] **`data.ts` Duplicated `GITHUB_USERNAME`**: Both `data.ts` and `api/admin/refresh/route.ts` independently define `const GITHUB_USERNAME = process.env.GITHUB_USERNAME || "qtremors"`. Use the centralized `GITHUB_CONFIG.username` from `config/site.ts` instead.
-- [x] **Duplicated `GITHUB_USERNAME` in `stats/commits`**: Same pattern — `stats/commits/route.ts` line 11 defines its own `GITHUB_USERNAME`. Third duplicate.
-- [x] **`getRecentCommits` Limit Mismatch**: `data.ts` line 220 calls `getRecentCommits(repos, 10)` in the fallback path but `api/admin/refresh/route.ts` line 50 calls it with `50`. `DATA_LIMITS.maxCommitsRefresh` (50) exists in config but isn't used consistently.
-- [x] **`mergeActivityWithCache` Potential Duplicates**: `data.ts` line 124 pushes cached activity items alongside commit-derived items without deduplication. If a commit also exists as a cached activity item, it appears twice.
-- [x] **Prisma Seed Scripts Coupled to Env**: Deleted `seed-newspaper`, `clean-editions`, and `delete-empty-today` entirely. Gemini generator now falls back to the most recent historical newspaper if an AI generation fails or hits rate limits.
-
----
-
-## 🔵 Low Priority — Cleanup & Quick Fixes
-
-- [x] **CSS Cleanup**: Remove redundant `flex` (keep `inline-flex`) in `ProjectsTable.tsx`.
-- [x] **Markdown Lint**: Fix list indentation in `CHANGELOG.md` (e.g., lines 87, 103 missing `---` separators).
-- [x] **`formatProjectTitle` Not Used in All Paths**: `lib/utils.ts` exports it but some components still do their own title formatting inline.
-- [x] **Newspaper RSS `description` Truncation**: `api/news/rss/route.ts` line 60 uses `substring(0, 200)` and appends `...` — not ideal for non-English or short body content where 200 chars is too much or too little.
-- [x] **`useFetch` Infinite Re-fetch Risk**: `useFetch.ts` includes `toast` in the `useCallback` dependency array for `fetchData`. If `toast` identity changes (common with context providers), it triggers re-fetches. Should use a ref instead.
-
----
-
-## 🟣 Security & Middleware
-
-- [ ] **Replace UA-Based Fingerprint**: Middleware fallback `anon-${ua.slice(0, 30)}` groups all users with the same browser into one rate-limit bucket. Replace with hashed anonymous ID (SHA-256 + salt + IP-like hints).
-- [ ] **Rate Limit Key Collision**: Use exact routes from config for rate limit keys instead of path prefix slicing.
-- [ ] **CSP Review**: Audit whether `unsafe-inline` and `unsafe-eval` in `next.config.ts` can be replaced with nonces now that Next.js 16 supports `experimental.sri`.
-- [ ] **`img-src https:` Too Permissive**: CSP allows images from any HTTPS origin. Could be tightened to specific domains (`github.com`, `avatars.githubusercontent.com`, blob storage domain).
-- [ ] **`connect-src` Missing Blob Storage**: If Vercel Blob is used for resume uploads, its domain should be in `connect-src`.
-
----
-
-## 🔍 Active Investigations & Logic
-
-- [ ] **Relative Time Sync**: Audit `ProjectCard`/`SpotlightSection` `timeAgo` calculation for hydration mismatches — uses `Date.now()` which differs between SSR and client.
-- [ ] **Test Refactor**: Use structured helper/timestamp in `auth.test.ts` instead of manual manipulation.
-- [ ] **Border Conflicts**: Resolve `TechnicalProficiencies.tsx` border overlaps in `lg` layout.
-
----
-
-## 🎨 UI/UX & Accessibility
-
-- [ ] **Loading States**: Add skeleton loaders to `ProjectsGrid` (beyond the basic 4-card pulse animation).
-- [ ] **Accessibility**: Add `aria-live` blocks to terminal output.
-- [ ] **Keyboard Navigation**: Audit modals for focus trapping.
-- [ ] **Drag-and-Drop Accessibility**: `ProjectsGrid` drag reorder has no keyboard alternative or screen reader support.
-
----
-
-## 📖 Documentation Issues
-
-- [ ] **README `Templates/` Reference**: README line 99 references `Templates/` directory which doesn't exist in the project root.
-- [ ] **DEVELOPMENT.md `DIRECT_URL` Mismatch**: `.env.example` calls it `DIRECT_URL` (line 19) but the Prisma schema uses `DATABASE_URL_UNPOOLED` (line 8). These may be different env var names for the same thing — confusing.
-- [ ] **DEVELOPMENT.md Test Table Incomplete**: Lists `api/*.test.ts` generically but there are 14 specific test files. Could list key ones.
-- [ ] **DEVELOPMENT.md Missing `NEXT_PUBLIC_URL`**: `csrf.ts` checks `process.env.NEXT_PUBLIC_URL` but this isn't documented in `.env.example` or `DEVELOPMENT.md`. Only `NEXT_PUBLIC_SITE_URL` is documented.
-- [ ] **.env.example `ADMIN_SECRET` Default Value**: Shows `your_secret_command` as example, matching the config fallback in `site.ts`. A warning should note this must be changed.
-- [ ] **Hardcoded Personal Info**: `site.ts` contains `singhamankumar207@gmail.com` and LinkedIn URL — these are not env-configurable, which limits reusability despite the project being structured as configurable.
-- [ ] **CHANGELOG Missing Separator**: Between `[2.1.5]` and `[2.1.0]` (lines 86-103) there is no `---` separator unlike other versions.
-- [ ] **CHANGELOG Links Not Working**: Version headers like `[2.2.3]` are not linked to any comparison URL or tag.
-
----
-
-## ❓ Questionable / Confusing Patterns
-
-- [ ] **`ErrorBoundary` as Provider**: `layout.tsx` line 76 wraps `ErrorBoundary` in `ProviderComposer`. Error boundaries are not providers — they don't provide context. This works but is semantically misleading.
-- [ ] **Settings GET is Public But Exposes Admin Data**: `api/admin/settings/route.ts` GET returns `lastRefresh`, `resumeSummary`, `resumeAbout` without any auth check. These are admin-level data (when edits were last made, custom content) leaking to any visitor.
-- [ ] **Newspaper `bodyContent` Stored as JSON String**: `NewspaperEdition.bodyContent` is a `String` containing a JSON array. Every read/write requires `JSON.parse`/`JSON.stringify`. This is error-prone (6+ parse sites). Should be JSONB or handled by a utility function everywhere.
-- [ ] **`addRandomSuffix: false` in Resume Upload**: `api/admin/resume/route.ts` line 79 uploads to Vercel Blob with the exact original filename. A re-upload of a different file with the same name will overwrite without versioning. Potential data loss.
-- [ ] **Holiday Detection Logic**: `api/newspaper/generate/route.ts` lines 160-164 has hardcoded holiday checks including a broad `Diwali/Festive Season` check for Oct 20-31 and Nov 20-31 — Diwali dates vary yearly and this range is inaccurate.
-
----
-
-## 📋 Backlog
-
-- [ ] **SEO**: Implement dynamic meta tags for editions and projects.
-- [ ] **Unit Tests**: Full coverage for `useFetch`, `SettingsContext`, and `useTerminalAdmin`.
-- [ ] **Terminal Extensions**: Games (Snake/Tetris) and RSS feed metadata.
-
----
-
-## 🏗️ Technical Notes
-- **Dates**: Use `formatIST` from `lib/date` for server/client consistency.
-- **Auth**: `verifyAdminCookie()` for APIs, `AdminContext` for client components.
-- **Fetching**: `useFetch<T>(url)` for reads, `fetch`/`useApiMutation` for mutations.
-- **Providers**: Use `ProviderComposer` for nested providers.
-- **Config**: Use `GITHUB_CONFIG.username` from `config/site.ts` — do not hardcode `GITHUB_USERNAME` in individual files.
+### D. Architecture & Design Quality
+- **[Tech Debt] Global Prisma Query Hack:** In `lib/data.ts`, `prisma.repo.findMany({ where: { id: { gte: 0 } } })` is used with a comment explaining it bypasses Postgres cached plans for a JSONB migration. This is a fragile database workaround. The core database index cache should be regenerated or a more robust Prisma querying strategy should be adopted.
+- **[Type Safety] JSONB Type Casting:** In `ProjectsGrid.tsx`, the `topics` field is manually cast `(r.topics as string[])` because Prisma's `JsonValue` type is too broad. Implementing a Zod schema or a custom Prisma Result extension would guarantee runtime and build-time type safety.

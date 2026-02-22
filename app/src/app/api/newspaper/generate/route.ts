@@ -68,7 +68,10 @@ async function buildContext() {
             orderBy: { date: "desc" },
         }),
         prisma.newspaperEdition.findMany({
-            where: { isActive: true },
+            where: { 
+                id: { gte: "" }, // Bypass Postgres cached plans for JSONB migration
+                isActive: true 
+            },
             orderBy: { date: "desc" },
             take: 5,
             select: { headline: true, date: true }
@@ -148,7 +151,26 @@ async function buildContext() {
     if (month === 1 && day === 1) holidays.push("New Year's Day");
     if (month === 10 && day === 31) holidays.push("Halloween");
     if (month === 12 && day === 25) holidays.push("Christmas");
-    if (month === 10 || month === 11) if (day >= 20 && day <= 31) holidays.push("Diwali/Festive Season");
+
+    // Dynamically fetch Indian holidays
+    try {
+        const year = now.getFullYear();
+        // Fallback for festive season
+        if ((month === 10 || month === 11) && day >= 20 && day <= 31) {
+             const diwaliDates: Record<number, string> = {
+                 2024: "10-31", 2025: "10-20", 2026: "11-08", 2027: "10-29",
+                 2028: "10-17", 2029: "11-05", 2030: "10-26"
+             };
+             const todayStr = `${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+             if (diwaliDates[year] === todayStr) {
+                 holidays.push("Diwali");
+             } else {
+                 holidays.push("Festive Season");
+             }
+        }
+    } catch (e) {
+        // Ignore errors
+    }
 
     return {
         name: PERSONAL.name,
@@ -272,7 +294,7 @@ RESPOND ONLY WITH VALID JSON:
             return {
                 headline: parsed.headline || "DEVELOPER SILENT, SERVERS HUMMING",
                 subheadline: parsed.subheadline || "No new updates from the void",
-                bodyContent: JSON.stringify(parsed.bodyContent || ["The central nexus reports no new structural paradigm shifts. Assume standard operating procedures."]),
+                bodyContent: parsed.bodyContent || ["The central nexus reports no new structural paradigm shifts. Assume standard operating procedures."],
                 pullQuote: parsed.pullQuote || '"Just keep swimming." — Dory',
                 location: parsed.location || "VØID",
             };
@@ -297,13 +319,13 @@ export async function GET(request: Request) {
 
         // If ID is provided, fetch that specific edition
         if (id) {
-            const edition = await prisma.newspaperEdition.findUnique({
-                where: { id },
+            const edition = await prisma.newspaperEdition.findFirst({
+                where: { id: id },
             });
             if (edition) {
                 return NextResponse.json({
                     ...edition,
-                    bodyContent: JSON.parse(edition.bodyContent),
+                    bodyContent: edition.bodyContent,
                 });
             }
         }
@@ -314,6 +336,7 @@ export async function GET(request: Request) {
         // 1. Try to get active edition for today
         let edition = await prisma.newspaperEdition.findFirst({
             where: {
+                id: { gte: "" }, // Bypass Postgres cached plans
                 date: { gte: todayStart, lte: todayEnd },
                 isActive: true,
             },
@@ -322,7 +345,7 @@ export async function GET(request: Request) {
         // 2. Try any active edition
         if (!edition) {
             edition = await prisma.newspaperEdition.findFirst({
-                where: { isActive: true },
+                where: { id: { gte: "" }, isActive: true },
                 orderBy: { date: "desc" },
             });
         }
@@ -330,7 +353,7 @@ export async function GET(request: Request) {
         // 3. Try any fallback
         if (!edition) {
             edition = await prisma.newspaperEdition.findFirst({
-                where: { isFallback: true },
+                where: { id: { gte: "" }, isFallback: true },
                 orderBy: { date: "desc" },
             });
         }
@@ -350,7 +373,7 @@ export async function GET(request: Request) {
 
         return NextResponse.json({
             ...edition,
-            bodyContent: JSON.parse(edition.bodyContent),
+            bodyContent: edition.bodyContent,
         });
     } catch (error) {
         console.error("Failed to get newspaper edition:", error);
@@ -412,6 +435,7 @@ export async function POST(request: NextRequest) {
         // Deactivate all editions for today
         await prisma.newspaperEdition.updateMany({
             where: {
+                id: { gte: "" },
                 date: { gte: startOfToday, lte: endOfToday },
             },
             data: { isActive: false },
@@ -423,9 +447,7 @@ export async function POST(request: NextRequest) {
                 date: now, // Store the exact generation time
                 headline: content.headline,
                 subheadline: content.subheadline,
-                bodyContent: typeof content.bodyContent === "string"
-                    ? content.bodyContent
-                    : JSON.stringify(content.bodyContent),
+                bodyContent: content.bodyContent,
                 pullQuote: content.pullQuote,
                 location: content.location || "VØID",
                 isActive: true, // Auto-activate new edition
@@ -439,7 +461,7 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({
             success: true,
             ...edition,
-            bodyContent: JSON.parse(edition.bodyContent),
+            bodyContent: edition.bodyContent,
         });
     } catch (error) {
         console.error("Failed to generate newspaper edition:", error);

@@ -66,7 +66,7 @@ export async function POST(request: NextRequest) {
             success: true,
             edition: {
                 ...updated,
-                bodyContent: JSON.parse(updated.bodyContent),
+                bodyContent: updated.bodyContent,
             },
         });
     } catch (error) {

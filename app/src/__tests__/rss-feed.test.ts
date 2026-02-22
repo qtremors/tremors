@@ -83,7 +83,7 @@ describe("RSS Feed API", () => {
                 date: new Date("2025-12-24T12:00:00Z"),
                 headline: "Test Headline",
                 subheadline: "Test Subheadline",
-                bodyContent: JSON.stringify(["First paragraph", "Second paragraph"]),
+                bodyContent: ["First paragraph", "Second paragraph"],
                 createdAt: new Date(),
             };
 
@@ -108,7 +108,7 @@ describe("RSS Feed API", () => {
                 date: new Date("2025-12-24T12:00:00Z"),
                 headline: "Content Test",
                 subheadline: "Testing full content",
-                bodyContent: JSON.stringify(["First paragraph here", "Second paragraph here"]),
+                bodyContent: ["First paragraph here", "Second paragraph here"],
                 createdAt: new Date(),
             };
 
@@ -133,7 +133,7 @@ describe("RSS Feed API", () => {
                     date: new Date("2025-12-24"),
                     headline: "Headline One",
                     subheadline: "Sub One",
-                    bodyContent: JSON.stringify(["Body one"]),
+                    bodyContent: ["Body one"],
                     createdAt: new Date(),
                 },
                 {
@@ -141,7 +141,7 @@ describe("RSS Feed API", () => {
                     date: new Date("2025-12-23"),
                     headline: "Headline Two",
                     subheadline: "Sub Two",
-                    bodyContent: JSON.stringify(["Body two"]),
+                    bodyContent: ["Body two"],
                     createdAt: new Date(),
                 },
             ];
@@ -178,7 +178,7 @@ describe("RSS Feed API", () => {
                 date: new Date(),
                 headline: "Test <script> & \"quotes\"",
                 subheadline: "Sub with 'apostrophe'",
-                bodyContent: JSON.stringify(["Para with <html> & special chars"]),
+                bodyContent: ["Para with <html> & special chars"],
                 createdAt: new Date(),
             };
 

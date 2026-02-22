@@ -73,11 +73,12 @@ export default function RootLayout({
             ToastProvider,
             SettingsProvider,
             NavButtonsProvider,
-            ErrorBoundary,
           ]}
         >
+          <ErrorBoundary>
           <KeyboardShortcuts />
-          <main id="main-content">{children}</main>
+            <main id="main-content">{children}</main>
+          </ErrorBoundary>
         </ProviderComposer>
       </body>
     </html>

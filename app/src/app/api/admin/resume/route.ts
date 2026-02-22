@@ -74,10 +74,10 @@ export async function POST(request: Request) {
             }
         }
 
-        // Upload new file to Vercel Blob with original filename
+        // Upload new file to Vercel Blob with versioning enabled
         const blob = await put(file.name, file, {
             access: "public",
-            addRandomSuffix: false, // Keep exact original filename
+            addRandomSuffix: true, // Generate random suffix to prevent unintended overwrites
         });
 
         // Update settings with new URL

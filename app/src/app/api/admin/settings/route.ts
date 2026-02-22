@@ -16,6 +16,8 @@ export async function GET() {
             where: { id: "main" },
         });
 
+        const isAdmin = await verifyAdminCookie();
+
         if (!settings) {
             // Return defaults if no settings exist
             return NextResponse.json({
@@ -28,16 +30,21 @@ export async function GET() {
             });
         }
 
+        const publicSettings = {
+            showProjectImages: settings.showProjectImages,
+            availableForWork: settings.availableForWork,
+            projectViewMode: settings.projectViewMode,
+        };
+
+        const adminSettings = isAdmin ? {
+            lastRefresh: settings.lastRefresh,
+            resumeSummary: settings.resumeSummary,
+            resumeAbout: settings.resumeAbout,
+        } : {};
+
         return NextResponse.json({
             success: true,
-            settings: {
-                showProjectImages: settings.showProjectImages,
-                availableForWork: settings.availableForWork,
-                projectViewMode: settings.projectViewMode,
-                lastRefresh: settings.lastRefresh,
-                resumeSummary: settings.resumeSummary,
-                resumeAbout: settings.resumeAbout,
-            },
+            settings: { ...publicSettings, ...adminSettings },
         });
     } catch (error) {
         console.error("Get settings error:", error);

@@ -55,8 +55,8 @@ export async function GET() {
             let description = edition.subheadline;
             let fullContent = "";
             try {
-                const bodyParts = JSON.parse(edition.bodyContent) as string[];
-                if (bodyParts.length > 0) {
+                const bodyParts = edition.bodyContent as unknown as string[];
+                if (Array.isArray(bodyParts) && bodyParts.length > 0) {
                     const firstPara = bodyParts[0];
                     const truncated = firstPara.length > 200 
                         ? firstPara.substring(0, 200).replace(/\s+\S*$/, "") + "..." 

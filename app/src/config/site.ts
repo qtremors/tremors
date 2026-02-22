@@ -23,26 +23,22 @@ export const CONTACT_LINKS: ContactLink[] = [
     {
         id: "email",
         label: "Email",
-        url: "mailto:singhamankumar207@gmail.com",
-        icon: "📧",
+        url: process.env.NEXT_PUBLIC_CONTACT_EMAIL ? `mailto:${process.env.NEXT_PUBLIC_CONTACT_EMAIL}` : "mailto:your@email.com",
     },
     {
         id: "github",
         label: "GitHub",
-        url: "https://github.com/qtremors",
-        icon: "🐙",
+        url: `https://github.com/${process.env.GITHUB_USERNAME || "yourusername"}`,
     },
     {
         id: "linkedin",
         label: "LinkedIn",
-        url: "https://www.linkedin.com/in/aman-singh-0a1938301",
-        icon: "💼",
+        url: process.env.NEXT_PUBLIC_LINKEDIN_URL || "https://linkedin.com/in/yourprofile",
     },
     {
         id: "resume",
         label: "Resume",
         url: "/Aman_Singh.pdf",
-        icon: "📄",
     },
 ];
 

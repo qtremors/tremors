@@ -1,8 +1,21 @@
 # Tremors Portfolio Changelog
 
-> **Project:** Tremors Portfolio  
-> **Version:** 2.2.8  
+> **Project:** Tremors Portfolio
+> **Version:** 2.3.0  
 > **Last Updated:** 2026-02-22
+
+---
+
+## [2.3.0] - 2026-02-22
+
+### Changed
+- **Documentation**: Fixed missing references, updated environment variables (`NEXT_PUBLIC_URL`, `DATABASE_URL_UNPOOLED`, `NEXT_PUBLIC_CONTACT_EMAIL`, `NEXT_PUBLIC_LINKEDIN_URL`).
+- **Config**: Removed hardcoded personal email, LinkedIn URL, and emojis from `site.ts` and `ContactLinks.tsx`, making them env-configurable dynamic.
+- **App**: Changed `ErrorBoundary` to be a normal client component instead of pretending to be a Provider.
+- **Database**: Migrated `NewspaperEdition.bodyContent` to use `Json` instead of String.
+- **Admin**: Updated `Settings` GET API to require admin authentication.
+- **Resume Upload**: Fixed issue where uploading to Vercel Blob used original filename resulting in no versioning.
+- **Newspaper Generation**: Fixed holiday detection logic that used hardcoded inaccurate dates.
 
 ---
 
