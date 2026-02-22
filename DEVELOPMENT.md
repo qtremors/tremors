@@ -205,7 +205,7 @@ npm run build
 Before making significant changes, ensure a deep understanding of:
 - **Core Architecture**: Workflows, data flow, and overall purpose.
 - **Implicit Design**: Assumptions and hidden coupling between components (e.g. CSRF handling, Auth signing secrets).
-- **Edge Cases**: UNintended behaviors and alternative use cases.
+- **Edge Cases**: Unintended behaviors and alternative use cases.
 
 ### Audit Categories
 
