@@ -6,6 +6,7 @@
 
 import { ProjectCard, RepoWithStatus } from "@/components/ProjectCard";
 import { formatProjectTitle } from "@/lib/utils";
+import { useHydratedTimeAgo } from "@/hooks/useHydratedTimeAgo";
 import type { GitHubRepo } from "@/types";
 
 interface SpotlightSectionProps {
@@ -74,14 +75,7 @@ export function SpotlightSection({
         .filter(r => r.pushed_at)
         .sort((a, b) => new Date(b.pushed_at).getTime() - new Date(a.pushed_at).getTime())[0];
 
-    const timeAgo = lastUpdated?.pushed_at ? (() => {
-        const diff = Date.now() - new Date(lastUpdated.pushed_at).getTime();
-        const hours = Math.floor(diff / (1000 * 60 * 60));
-        const days = Math.floor(hours / 24);
-        if (days > 0) return `${days}d ago`;
-        if (hours > 0) return `${hours}h ago`;
-        return "just now";
-    })() : null;
+    const timeAgo = useHydratedTimeAgo(lastUpdated?.pushed_at);
 
     // Grid: 2+3 Bento Layout
     return (

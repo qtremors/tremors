@@ -1,8 +1,25 @@
 # Tremors Portfolio Changelog
 
 > **Project:** Tremors Portfolio  
-> **Version:** 2.2.7  
+> **Version:** 2.2.8  
 > **Last Updated:** 2026-02-22
+
+---
+
+## [2.2.8] - 2026-02-22
+
+### Changed
+- **UI Tweaks**: Centered the "Show More Projects" button in the Newspaper layout list for better visual harmony.
+
+### Fixed
+- **Edge Runtime**: Resolved a build failure in `middleware.ts` by replacing the Node.js `crypto` library with the native Web Crypto API (`crypto.subtle`).
+- **Hydration Errors**: Fixed React hydration mismatches on timestamps within `SpotlightSection` and `ProjectCard` via a new client-side `useHydratedTimeAgo` hook.
+- **Styling Overlaps**: Corrected CSS grid border right computations for 5-column `lg` layouts inside `TechnicalProficiencies`.
+
+### Security
+- **Middleware IP Fingerprinting**: Strengthened fallback fingerprinting by applying a `SHA-256` hash to `user-agent` data instead of truncating plain strings, optimizing user privacy and preventing rate bucket collisions.
+- **Rate Limit Paths**: Refactored middleware tracking to evaluate the exact `request.nextUrl.pathname` rather than sliced path variables to correctly distinguish API endpoints. Un-duplicated secondary tracking in `/api/auth`.
+- **Content Security Policy**: Tightened production CSP configurations within `next.config.ts`, omitting `unsafe-eval` and clamping `img-src` down to explicitly trusted sources.
 
 ---
 

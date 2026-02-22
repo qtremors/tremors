@@ -79,24 +79,19 @@ describe('Session Management', () => {
     });
 
     it('should reject an expired token', async () => {
-        // Manually create a token from the past
-        const crypto = await import('crypto');
-        const payload = {
-            admin: true,
-            timestamp: Date.now() - 1000 * 60 * 60 * 25, // 25 hours ago (max age is 24h)
-            nonce: 'test-nonce',
-        };
-        const data = JSON.stringify(payload);
-        const secret = process.env.AUTH_SECRET!;
-        const signature = crypto
-            .createHmac("sha256", secret)
-            .update(data)
-            .digest("hex");
-        const token = `${Buffer.from(data).toString("base64")}.${signature}`;
+        // Create token normally
+        await setAdminCookie();
+        const token = mockCookieStore.set.mock.calls[0][1];
+
+        // Move time forward 25 hours to simulate expiration
+        vi.useFakeTimers();
+        vi.setSystemTime(new Date(Date.now() + 1000 * 60 * 60 * 25));
 
         mockCookieStore.get.mockReturnValue({ value: token });
         const isValid = await verifyAdminCookie();
         expect(isValid).toBe(false);
+
+        vi.useRealTimers();
     });
 
     it('should clear the admin cookie', async () => {

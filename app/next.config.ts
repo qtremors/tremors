@@ -13,12 +13,12 @@ const nextConfig: NextConfig = {
               "default-src 'self'",
               process.env.NODE_ENV === "development"
                 ? "script-src 'self' 'unsafe-inline' 'unsafe-eval'"
-                : "script-src 'self' 'unsafe-inline'", // Next.js requires inline without strict nonces
+                : "script-src 'self'",
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
               "font-src 'self' https://fonts.gstatic.com",
-              "img-src 'self' data: https: blob:",
+              "img-src 'self' data: blob: https://github.com https://avatars.githubusercontent.com https://*.public.blob.vercel-storage.com",
               "media-src 'self' blob:",
-              "connect-src 'self' https://api.github.com https://generativelanguage.googleapis.com",
+              "connect-src 'self' https://api.github.com https://generativelanguage.googleapis.com https://*.public.blob.vercel-storage.com",
               "frame-ancestors 'none'",
               "base-uri 'self'",
               "form-action 'self'",

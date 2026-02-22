@@ -22,68 +22,12 @@ import {
 } from "@/lib/auth";
 import { validateCsrf } from "@/lib/csrf";
 
-// Simple in-memory rate limiting with cleanup
-const attempts = new Map<string, { count: number; firstAttempt: number }>();
-const RATE_LIMIT = 10;
-const RATE_WINDOW = 5 * 60 * 1000; // 5 minutes (reduced from 15)
-const CLEANUP_INTERVAL = 1 * 60 * 1000; // Cleanup every minute
-let lastCleanup = Date.now();
-
-function getClientIP(request: Request): string {
-    const forwarded = request.headers.get("x-forwarded-for");
-    if (forwarded) {
-        return forwarded.split(",")[0].trim();
-    }
-    // Fallback: use a combination of user-agent and accept-language for some isolation
-    const ua = request.headers.get("user-agent") || "";
-    const lang = request.headers.get("accept-language") || "";
-    return `anon-${(ua + lang).slice(0, 50)}`;
-}
-
-// Clean up expired rate limit entries to prevent memory leak
-function cleanupExpiredEntries(): void {
-    const now = Date.now();
-    // Only cleanup periodically, not on every request
-    if (now - lastCleanup < CLEANUP_INTERVAL) return;
-
-    lastCleanup = now;
-    for (const [ip, record] of attempts.entries()) {
-        if (now - record.firstAttempt > RATE_WINDOW) {
-            attempts.delete(ip);
-        }
-    }
-}
-
-function checkRateLimit(ip: string): boolean {
-    const now = Date.now();
-
-    // Always clean up expired entries before checking
-    cleanupExpiredEntries();
-
-    const record = attempts.get(ip);
-
-    if (!record || now - record.firstAttempt > RATE_WINDOW) {
-        attempts.set(ip, { count: 1, firstAttempt: now });
-        return true;
-    }
-
-    if (record.count >= RATE_LIMIT) {
-        return false;
-    }
-
-    record.count++;
-    return true;
-}
-
-function clearRateLimit(ip: string): void {
-    attempts.delete(ip);
-}
+// middleware.ts handles rate limiting for this route.
 
 export async function POST(request: NextRequest) {
     try {
         const body = await request.json();
         const { action } = body;
-        const ip = getClientIP(request);
 
         // Check if admin account exists (read-only, skip CSRF)
         if (action === "check") {
@@ -137,7 +81,6 @@ export async function POST(request: NextRequest) {
 
             await createAdmin(password);
             await setAdminCookie();
-            clearRateLimit(ip);
 
             return NextResponse.json({
                 success: true,
@@ -147,14 +90,6 @@ export async function POST(request: NextRequest) {
 
         // Login with password
         if (action === "login") {
-            // Check rate limit
-            if (!checkRateLimit(ip)) {
-                return NextResponse.json(
-                    { success: false, error: "Too many attempts. Try again later." },
-                    { status: 429 }
-                );
-            }
-
             const { password } = body;
 
             if (!password) {
@@ -181,7 +116,6 @@ export async function POST(request: NextRequest) {
             }
 
             await setAdminCookie();
-            clearRateLimit(ip);
 
             return NextResponse.json({
                 success: true,

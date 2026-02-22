@@ -17,17 +17,24 @@ const RATE_LIMITS: Record<string, { requests: number; windowMs: number }> = {
     default: { requests: 100, windowMs: 60 * 1000 }, // 100 per min
 };
 
-function getClientIP(request: NextRequest): string {
+async function getClientIP(request: NextRequest): Promise<string> {
     const forwarded = request.headers.get("x-forwarded-for");
     if (forwarded) {
         return forwarded.split(",")[0].trim();
     }
     const ip = request.headers.get("x-real-ip");
     if (ip) return ip;
-    // Fallback fingerprint
+    // Fallback fingerprint: hash to prevent colliding different users on same browser while retaining anonymity
     const ua = request.headers.get("user-agent") || "";
     const lang = request.headers.get("accept-language") || "";
-    return `anon-${(ua + lang).slice(0, 50)}`;
+    
+    const encoder = new TextEncoder();
+    const data = encoder.encode(ua + lang + "tremors-salt");
+    const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    
+    return `anon-${hashHex.slice(0, 16)}`;
 }
 
 function getRateLimitConfig(pathname: string): { requests: number; windowMs: number } {
@@ -67,7 +74,7 @@ function checkRateLimit(key: string, config: { requests: number; windowMs: numbe
     return { allowed: true, remaining: config.requests - record.count, resetTime: record.resetTime };
 }
 
-export function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest) {
     const { pathname } = request.nextUrl;
 
     // Only rate limit API routes
@@ -81,8 +88,9 @@ export function middleware(request: NextRequest) {
         return NextResponse.next();
     }
 
-    const ip = getClientIP(request);
+    const ip = await getClientIP(request);
     const config = getRateLimitConfig(pathname);
+    // Use exact pathname to avoid bucket collisions (e.g. /api/auth vs /api/auth/check)
     const key = `${ip}:${pathname}`;
 
     const { allowed, remaining, resetTime } = checkRateLimit(key, config);
