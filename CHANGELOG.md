@@ -1,10 +1,28 @@
 # Tremors Portfolio Changelog
 
 > **Project:** Tremors Portfolio
-> **Version:** 2.3.0  
-> **Last Updated:** 2026-02-22
+> **Version:** 2.3.1  
+> **Last Updated:** 2026-02-25
 
 ---
+
+## [2.3.1] - 2026-02-25
+
+### Fixed
+- **CSP**: Added `https://opengraph.githubassets.com` to `img-src` in `next.config.ts` to allow GitHub fallback images on project cards.
+- **Caching**: Added `revalidatePath("/")` to admin API routes to invalidate the Next.js static cache when the database is updated, fixing stale data in production.
+
+### Security
+- **CSRF**: Added CSRF validation to auth legacy secret command flow — previously cross-origin requests could probe the admin secret.
+- **CSRF**: Added CSRF validation to resume upload route (`api/admin/resume`).
+- **CSRF**: Wrapped referer URL parsing in try/catch to prevent malformed referer headers from crashing and bypassing CSRF validation.
+- **API Key**: Moved Gemini API key from URL query parameter to `x-goog-api-key` header to prevent key leakage in server/proxy logs.
+- **HSTS**: Added `Strict-Transport-Security` header to `next.config.ts`.
+
+### Improved
+- **Caching**: Added `revalidatePath("/")` to availability and settings admin routes for consistent cache invalidation.
+- **Validation**: Added input type validation to repo reorder route — rejects malformed payloads with non-numeric `id`/`order`.
+- **Testing**: Fixed pre-existing test failure in `api_refresh.test.ts` (missing `next/cache` mock).
 
 ## [2.3.0] - 2026-02-22
 

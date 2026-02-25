@@ -138,9 +138,6 @@ export async function getGitHubData(): Promise<PortfolioData> {
     try {
         // Get ALL repos from database (for commits)
         const allDbRepos = await prisma.repo.findMany({
-            where: {
-                id: { gte: 0 } // Dummy condition to change the SQL string and bypass Postgres cached plans for the JSONB migration
-            },
             orderBy: [
                 { featured: "desc" },
                 { order: "asc" },

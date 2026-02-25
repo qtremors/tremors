@@ -6,30 +6,17 @@
 
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-
-const GITHUB_API_URL = "https://api.github.com";
-const GITHUB_USERNAME = process.env.GITHUB_USERNAME || "qtremors";
-const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
-
-function getAuthHeaders(): HeadersInit {
-    const headers: HeadersInit = {
-        Accept: "application/vnd.github.v3+json",
-        "User-Agent": "tremors-portfolio",
-    };
-    if (GITHUB_TOKEN) {
-        headers.Authorization = `Bearer ${GITHUB_TOKEN}`;
-    }
-    return headers;
-}
+import { GITHUB_API, getHeaders } from "@/lib/github";
+import { GITHUB_CONFIG } from "@/config/site";
 
 /**
  * Fetches the total commit count for a single repo using Link header pagination trick
  */
 async function fetchCommitCount(owner: string, repoName: string): Promise<number> {
-    const url = `${GITHUB_API_URL}/repos/${owner}/${repoName}/commits?per_page=1`;
+    const url = `${GITHUB_API}/repos/${owner}/${repoName}/commits?per_page=1`;
     try {
         const response = await fetch(url, {
-            headers: getAuthHeaders(),
+            headers: getHeaders(),
             next: { revalidate: 3600 }, // Cache for 1 hour
         });
 
@@ -78,7 +65,7 @@ export async function GET() {
             const batch = repos.slice(i, i + BATCH_SIZE);
             const batchResults = await Promise.allSettled(
                 batch.map(async (repo: { name: string }) => {
-                    const count = await fetchCommitCount(GITHUB_USERNAME, repo.name);
+                    const count = await fetchCommitCount(GITHUB_CONFIG.username, repo.name);
                     return { name: repo.name, count };
                 })
             );

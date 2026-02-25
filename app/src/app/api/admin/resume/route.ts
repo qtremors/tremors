@@ -3,10 +3,11 @@
  * Upload and manage resume PDF via Vercel Blob
  */
 
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { put, del } from "@vercel/blob";
 import { prisma } from "@/lib/db";
 import { verifyAdminCookie } from "@/lib/auth";
+import { validateCsrf } from "@/lib/csrf";
 
 const FALLBACK_RESUME_URL = "/Aman_Singh.pdf";
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
@@ -34,8 +35,17 @@ export async function GET() {
 /**
  * POST: Upload new resume PDF to Vercel Blob
  */
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
     try {
+        // Validate CSRF
+        const csrf = validateCsrf(request);
+        if (!csrf.valid) {
+            return NextResponse.json(
+                { success: false, error: csrf.error },
+                { status: 403 }
+            );
+        }
+
         // Check admin auth
         const isAdmin = await verifyAdminCookie();
         if (!isAdmin) {

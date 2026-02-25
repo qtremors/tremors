@@ -163,6 +163,15 @@ export async function POST(request: NextRequest) {
             });
         }
 
+        // Validate CSRF for legacy flow (same protection as action-based flow above)
+        const csrfLegacy = validateCsrf(request);
+        if (!csrfLegacy.valid) {
+            return NextResponse.json(
+                { success: false, error: csrfLegacy.error },
+                { status: 403 }
+            );
+        }
+
         // Legacy support: Check if username matches secret (for terminal trigger)
         const { username, password } = body;
         const adminSecret = process.env.ADMIN_SECRET;

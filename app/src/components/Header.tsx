@@ -5,8 +5,9 @@
 
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTheme } from "@/components/ThemeProvider";
 import { useAdmin } from "@/components/AdminContext";
@@ -24,6 +25,7 @@ export function Header({ currentMode }: HeaderProps) {
     const { isAdmin, editMode, setEditMode } = useAdmin();
     const { showInHeader } = useNavButtons();
     const toast = useToast();
+    const router = useRouter();
     const [refreshing, setRefreshing] = useState(false);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
 
@@ -34,7 +36,7 @@ export function Header({ currentMode }: HeaderProps) {
             const res = await fetch("/api/admin/refresh", { method: "POST" });
             if (res.ok) {
                 toast.success("Data refreshed from GitHub");
-                window.location.reload();
+                router.refresh();
             } else {
                 toast.error("Failed to refresh");
             }
