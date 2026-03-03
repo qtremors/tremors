@@ -5,11 +5,11 @@
 
 import type { GitHubUser, GitHubRepo, GitHubEvent, GitHubCommit } from "@/types";
 
-const GITHUB_API = 'https://api.github.com';
+export const GITHUB_API = 'https://api.github.com';
 
 
 // Get headers with optional auth
-function getHeaders(): HeadersInit {
+export function getHeaders(): HeadersInit {
   const headers: HeadersInit = {
     'Accept': 'application/vnd.github.v3+json',
   };

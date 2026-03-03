@@ -85,13 +85,15 @@ describe('Session Management', () => {
 
         // Move time forward 25 hours to simulate expiration
         vi.useFakeTimers();
-        vi.setSystemTime(new Date(Date.now() + 1000 * 60 * 60 * 25));
+        try {
+            vi.setSystemTime(new Date(Date.now() + 1000 * 60 * 60 * 25));
 
-        mockCookieStore.get.mockReturnValue({ value: token });
-        const isValid = await verifyAdminCookie();
-        expect(isValid).toBe(false);
-
-        vi.useRealTimers();
+            mockCookieStore.get.mockReturnValue({ value: token });
+            const isValid = await verifyAdminCookie();
+            expect(isValid).toBe(false);
+        } finally {
+            vi.useRealTimers();
+        }
     });
 
     it('should clear the admin cookie', async () => {

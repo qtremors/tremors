@@ -12,6 +12,7 @@ import { validateCsrf } from "@/lib/csrf";
 import { eventToDbActivity } from "@/lib/activity";
 import type { GitHubEvent } from "@/types";
 import { GITHUB_CONFIG, DATA_LIMITS } from "@/config/site";
+import { revalidatePath } from "next/cache";
 
 export async function POST(request: NextRequest) {
     // Validate CSRF
@@ -77,7 +78,7 @@ export async function POST(request: NextRequest) {
                             stars: repo.stargazers_count,
                             forks: repo.forks_count,
                             language: repo.language,
-                            topics: JSON.stringify(repo.topics),
+                            topics: repo.topics,
                             pushedAt: new Date(repo.pushed_at),
                             createdAt: new Date(repo.created_at),
                         },
@@ -91,7 +92,7 @@ export async function POST(request: NextRequest) {
                             stars: repo.stargazers_count,
                             forks: repo.forks_count,
                             language: repo.language,
-                            topics: JSON.stringify(repo.topics),
+                            topics: repo.topics,
                             pushedAt: new Date(repo.pushed_at),
                             createdAt: new Date(repo.created_at),
                             hidden: false,
@@ -140,6 +141,11 @@ export async function POST(request: NextRequest) {
             maxWait: 10000,  // Max time to wait for a transaction slot (10s)
             timeout: 30000, // Max time for the transaction to complete (30s)
         });
+
+        // Revalidate all pages that use GitHub data
+        revalidatePath("/");
+        revalidatePath("/news");
+        revalidatePath("/resume");
 
         return NextResponse.json({
             success: true,

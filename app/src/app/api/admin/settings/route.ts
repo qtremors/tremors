@@ -8,6 +8,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { verifyAdminCookie } from "@/lib/auth";
 import { validateCsrf } from "@/lib/csrf";
+import { revalidatePath } from "next/cache";
 
 // GET settings (public for showProjectImages, admin for full)
 export async function GET() {
@@ -106,6 +107,8 @@ export async function PATCH(request: NextRequest) {
                 availableForWork: availableForWork ?? true,
             },
         });
+
+        revalidatePath("/");
 
         return NextResponse.json({
             success: true,

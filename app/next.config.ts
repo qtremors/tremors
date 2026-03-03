@@ -16,7 +16,7 @@ const nextConfig: NextConfig = {
                 : "script-src 'self' 'unsafe-inline'",
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
               "font-src 'self' https://fonts.gstatic.com",
-              "img-src 'self' data: blob: https://github.com https://avatars.githubusercontent.com https://*.public.blob.vercel-storage.com",
+              "img-src 'self' data: blob: https://github.com https://avatars.githubusercontent.com https://*.public.blob.vercel-storage.com https://opengraph.githubassets.com",
               "media-src 'self' blob:",
               "connect-src 'self' https://api.github.com https://generativelanguage.googleapis.com https://*.public.blob.vercel-storage.com",
               "frame-ancestors 'none'",
@@ -39,6 +39,10 @@ const nextConfig: NextConfig = {
           {
             key: "Permissions-Policy",
             value: "camera=(), microphone=(), geolocation=()",
+          },
+          {
+            key: "Strict-Transport-Security",
+            value: "max-age=63072000; includeSubDomains; preload",
           },
         ],
       },

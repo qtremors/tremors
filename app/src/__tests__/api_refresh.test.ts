@@ -32,6 +32,10 @@ vi.mock('@/lib/csrf', () => ({
     validateCsrf: vi.fn().mockReturnValue({ valid: true })
 }));
 
+vi.mock('next/cache', () => ({
+    revalidatePath: vi.fn()
+}));
+
 describe('Admin Refresh API', () => {
     it('should successfully sync data', async () => {
         const req = new NextRequest('http://localhost:3000/api/admin/refresh', {

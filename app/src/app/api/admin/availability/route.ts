@@ -7,6 +7,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { verifyAdminCookie } from "@/lib/auth";
 import { validateCsrf } from "@/lib/csrf";
+import { revalidatePath } from "next/cache";
 
 // GET: Get current availability status (public)
 export async function GET() {
@@ -63,6 +64,8 @@ export async function POST(request: NextRequest) {
             update: { availableForWork },
             create: { id: "main", availableForWork },
         });
+
+        revalidatePath("/");
 
         return NextResponse.json({
             success: true,

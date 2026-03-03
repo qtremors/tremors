@@ -10,6 +10,7 @@ import { prisma } from "@/lib/db";
 import { verifyAdminCookie } from "@/lib/auth";
 import { parseTopics } from "@/lib/utils";
 import { validateCsrf } from "@/lib/csrf";
+import { revalidatePath } from "next/cache";
 
 // GET all repos (for admin panel)
 export async function GET() {
@@ -118,6 +119,8 @@ export async function PATCH(request: NextRequest) {
             where: { id: Number(id) },
             data: updateData,
         });
+
+        revalidatePath("/");
 
         return NextResponse.json({
             success: true,

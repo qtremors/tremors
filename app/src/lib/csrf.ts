@@ -62,13 +62,17 @@ export function validateCsrf(request: NextRequest): { valid: boolean; error?: st
 
     // Check referer as fallback
     if (referer) {
-        const refererUrl = new URL(referer);
-        if (ALLOWED_ORIGINS.some(allowed => referer.startsWith(allowed))) {
-            return { valid: true };
-        }
-        const host = request.headers.get("host");
-        if (host && refererUrl.host === host) {
-            return { valid: true };
+        try {
+            const refererUrl = new URL(referer);
+            if (ALLOWED_ORIGINS.some(allowed => referer.startsWith(allowed))) {
+                return { valid: true };
+            }
+            const host = request.headers.get("host");
+            if (host && refererUrl.host === host) {
+                return { valid: true };
+            }
+        } catch {
+            // Malformed referer URL — treat as invalid
         }
     }
 

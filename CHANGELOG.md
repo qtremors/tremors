@@ -1,10 +1,69 @@
 # Tremors Portfolio Changelog
 
 > **Project:** Tremors Portfolio
-> **Version:** 2.3.0  
-> **Last Updated:** 2026-02-22
+> **Version:** 2.3.3  
+> **Last Updated:** 2026-03-03
 
 ---
+
+## [2.3.3] - 2026-03-03
+
+### Security
+- **Rate Limiter Cleanup**: Replaced probabilistic `Math.random() < 0.01` cleanup with deterministic 60-second interval to prevent memory leaks under sustained load.
+- **Auth Rate Limiting**: Grouped `/api/auth/*` sub-routes into a single rate limit bucket — previously each sub-path (`/check`, `/logout`) had its own bucket, allowing 5× the intended rate.
+- **GET Rate Limiting**: Added rate limits for expensive GET endpoints: `/api/stats/commits` (20/min), `/api/newspaper/editions` (30/min). Previously all GETs were completely unprotected.
+- **Logout Verification**: Logout now verifies admin session before clearing the cookie, consistent with all other admin endpoints.
+- **Fallback Secret Warning**: Added explicit `console.warn` when using random in-memory auth secret, so session loss after server restarts is no longer silent.
+
+### Improved
+- **Type Safety**: Changed `import { Repo }` to `import type { Repo }` in `ProjectsGrid.tsx` to avoid bundling Prisma server code into the client.
+- **Documentation**: Added `ADMIN_PASSWORD` to `DEVELOPMENT.md` env vars table. Updated test count to "111 tests across 15 files". Updated README badge from `Next.js-16.0` to `Next.js-16.1`.
+
+### Removed
+- **Dead Code**: Removed unused `useApiMutation` hook from `useFetch.ts` (75 lines of dead code).
+
+---
+
+## [2.3.2] - 2026-03-03
+
+### Fixed
+- **Holiday Detection**: Removed invalid `day >= 20 && day <= 31` guard from Diwali detection in `api/newspaper/generate/route.ts` — was excluding valid dates like Nov 8, 2026.
+- **Type Safety**: Fixed `generateWithGemini` return type (`bodyContent: string` → `string[]`) to match actual Gemini JSON response schema.
+- **Dummy URL**: Fixed malformed fallback URL `https://github/` → `https://github.com/` in `lib/data.ts`.
+- **Client Bundle**: `CONTACT_LINKS` in `config/site.ts` used server-only `process.env.GITHUB_USERNAME` (undefined on client). Replaced with `GITHUB_CONFIG.username`.
+- **Topics Double-Serialization**: Refresh route was calling `JSON.stringify(repo.topics)` before storing in a Prisma `Json` column, causing double-serialization. Now stores the raw array.
+- **Leaked Timers**: Wrapped `vi.useFakeTimers()` in `try/finally` in `auth.test.ts` to prevent timer leaks on assertion failure.
+- **Production Caching**: Added `export const dynamic = "force-dynamic"` to `/`, `/news`, `/resume` pages and replaced `window.location.reload()` with `router.refresh()` in `Header.tsx` for proper cache busting.
+
+### Improved
+- **Data Integrity**: Wrapped newspaper edition deactivate+create flow in `prisma.$transaction()` to prevent orphaned deactivations.
+- **Performance**: Parallelized all 5 database queries in `buildContext()` (newspaper generation) — `allRepos` and `recentCommits` now run concurrently with weekly data.
+- **Revalidation**: Refresh API now calls `revalidatePath` for `/`, `/news`, and `/resume` instead of just `/`.
+
+### Removed
+- **Tech Debt**: Removed all 4 remaining `{ id: { gte: "" } }` Postgres cached plan bypass hacks from `newspaper/generate/route.ts`.
+- **Dead Code**: Deleted empty `lib/agent` directory (vestigial from v2.2.6).
+- **Doc Fix**: Removed non-existent `.agents/` from `DEVELOPMENT.md` project structure.
+
+---
+
+## [2.3.1] - 2026-02-25
+
+### Fixed
+- **CSP**: Added `https://opengraph.githubassets.com` to `img-src` in `next.config.ts` to allow GitHub fallback images on project cards.
+- **Caching**: Added `revalidatePath("/")` to admin API routes to invalidate the Next.js static cache when the database is updated, fixing stale data in production.
+
+### Security
+- **CSRF**: Added CSRF validation to auth legacy secret command flow — previously cross-origin requests could probe the admin secret.
+- **CSRF**: Added CSRF validation to resume upload route (`api/admin/resume`).
+- **CSRF**: Wrapped referer URL parsing in try/catch to prevent malformed referer headers from crashing and bypassing CSRF validation.
+- **API Key**: Moved Gemini API key from URL query parameter to `x-goog-api-key` header to prevent key leakage in server/proxy logs.
+- **HSTS**: Added `Strict-Transport-Security` header to `next.config.ts`.
+
+### Improved
+- **Caching**: Added `revalidatePath("/")` to availability and settings admin routes for consistent cache invalidation.
+- **Validation**: Added input type validation to repo reorder route — rejects malformed payloads with non-numeric `id`/`order`.
+- **Testing**: Fixed pre-existing test failure in `api_refresh.test.ts` (missing `next/cache` mock).
 
 ## [2.3.0] - 2026-02-22
 

@@ -2,7 +2,7 @@
 
 > Comprehensive documentation for developers working on Tremors Portfolio.
 
-**Version:** 2.3.0 | **Last Updated:** 2026-02-22
+**Version:** 2.3.3 | **Last Updated:** 2026-03-03
 
 ---
 
@@ -10,10 +10,13 @@
 
 - [Architecture Overview](#architecture-overview)
 - [Project Structure](#project-structure)
+- [Naming Conventions](#naming-conventions)
 - [Database Schema](#database-schema)
+- [API Reference](#api-reference)
 - [Environment Variables](#environment-variables)
 - [Configuration](#configuration)
 - [Security Practices](#security-practices)
+- [Error Handling](#error-handling)
 - [Testing](#testing)
 - [Deployment](#deployment)
 - [Project Auditing & Quality Standards](#project-auditing--quality-standards)
@@ -64,12 +67,49 @@ tremors/
 │   ├── public/               # Static assets
 │   ├── .env.example          # Template for environment variables
 │   └── next.config.ts        # Next.js configuration
-├── .agents/                  # AI agent configuration & workflows
 ├── README.md                 # User-facing documentation
 ├── DEVELOPMENT.md            # This file
 ├── CHANGELOG.md              # Version history
-└── TASKS.md                  # Implementation tasks and backlog
+├── TASKS.md                  # Implementation tasks and backlog
+└── LICENSE.md                # License terms
 ```
+
+---
+
+## Naming Conventions
+
+> Names should be self-documenting. A reader should understand what a file, function, or component does without opening it.
+
+### Files & Directories
+
+| Type | Convention | Example |
+|------|-----------|------------------|
+| **Pages / Routes** | `kebab-case` directory | `app/news/page.tsx`, `app/resume/page.tsx` |
+| **Components** | `PascalCase.tsx` | `ProjectCard.tsx`, `SpotlightSection.tsx` |
+| **Hooks** | `camelCase` with `use` prefix | `useFetch.ts`, `useTerminalAdmin.ts` |
+| **Utilities / Lib** | `camelCase.ts` | `auth.ts`, `github.ts`, `date.ts` |
+| **Config** | `camelCase.ts` | `site.ts` |
+| **Tests** | `snake_case.test.ts` | `api_refresh.test.ts`, `auth.test.ts` |
+| **API Routes** | `kebab-case/route.ts` | `api/admin/refresh/route.ts` |
+
+### Functions & Methods
+
+| Prefix | Purpose | Example |
+|--------|---------|---------|
+| `get` / `fetch` | Retrieve data | `getGitHubData()`, `fetchRepos()` |
+| `set` / `update` | Modify state | `setAdminCookie()`, `updateSettings()` |
+| `verify` / `validate` | Validation | `verifyAdminCookie()`, `validateCsrf()` |
+| `handle` | Event handler | `handleRefresh()`, `handleLogin()` |
+| `format` / `parse` | Transform | `formatProjectTitle()`, `parseTopics()` |
+| `clear` / `delete` | Remove | `clearAdminCookie()` |
+
+### Database Models & Fields
+
+| Type | Convention | Example |
+|------|-----------|---------|
+| **Models** | `PascalCase` singular | `Repo`, `Settings`, `NewspaperEdition` |
+| **Fields** | `camelCase` | `pushedAt`, `isActive`, `passwordHash` |
+| **IDs** | `id` (auto) or `cuid()` | `Repo.id` (Int), `NewspaperEdition.id` (String/cuid) |
 
 ---
 
@@ -84,6 +124,103 @@ tremors/
 | **Admin** | Single-user admin authentication | `passwordHash` |
 | **NewspaperEdition** | AI-generated news content | `headline`, `bodyContent`, `generatedBy`, `agentName`, `personality` |
 | **Activity/Commit** | Caches GitHub history | `sha`, `message`, `date` |
+
+### Relationships
+
+```mermaid
+erDiagram
+    Repo ||--o{ Commit : "repoName"
+    Repo ||--o{ Activity : "repoName"
+    Settings ||--|| Admin : "singleton pair"
+    NewspaperEdition }o--|| Settings : "uses lastRefresh"
+```
+
+> Note: Relationships are logical (via `repoName` string matching), not enforced via foreign keys. This keeps the schema flexible for GitHub API data.
+
+### Migrations
+
+```bash
+# Run pending migrations
+npx prisma migrate deploy
+
+# Create a new migration
+npx prisma migrate dev --name describe_change
+
+# Reset database (destructive)
+npx prisma migrate reset
+
+# Generate Prisma Client after schema changes
+npx prisma generate
+```
+
+### Indexes
+
+| Table | Column(s) | Type | Purpose |
+|-------|-----------|------|---------|
+| `Repo` | `featured` | B-tree | Optimized featured project filtering |
+| `Repo` | `hidden` | B-tree | Optimized visibility filtering |
+| `Repo` | `fullName` | Unique | Upsert key for GitHub sync |
+| `NewspaperEdition` | `date` | B-tree | Date-range queries for editions |
+| `Activity` | `date` | B-tree | Date-range queries for activity feed |
+
+---
+
+## API Reference
+
+### Authentication
+
+| Detail | Value |
+|--------|-------|
+| **Method** | Session Cookie (HMAC-signed token) |
+| **Cookie** | `admin_session` (httpOnly, Secure, SameSite=Lax) |
+| **Lifetime** | 24 hours |
+| **CSRF** | Origin/Referer header validation on all mutating requests |
+
+### Rate Limiting
+
+| Route Pattern | Limit | Window |
+|---|---|---|
+| `/api/auth/*` | 5 requests | 15 minutes |
+| `/api/admin/*` | 30 requests | 1 minute |
+| `/api/newspaper/generate` | 10 requests | 1 minute |
+| `/api/stats/commits` | 20 requests | 1 minute |
+| `/api/newspaper/editions` | 30 requests | 1 minute |
+| All other API routes | 100 requests | 1 minute |
+
+Headers: `X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-RateLimit-Reset`
+
+### Endpoints
+
+#### Authentication
+
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| `POST` | `/api/auth` | No | Login with admin secret or password |
+| `GET` | `/api/auth/check` | No | Check current session validity |
+| `POST` | `/api/auth/logout` | Admin | Clear admin session |
+
+#### Admin
+
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| `POST` | `/api/admin/refresh` | Admin | Sync GitHub data to database |
+| `GET` | `/api/admin/repos` | Admin | List all repos with admin fields |
+| `PATCH` | `/api/admin/repos` | Admin | Update repo visibility/featured/order |
+| `POST` | `/api/admin/repos/reorder` | Admin | Batch reorder repos |
+| `PATCH` | `/api/admin/availability` | Admin | Toggle "available for work" |
+| `GET` | `/api/admin/settings` | Admin | Get site settings |
+| `PATCH` | `/api/admin/settings` | Admin | Update site settings |
+| `POST` | `/api/admin/resume` | Admin | Upload resume PDF to Vercel Blob |
+
+#### Public
+
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| `GET` | `/api/stats/commits` | No | Commit counts per visible repo |
+| `GET` | `/api/newspaper/active` | No | Get today's active newspaper edition |
+| `GET` | `/api/newspaper/editions` | No | List recent editions |
+| `POST` | `/api/newspaper/generate` | Admin | Generate new AI newspaper edition |
+| `GET` | `/api/news/rss` | No | RSS feed of newspaper editions |
 
 ---
 
@@ -112,6 +249,7 @@ tremors/
 | `NEXT_PUBLIC_SITE_URL` | Canonical URL for SEO/RSS | `http://localhost:3000` |
 | `NEXT_PUBLIC_CONTACT_EMAIL` | Contact email address used in portfolio | - |
 | `NEXT_PUBLIC_LINKEDIN_URL` | LinkedIn profile URL used in portfolio | - |
+| `ADMIN_PASSWORD` | Pre-hashed admin password. Leave empty — set automatically on first login. | Auto-set |
 | `BLOB_READ_WRITE_TOKEN` | Vercel Blob access token for Resume uploads | - |
 
 ---
@@ -143,6 +281,44 @@ tremors/
 - Passwords are hashed using **PBKDF2/HMAC-SHA256**.
 - Signing secrets incorporate runtime entropy or rely strictly on heavily keyed predefined secrets.
 
+### CORS Policy
+
+| Setting | Value |
+|---------|-------|
+| **Allowed origins** | Same-origin only (enforced via CSRF middleware) |
+| **Credentials** | httpOnly cookies (not exposed to JavaScript) |
+
+### Dependency Auditing
+
+```bash
+# Check for known vulnerabilities
+npm audit
+
+# Auto-fix where possible
+npm audit fix
+```
+
+---
+
+## Error Handling
+
+### Server-Side
+
+| Layer | Strategy |
+|-------|----------|
+| **Route handlers** | `try/catch` with standardized JSON error responses (`{ success: false, error: "..." }`) |
+| **Middleware** | Rate limiting returns `429` with `Retry-After` header |
+| **Database** | Transaction rollback on failure (`prisma.$transaction`), connection retry via Prisma |
+| **External services** | Graceful fallback (e.g., newspaper falls back to last edition if Gemini fails) |
+
+### Client-Side
+
+| Layer | Strategy |
+|-------|----------|
+| **API calls** | `useFetch` hook with automatic error toasts |
+| **Forms** | Inline validation with toast notifications |
+| **Global** | `<ErrorBoundary>` component in `layout.tsx` |
+
 ---
 
 ## Testing
@@ -168,7 +344,7 @@ npm run test src/__tests__/auth.test.ts
 | `src/__tests__/terminal-commands.test.ts` | Command parsing and execution logic |
 | `src/__tests__/csrf.test.ts` | Validation logic for CSRF tokens |
 
-There are 111 passing tests ensuring the core stability of the project backend paths.
+There are 111 passing tests across 15 test files ensuring the core stability of the project backend paths.
 
 ---
 
@@ -193,6 +369,23 @@ npm run build
 - [ ] Configure `GEMINI_API_KEY` if using News feature.
 - [ ] Verify `NEXT_PUBLIC_SITE_URL` aligns with your domain.
 - [ ] Log in via terminal (`your_secret_command`) to set the initial password.
+
+### Health Check
+
+| Endpoint | Expected | Description |
+|----------|----------|-------------|
+| `GET /` | `200 OK` | Main page renders (dynamic, hits DB) |
+| `GET /api/auth/check` | `200 OK` | API layer is responsive |
+
+### Rollback
+
+```bash
+# Vercel: revert to previous deployment
+vercel rollback
+
+# Database: revert last migration (destructive)
+npx prisma migrate reset
+```
 
 ---
 

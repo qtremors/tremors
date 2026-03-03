@@ -17,7 +17,7 @@ import type { GitHubRepo } from "@/types";
 import { GridControls } from "@/components/Projects/GridControls";
 import { SpotlightSection } from "@/components/Projects/SpotlightSection";
 import { MoreProjectsSection } from "@/components/Projects/MoreProjectsSection";
-import { Repo } from "@prisma/client";
+import type { Repo } from "@prisma/client";
 
 interface ProjectsGridProps {
     repos: GitHubRepo[];

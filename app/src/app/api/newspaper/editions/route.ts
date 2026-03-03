@@ -9,7 +9,6 @@ import { prisma } from "@/lib/db";
 export async function GET() {
     try {
         const editions = await prisma.newspaperEdition.findMany({
-            where: { id: { gte: "" } }, // Bypass Postgres cached plans
             orderBy: { createdAt: "desc" }, // Order by actual creation time (newest first)
             select: {
                 id: true,

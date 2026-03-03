@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { clearAdminCookie } from "@/lib/auth";
+import { clearAdminCookie, verifyAdminCookie } from "@/lib/auth";
 import { validateCsrf } from "@/lib/csrf";
 
 /**
@@ -17,6 +17,15 @@ export async function POST(request: NextRequest) {
         return NextResponse.json(
             { success: false, error: csrf.error },
             { status: 403 }
+        );
+    }
+
+    // Verify the user is actually authenticated before clearing
+    const isAdmin = await verifyAdminCookie();
+    if (!isAdmin) {
+        return NextResponse.json(
+            { success: false, error: "Not authenticated" },
+            { status: 401 }
         );
     }
 

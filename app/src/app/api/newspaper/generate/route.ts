@@ -45,33 +45,31 @@ async function buildContext() {
 
     const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
 
-    // Fetch all repos (Global Context)
-    const allRepos = await prisma.repo.findMany({
-        where: { hidden: false },
-        orderBy: { pushedAt: "desc" },
-    });
-
-    // Fetch all commits (Historical Context for streaks/active repo)
-    const recentCommits = await prisma.commit.findMany({
-        orderBy: { date: "desc" },
-        take: 100, // Increased for weekly depth
-    });
-
-    // Fetch Strictly Weekly data (7 days)
-    const [weeklyCommits, weeklyActivity, previousEditions] = await Promise.all([
+    // Fetch all data in parallel for maximum performance
+    const [allRepos, recentCommits, weeklyCommits, weeklyActivity, previousEditions] = await Promise.all([
+        // Global Context: all visible repos
+        prisma.repo.findMany({
+            where: { hidden: false },
+            orderBy: { pushedAt: "desc" },
+        }),
+        // Historical Context for streaks/active repo
+        prisma.commit.findMany({
+            orderBy: { date: "desc" },
+            take: 100,
+        }),
+        // Weekly commits (7 days)
         prisma.commit.findMany({
             where: { date: { gte: sevenDaysAgo } },
             orderBy: { date: "desc" },
         }),
+        // Weekly activity (7 days)
         prisma.activity.findMany({
             where: { date: { gte: sevenDaysAgo } },
             orderBy: { date: "desc" },
         }),
+        // Previous headlines to avoid repetition
         prisma.newspaperEdition.findMany({
-            where: { 
-                id: { gte: "" }, // Bypass Postgres cached plans for JSONB migration
-                isActive: true 
-            },
+            where: { isActive: true },
             orderBy: { date: "desc" },
             take: 5,
             select: { headline: true, date: true }
@@ -155,8 +153,8 @@ async function buildContext() {
     // Dynamically fetch Indian holidays
     try {
         const year = now.getFullYear();
-        // Fallback for festive season
-        if ((month === 10 || month === 11) && day >= 20 && day <= 31) {
+        // Check for Diwali and festive season (Oct-Nov)
+        if (month === 10 || month === 11) {
              const diwaliDates: Record<number, string> = {
                  2024: "10-31", 2025: "10-20", 2026: "11-08", 2027: "10-29",
                  2028: "10-17", 2029: "11-05", 2030: "10-26"
@@ -206,7 +204,7 @@ async function buildContext() {
 async function generateWithGemini(
     context: Awaited<ReturnType<typeof buildContext>>,
     personalityId: string = "tabloid"
-): Promise<{ headline: string, subheadline: string, bodyContent: string, pullQuote: string, location: string } | null> {
+): Promise<{ headline: string, subheadline: string, bodyContent: string[], pullQuote: string, location: string } | null> {
     const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) return null;
 
@@ -250,9 +248,12 @@ RESPOND ONLY WITH VALID JSON:
 {"headline":"...","subheadline":"...","bodyContent":["...","...","..."],"pullQuote":"...","location":"..."}`;
 
     try {
-        const response = await fetch(`${GEMINI_API_URL}/${MODEL}:generateContent?key=${apiKey}`, {
+        const response = await fetch(`${GEMINI_API_URL}/${MODEL}:generateContent`, {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: {
+                "Content-Type": "application/json",
+                "x-goog-api-key": apiKey,
+            },
             body: JSON.stringify({
                 contents: [{ parts: [{ text: prompt }] }],
                 generationConfig: {
@@ -336,7 +337,6 @@ export async function GET(request: Request) {
         // 1. Try to get active edition for today
         let edition = await prisma.newspaperEdition.findFirst({
             where: {
-                id: { gte: "" }, // Bypass Postgres cached plans
                 date: { gte: todayStart, lte: todayEnd },
                 isActive: true,
             },
@@ -345,7 +345,7 @@ export async function GET(request: Request) {
         // 2. Try any active edition
         if (!edition) {
             edition = await prisma.newspaperEdition.findFirst({
-                where: { id: { gte: "" }, isActive: true },
+                where: { isActive: true },
                 orderBy: { date: "desc" },
             });
         }
@@ -353,7 +353,7 @@ export async function GET(request: Request) {
         // 3. Try any fallback
         if (!edition) {
             edition = await prisma.newspaperEdition.findFirst({
-                where: { id: { gte: "" }, isFallback: true },
+                where: { isFallback: true },
                 orderBy: { date: "desc" },
             });
         }
@@ -432,30 +432,32 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        // Deactivate all editions for today
-        await prisma.newspaperEdition.updateMany({
-            where: {
-                id: { gte: "" },
-                date: { gte: startOfToday, lte: endOfToday },
-            },
-            data: { isActive: false },
-        });
+        // Deactivate today's editions and create new one atomically
+        const edition = await prisma.$transaction(async (tx) => {
+            // Deactivate all editions for today
+            await tx.newspaperEdition.updateMany({
+                where: {
+                    date: { gte: startOfToday, lte: endOfToday },
+                },
+                data: { isActive: false },
+            });
 
-        // Create new edition (variant) and set as active
-        const edition = await prisma.newspaperEdition.create({
-            data: {
-                date: now, // Store the exact generation time
-                headline: content.headline,
-                subheadline: content.subheadline,
-                bodyContent: content.bodyContent,
-                pullQuote: content.pullQuote,
-                location: content.location || "VØID",
-                isActive: true, // Auto-activate new edition
-                isFallback: false,
-                generatedBy: generated ? MODEL : "fallback-content",
-                agentName: NEWS_AGENT.name,
-                personality: personalityId,
-            },
+            // Create new edition (variant) and set as active
+            return tx.newspaperEdition.create({
+                data: {
+                    date: now, // Store the exact generation time
+                    headline: content.headline,
+                    subheadline: content.subheadline,
+                    bodyContent: content.bodyContent,
+                    pullQuote: content.pullQuote,
+                    location: content.location || "VØID",
+                    isActive: true, // Auto-activate new edition
+                    isFallback: false,
+                    generatedBy: generated ? MODEL : "fallback-content",
+                    agentName: NEWS_AGENT.name,
+                    personality: personalityId,
+                },
+            });
         });
 
         return NextResponse.json({

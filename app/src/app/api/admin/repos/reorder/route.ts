@@ -8,6 +8,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { verifyAdminCookie } from "@/lib/auth";
 import { validateCsrf } from "@/lib/csrf";
+import { revalidatePath } from "next/cache";
 
 export async function POST(request: NextRequest) {
     // Validate CSRF
@@ -39,6 +40,20 @@ export async function POST(request: NextRequest) {
             );
         }
 
+        // Validate each item has numeric id and order
+        const isValid = orders.every(
+            (item: unknown) =>
+                typeof item === "object" && item !== null &&
+                typeof (item as Record<string, unknown>).id === "number" &&
+                typeof (item as Record<string, unknown>).order === "number"
+        );
+        if (!isValid) {
+            return NextResponse.json(
+                { success: false, error: "Each item must have numeric id and order" },
+                { status: 400 }
+            );
+        }
+
         // Use transaction to update all orders
         await prisma.$transaction(
             orders.map((item) =>
@@ -48,6 +63,8 @@ export async function POST(request: NextRequest) {
                 })
             )
         );
+
+        revalidatePath("/");
 
         return NextResponse.json({
             success: true,

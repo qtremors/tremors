@@ -4,5 +4,5 @@
  */
 
 export { useAdminAuth } from "./useAdminAuth";
-export { useFetch, useApiMutation } from "./useFetch";
+export { useFetch } from "./useFetch";
 export { useTerminalAdmin } from "./useTerminalAdmin";
