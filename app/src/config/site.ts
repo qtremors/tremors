@@ -18,6 +18,15 @@ export const PERSONAL = {
     availableForWork: true,
 } as const;
 
+// GitHub configuration
+export const GITHUB_CONFIG = {
+    username: process.env.GITHUB_USERNAME || "qtremors",
+    excludeTopic: "x",           // Repos with this topic are hidden
+    featuredTopic: "portfolio",   // Repos with this topic are featured
+    maxFeatured: 6,
+    maxActivity: 10,
+} as const;
+
 // Contact Links
 export const CONTACT_LINKS: ContactLink[] = [
     {
@@ -28,7 +37,7 @@ export const CONTACT_LINKS: ContactLink[] = [
     {
         id: "github",
         label: "GitHub",
-        url: `https://github.com/${process.env.GITHUB_USERNAME || "yourusername"}`,
+        url: `https://github.com/${GITHUB_CONFIG.username}`,
     },
     {
         id: "linkedin",
@@ -80,15 +89,6 @@ export const SECTIONS: SectionConfig[] = [
     { id: "activity", title: "Activity", enabled: true, order: 4 },
     { id: "contact", title: "Contact", enabled: true, order: 5 },
 ];
-
-// GitHub configuration
-export const GITHUB_CONFIG = {
-    username: process.env.GITHUB_USERNAME || "qtremors",
-    excludeTopic: "x",           // Repos with this topic are hidden
-    featuredTopic: "portfolio",   // Repos with this topic are featured
-    maxFeatured: 6,
-    maxActivity: 10,
-} as const;
 
 // Data fetching limits (Q-002: centralized magic numbers)
 export const DATA_LIMITS = {

@@ -2,7 +2,7 @@
 
 > Comprehensive documentation for developers working on Tremors Portfolio.
 
-**Version:** 2.3.0 | **Last Updated:** 2026-02-22
+**Version:** 2.3.2 | **Last Updated:** 2026-03-03
 
 ---
 
@@ -64,7 +64,6 @@ tremors/
 │   ├── public/               # Static assets
 │   ├── .env.example          # Template for environment variables
 │   └── next.config.ts        # Next.js configuration
-├── .agents/                  # AI agent configuration & workflows
 ├── README.md                 # User-facing documentation
 ├── DEVELOPMENT.md            # This file
 ├── CHANGELOG.md              # Version history

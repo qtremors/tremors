@@ -247,7 +247,7 @@ export async function getGitHubData(): Promise<PortfolioData> {
             user: {
                 login: GITHUB_CONFIG.username,
                 avatar_url: "",
-                html_url: `https://github/${GITHUB_CONFIG.username}`,
+                html_url: `https://github.com/${GITHUB_CONFIG.username}`,
                 name: GITHUB_CONFIG.username,
                 bio: "Loading profile data...",
                 public_repos: 0,

@@ -1,8 +1,31 @@
 # Tremors Portfolio Changelog
 
 > **Project:** Tremors Portfolio
-> **Version:** 2.3.1  
-> **Last Updated:** 2026-02-25
+> **Version:** 2.3.2  
+> **Last Updated:** 2026-03-03
+
+---
+
+## [2.3.2] - 2026-03-03
+
+### Fixed
+- **Holiday Detection**: Removed invalid `day >= 20 && day <= 31` guard from Diwali detection in `api/newspaper/generate/route.ts` — was excluding valid dates like Nov 8, 2026.
+- **Type Safety**: Fixed `generateWithGemini` return type (`bodyContent: string` → `string[]`) to match actual Gemini JSON response schema.
+- **Dummy URL**: Fixed malformed fallback URL `https://github/` → `https://github.com/` in `lib/data.ts`.
+- **Client Bundle**: `CONTACT_LINKS` in `config/site.ts` used server-only `process.env.GITHUB_USERNAME` (undefined on client). Replaced with `GITHUB_CONFIG.username`.
+- **Topics Double-Serialization**: Refresh route was calling `JSON.stringify(repo.topics)` before storing in a Prisma `Json` column, causing double-serialization. Now stores the raw array.
+- **Leaked Timers**: Wrapped `vi.useFakeTimers()` in `try/finally` in `auth.test.ts` to prevent timer leaks on assertion failure.
+- **Production Caching**: Added `export const dynamic = "force-dynamic"` to `/`, `/news`, `/resume` pages and replaced `window.location.reload()` with `router.refresh()` in `Header.tsx` for proper cache busting.
+
+### Improved
+- **Data Integrity**: Wrapped newspaper edition deactivate+create flow in `prisma.$transaction()` to prevent orphaned deactivations.
+- **Performance**: Parallelized all 5 database queries in `buildContext()` (newspaper generation) — `allRepos` and `recentCommits` now run concurrently with weekly data.
+- **Revalidation**: Refresh API now calls `revalidatePath` for `/`, `/news`, and `/resume` instead of just `/`.
+
+### Removed
+- **Tech Debt**: Removed all 4 remaining `{ id: { gte: "" } }` Postgres cached plan bypass hacks from `newspaper/generate/route.ts`.
+- **Dead Code**: Deleted empty `lib/agent` directory (vestigial from v2.2.6).
+- **Doc Fix**: Removed non-existent `.agents/` from `DEVELOPMENT.md` project structure.
 
 ---
 

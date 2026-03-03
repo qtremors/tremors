@@ -78,7 +78,7 @@ export async function POST(request: NextRequest) {
                             stars: repo.stargazers_count,
                             forks: repo.forks_count,
                             language: repo.language,
-                            topics: JSON.stringify(repo.topics),
+                            topics: repo.topics,
                             pushedAt: new Date(repo.pushed_at),
                             createdAt: new Date(repo.created_at),
                         },
