@@ -74,7 +74,7 @@ Visit **http://localhost:3000**
 | `ADMIN_SECRET` | Yes | Secret command for terminal admin login |
 | `DATABASE_URL` | Yes | Postgres connection string (pooled) |
 | `GITHUB_TOKEN` | No | GitHub PAT for higher API rate limits |
-| `AUTH_SECRET` | No | Signing key for sessions (auto-generated) |
+| `AUTH_SECRET` | Yes (production) | Signing key for sessions (auto-generated in dev, stable secret required in prod) |
 | `GEMINI_API_KEY` | No | Google AI key for News feature |
 
 Full details in [DEVELOPMENT.md → Environment Variables](DEVELOPMENT.md#environment-variables)

@@ -44,8 +44,9 @@ export async function POST(request: NextRequest) {
         const isValid = orders.every(
             (item: unknown) =>
                 typeof item === "object" && item !== null &&
-                typeof (item as Record<string, unknown>).id === "number" &&
-                typeof (item as Record<string, unknown>).order === "number"
+                Number.isFinite((item as Record<string, unknown>).id) && Number.isInteger((item as Record<string, unknown>).id) &&
+                Number.isFinite((item as Record<string, unknown>).order) && Number.isInteger((item as Record<string, unknown>).order) &&
+                (item as Record<string, unknown>).id as number >= 0
         );
         if (!isValid) {
             return NextResponse.json(

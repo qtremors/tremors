@@ -1,7 +1,7 @@
 # Tremors Implementation Tasks
 
 > **Project:** Tremors  
-> **Version:** 2.3.3
+> **Version:** 2.3.4
 > **Last Updated:** 2026-03-03
 
 ---
@@ -22,3 +22,13 @@
 
 ## G. Configuration & Infrastructure
 - **[Config] `eslint-config-next` Version Pinned at `16.0.10`:** The `next` package is `^16.1.6` but `eslint-config-next` is pinned to `16.0.10`. This version mismatch could cause lint rule drift. Update to match the `next` version range.
+
+## H. PR Review Fixes
+- [x] **[Middleware] Rate Limit Prefix Matching:** `getRateLimitConfig` in `middleware.ts` uses naive prefix matching (`pathname.startsWith`), which can misclassify routes. Replace with a boundary-aware matcher.
+- [x] **[Validation] Admin Repos Reorder:** The `orders` validation in `api/admin/repos/reorder/route.ts` only checks `typeof === "number"`, allowing NaN/Infinity. Update predicate to use `Number.isFinite` and `Number.isInteger`.
+- [x] **[Type Safety] Newspaper Generate Normalization:** The generated `bodyContent` in `api/newspaper/generate/route.ts` must be strictly normalized to a `string[]` at runtime before returning.
+- [] **[Race Condition] Newspaper Active Edition:** Concurrent transactions can produce multiple active editions in `api/newspaper/generate/route.ts`. Add a DB-level uniqueness constraint and handle Prisma P2002 conflicts.
+- [x] **[Docs] DEVELOPMENT.md Public Endpoints:** The `POST /api/newspaper/generate` endpoint is incorrectly listed under the "Public" table. Move it to the "Admin" table.
+- [x] **[Docs] DEVELOPMENT.md Rollback Guidance:** The docs advise using the destructive `prisma migrate reset` for rollbacks. Replace with safe production rollback procedures via `migrate deploy`/`resolve` and reverting changes.
+- [x] **[Docs] LICENSE.md Severability Clause:** Simplify the redundant severability sentence in `LICENSE.md`.
+- [x] **[Docs] README.md AUTH_SECRET:** Update the `AUTH_SECRET` table row in `README.md` to indicate it is required for production.

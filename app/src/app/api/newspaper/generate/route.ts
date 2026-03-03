@@ -292,10 +292,23 @@ RESPOND ONLY WITH VALID JSON:
 
         try {
             const parsed = JSON.parse(jsonMatch[0]);
+            
+            let normalizedBody: string[] = [];
+            if (Array.isArray(parsed.bodyContent)) {
+                normalizedBody = parsed.bodyContent
+                    .filter((item: unknown) => item !== null && item !== undefined)
+                    .map((item: unknown) => String(item));
+            } else if (typeof parsed.bodyContent === "string") {
+                normalizedBody = [parsed.bodyContent];
+            }
+            if (normalizedBody.length === 0) {
+                normalizedBody = ["The central nexus reports no new structural paradigm shifts. Assume standard operating procedures."];
+            }
+
             return {
                 headline: parsed.headline || "DEVELOPER SILENT, SERVERS HUMMING",
                 subheadline: parsed.subheadline || "No new updates from the void",
-                bodyContent: parsed.bodyContent || ["The central nexus reports no new structural paradigm shifts. Assume standard operating procedures."],
+                bodyContent: normalizedBody,
                 pullQuote: parsed.pullQuote || '"Just keep swimming." — Dory',
                 location: parsed.location || "VØID",
             };

@@ -2,7 +2,7 @@
 
 > Comprehensive documentation for developers working on Tremors Portfolio.
 
-**Version:** 2.3.3 | **Last Updated:** 2026-03-03
+**Version:** 2.3.4 | **Last Updated:** 2026-03-03
 
 ---
 
@@ -211,6 +211,7 @@ Headers: `X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-RateLimit-Reset`
 | `GET` | `/api/admin/settings` | Admin | Get site settings |
 | `PATCH` | `/api/admin/settings` | Admin | Update site settings |
 | `POST` | `/api/admin/resume` | Admin | Upload resume PDF to Vercel Blob |
+| `POST` | `/api/newspaper/generate` | Admin | Generate new AI newspaper edition |
 
 #### Public
 
@@ -219,7 +220,6 @@ Headers: `X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-RateLimit-Reset`
 | `GET` | `/api/stats/commits` | No | Commit counts per visible repo |
 | `GET` | `/api/newspaper/active` | No | Get today's active newspaper edition |
 | `GET` | `/api/newspaper/editions` | No | List recent editions |
-| `POST` | `/api/newspaper/generate` | Admin | Generate new AI newspaper edition |
 | `GET` | `/api/news/rss` | No | RSS feed of newspaper editions |
 
 ---
@@ -383,8 +383,14 @@ npm run build
 # Vercel: revert to previous deployment
 vercel rollback
 
-# Database: revert last migration (destructive)
-npx prisma migrate reset
+# Database: deploy previous migrations safely
+npx prisma migrate deploy
+
+# Revert changes by applying a new migration that undoes the schema change
+# (Alternatively, use `prisma migrate resolve` to mark failed migrations)
+# Important: Always take backups/snapshots and test restores before proceeding.
+# Do NOT run `prisma migrate reset` in production as it destroys all data.
+# Consider using point-in-time recovery via Neon/Postgres replicas for safe recovery.
 ```
 
 ---

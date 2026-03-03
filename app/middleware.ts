@@ -41,9 +41,14 @@ async function getClientIP(request: NextRequest): Promise<string> {
     return `anon-${hashHex.slice(0, 16)}`;
 }
 
+function matchesRoutePrefix(pattern: string, pathname: string): boolean {
+    if (pattern === "default") return true;
+    return pathname === pattern || pathname.startsWith(pattern + "/");
+}
+
 function getRateLimitConfig(pathname: string): { requests: number; windowMs: number; routeKey: string } {
     for (const [pattern, config] of Object.entries(RATE_LIMITS)) {
-        if (pattern !== "default" && pathname.startsWith(pattern)) {
+        if (pattern !== "default" && matchesRoutePrefix(pattern, pathname)) {
             return { ...config, routeKey: pattern };
         }
     }
@@ -94,7 +99,7 @@ export async function middleware(request: NextRequest) {
         // Check if this route has an explicit rate limit config
         const hasExplicitConfig = Object.keys(RATE_LIMITS)
             .filter(k => k !== "default")
-            .some(pattern => pathname.startsWith(pattern));
+            .some(pattern => matchesRoutePrefix(pattern, pathname));
         if (!hasExplicitConfig) {
             return NextResponse.next();
         }

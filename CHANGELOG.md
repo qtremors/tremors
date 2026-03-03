@@ -1,8 +1,18 @@
 # Tremors Portfolio Changelog
 
 > **Project:** Tremors Portfolio
-> **Version:** 2.3.3  
+> **Version:** 2.3.4  
 > **Last Updated:** 2026-03-03
+
+---
+
+## [2.3.4] - 2026-03-03
+
+### Fixed
+- **Middleware**: Replaced naive route prefix matching with a boundary-aware matcher for rate-limiting routes.
+- **Validation**: Hardened validation in `/api/admin/repos/reorder` endpoint using `Number.isFinite` and `Number.isInteger`.
+- **Type Safety**: Enforced runtime validation of AI generated `bodyContent` array to strict `string[]` in `/api/newspaper/generate`.
+- **Documentation**: Simplified severability clause in `LICENSE.md`, corrected endpoints and rollback guidance in `DEVELOPMENT.md`, and updated `AUTH_SECRET` prod requirement in `README.md`.
 
 ---
 

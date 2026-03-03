@@ -91,7 +91,7 @@ The authors or copyright holders are NOT liable for any claim, damages, or other
 
 ### 8. Severability
 
-If any provision of this license is found to be unenforceable or invalid, the remaining provisions shall continue to remain in full force and effect.
+If any provision of this license is found to be unenforceable or invalid, the remaining provisions shall remain in full force and effect.
 
 ### 9. Trademark
 
