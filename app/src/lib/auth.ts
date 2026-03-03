@@ -38,6 +38,7 @@ function getSigningSecret(): string {
     if (adminSecret === "your_secret_command" || adminSecret === "default-site-secret") {
         if (!RANDOM_FALLBACK_SECRET) {
             RANDOM_FALLBACK_SECRET = crypto.randomBytes(32).toString("hex");
+            console.warn("WARNING: Using random in-memory auth secret. Sessions will not survive server restarts. Set AUTH_SECRET environment variable for persistent sessions.");
         }
         return RANDOM_FALLBACK_SECRET;
     }

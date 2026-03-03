@@ -1,8 +1,26 @@
 # Tremors Portfolio Changelog
 
 > **Project:** Tremors Portfolio
-> **Version:** 2.3.2  
+> **Version:** 2.3.3  
 > **Last Updated:** 2026-03-03
+
+---
+
+## [2.3.3] - 2026-03-03
+
+### Security
+- **Rate Limiter Cleanup**: Replaced probabilistic `Math.random() < 0.01` cleanup with deterministic 60-second interval to prevent memory leaks under sustained load.
+- **Auth Rate Limiting**: Grouped `/api/auth/*` sub-routes into a single rate limit bucket — previously each sub-path (`/check`, `/logout`) had its own bucket, allowing 5× the intended rate.
+- **GET Rate Limiting**: Added rate limits for expensive GET endpoints: `/api/stats/commits` (20/min), `/api/newspaper/editions` (30/min). Previously all GETs were completely unprotected.
+- **Logout Verification**: Logout now verifies admin session before clearing the cookie, consistent with all other admin endpoints.
+- **Fallback Secret Warning**: Added explicit `console.warn` when using random in-memory auth secret, so session loss after server restarts is no longer silent.
+
+### Improved
+- **Type Safety**: Changed `import { Repo }` to `import type { Repo }` in `ProjectsGrid.tsx` to avoid bundling Prisma server code into the client.
+- **Documentation**: Added `ADMIN_PASSWORD` to `DEVELOPMENT.md` env vars table. Updated test count to "111 tests across 15 files". Updated README badge from `Next.js-16.0` to `Next.js-16.1`.
+
+### Removed
+- **Dead Code**: Removed unused `useApiMutation` hook from `useFetch.ts` (75 lines of dead code).
 
 ---
 

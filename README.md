@@ -9,7 +9,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Next.js-16.0-black?style=flat-square&logo=next.js" alt="Next.js">
+  <img src="https://img.shields.io/badge/Next.js-16.1-black?style=flat-square&logo=next.js" alt="Next.js">
   <img src="https://img.shields.io/badge/React-19-61DAFB?style=flat-square&logo=react">
   <img src="https://img.shields.io/badge/TypeScript-5-3178C6?style=flat-square&logo=typescript">
   <img src="https://img.shields.io/badge/Tailwind-4-06B6D4?style=flat-square&logo=tailwindcss">
@@ -58,6 +58,26 @@ npm run dev
 ```
 
 Visit **http://localhost:3000**
+
+### Prerequisites
+
+| Tool | Version | Install |
+|------|---------|---------|
+| Node.js | `≥ 18` | [nodejs.org](https://nodejs.org/) |
+| npm | `≥ 9` | Included with Node.js |
+
+### Environment Variables
+
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `GITHUB_USERNAME` | Yes | Your GitHub profile to sync |
+| `ADMIN_SECRET` | Yes | Secret command for terminal admin login |
+| `DATABASE_URL` | Yes | Postgres connection string (pooled) |
+| `GITHUB_TOKEN` | No | GitHub PAT for higher API rate limits |
+| `AUTH_SECRET` | No | Signing key for sessions (auto-generated) |
+| `GEMINI_API_KEY` | No | Google AI key for News feature |
+
+Full details in [DEVELOPMENT.md → Environment Variables](DEVELOPMENT.md#environment-variables)
 
 ---
 
@@ -123,13 +143,16 @@ npm run test:coverage
 |----------|-------------|
 | [DEVELOPMENT.md](DEVELOPMENT.md) | Architecture, setup, API reference |
 | [CHANGELOG.md](CHANGELOG.md) | Version history and release notes |
+| [TASKS.md](TASKS.md) | Implementation tasks and known issues |
 | [LICENSE.md](LICENSE.md) | License terms and attribution |
 
 ---
 
 ## 📄 License
 
-**Tremors Source License v2.0** - Strict personal use license. Allows viewing and personal reference only. No forking, redistribution, or commercial use allowed.
+**Tremors Source License (TSL v1.0)** — Source-available license allowing viewing, forking, and derivative works with **mandatory attribution**. Commercial use requires written permission.
+
+Web Version: [github.com/qtremors/license](https://github.com/qtremors/license)
 
 See [LICENSE.md](LICENSE.md) for full terms.
 
